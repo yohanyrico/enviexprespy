@@ -1,0 +1,297 @@
+{# templates/home.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador – EnviExpress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+   <style>
+    :root {
+        --deep-blue: #002B5B;
+        --bright-orange: #FF8C00;
+        --hover-orange: #E67E00;
+        --soft-bg: #f4f7f6;
+        --white: #ffffff;
+        --text-light: #f8f9fa;
+    }
+
+    body { 
+        background: linear-gradient(135deg, #002B5B, #004085, #001a33); 
+        min-height: 100vh; 
+        color: var(--text-light); 
+        font-family: 'Montserrat', sans-serif; 
+        padding-top: 90px; 
+    }
+
+    /* NAVBAR - Estilo limpio y autoritario */
+    .navbar { 
+        backdrop-filter: blur(15px); 
+        background: rgba(0, 43, 91, 0.85); 
+        border-bottom: 2px solid var(--bright-orange); 
+    }
+    .navbar-brand { font-size: 1.8rem; font-weight: 800; color: var(--bright-orange) !important; }
+    .navbar-brand span { color: var(--white); }
+
+    /* TÍTULOS */
+    .title-glow { 
+        font-size: 2.8rem; 
+        font-weight: 800; 
+        text-shadow: 0 0 15px rgba(255, 140, 0, 0.4); 
+        color: var(--white); 
+    }
+    .section-title { 
+        color: var(--bright-orange); 
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 2px solid rgba(255, 140, 0, 0.2);
+        display: inline-block;
+        padding-bottom: 5px;
+    }
+
+    /* TARJETAS (CARDS) - Más modernas y menos traslúcidas */
+    .quick-card { 
+        background: rgba(255, 255, 255, 0.1); 
+        border: 1px solid rgba(255, 255, 255, 0.1); 
+        border-radius: 16px; 
+        padding: 30px; 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        text-align: center; 
+        backdrop-filter: blur(5px);
+    }
+    .quick-card:hover { 
+        transform: translateY(-10px); 
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        border-color: var(--bright-orange);
+    }
+    .card-icon { 
+        font-size: 3.5rem; 
+        color: var(--bright-orange) !important; 
+        margin-bottom: 20px; 
+        filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.3));
+    }
+
+    /* BOTONES */
+    .btn-green { /* Mantenemos el nombre de la clase pero cambiamos a Naranja */
+        background: var(--bright-orange); 
+        border: none; 
+        padding: 12px 20px; 
+        color: var(--deep-blue); 
+        font-weight: 800; 
+        border-radius: 8px; 
+        transition: .3s; 
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+    .btn-green:hover { 
+        transform: scale(1.05); 
+        background: var(--white); 
+        color: var(--deep-blue); 
+        box-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+    }
+
+    .btn-success { background-color: var(--bright-orange); border: none; color: var(--deep-blue); font-weight: 700; }
+    .btn-success:hover { background-color: var(--hover-orange); color: white; }
+
+    .btn-outline-success { 
+        border: 2px solid var(--bright-orange); 
+        color: var(--bright-orange); 
+        font-weight: 600; 
+    }
+    .btn-outline-success:hover { 
+        background: var(--bright-orange); 
+        color: var(--deep-blue); 
+    }
+
+    /* ALERTAS */
+    .alert-success { 
+        background: rgba(255, 140, 0, 0.15); 
+        border: 1px solid var(--bright-orange); 
+        color: var(--white); 
+    }
+
+    /* FOOTER */
+    footer { 
+        background: rgba(0, 0, 0, 0.4); 
+        border-top: 3px solid var(--bright-orange); 
+        padding: 30px 0;
+        margin-top: 60px; 
+    }
+
+    /* SCROLLBAR (Opcional para mejorar el look) */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: var(--deep-blue); }
+    ::-webkit-scrollbar-thumb { background: var(--bright-orange); border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold fs-3 text-success" href="#">ENVI<span class="text-light">EXPRESS</span></a>
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div id="nav" class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto gap-3">
+                <li class="nav-item">
+                    <span class="navbar-text text-light">
+                        <i class="bi bi-person-badge"></i>
+                        <!-- Equivalente a th:text="${rol}" -->
+                        {{ rol }}
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <!-- Equivalente a th:action="@{/logout}" -->
+                    <form action="/logout" method="post">
+                        <button class="btn btn-danger btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- HEADER -->
+<div class="container text-center mb-4">
+    <h1 class="title-glow">Panel de Administrador</h1>
+    <p class="fs-5">Gestiona usuarios, vehículos, tarifas y envíos desde un solo lugar.</p>
+</div>
+
+<!-- Mensaje de éxito -->
+<div class="container">
+    <!-- Equivalente a th:if="${param.actualizado}" -->
+    {% if actualizado %}
+    <div id="mensajeExito" class="alert alert-success text-center" role="alert">
+        <i class="bi bi-check-circle-fill"></i> ¡El perfil ha sido actualizado correctamente!
+    </div>
+    {% endif %}
+</div>
+
+<!-- ACCIONES PRINCIPALES -->
+<section class="container py-4">
+    <h2 class="mb-4 fw-bold section-title text-center">Gestión del Sistema</h2>
+    <div class="row g-4">
+
+        <div class="col-md-3">
+            <div class="quick-card">
+                <i class="bi bi-people-fill text-success card-icon"></i>
+                <h5 class="mt-2">Usuarios</h5>
+                <p class="small">Gestiona clientes, mensajeros y administradores</p>
+                <a href="/usuarios" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Administrar
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="quick-card">
+                <i class="bi bi-truck text-success card-icon"></i>
+                <h5 class="mt-2">Vehículos</h5>
+                <p class="small">Administra la flota de vehículos disponibles</p>
+                <a href="/vehiculos" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Ver Flota
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="quick-card">
+                <i class="bi bi-box-seam text-success card-icon"></i>
+                <h5 class="mt-2">Envíos</h5>
+                <p class="small">Gestiona y supervisa todos los envíos</p>
+                <a href="/envios" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Ver Envíos
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="quick-card">
+                <i class="bi bi-currency-dollar text-success card-icon"></i>
+                <h5 class="mt-2">Tarifas</h5>
+                <p class="small">Configura precios y tipos de servicio</p>
+                <a href="/tarifas" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Configurar
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- VISTA RÁPIDA -->
+<section class="container py-5">
+    <h2 class="fw-bold mb-4 section-title text-center">Vista Rápida</h2>
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="quick-card">
+                <i class="bi bi-graph-up-arrow fs-1 text-success"></i>
+                <h4 class="mt-3">Envíos Activos</h4>
+                <p>Consulta el estado de todos los envíos en curso</p>
+                <a href="/envios" class="btn btn-sm btn-outline-success mt-2">Ver detalles</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="quick-card">
+                <i class="bi bi-people fs-1 text-success"></i>
+                <h4 class="mt-3">Usuarios Registrados</h4>
+                <p>Administra perfiles y permisos del sistema</p>
+                <a href="/usuarios" class="btn btn-sm btn-outline-success mt-2">Gestionar</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="quick-card">
+                <i class="bi bi-gear-fill fs-1 text-success"></i>
+                <h4 class="mt-3">Configuración</h4>
+                <p>Ajusta tarifas, rutas y parámetros del sistema</p>
+                <a href="/tarifas" class="btn btn-sm btn-outline-success mt-2">Configurar</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ACCESOS RÁPIDOS -->
+<section class="container text-center py-4">
+    <h2 class="fw-bold section-title">Accesos Rápidos</h2>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="/usuarios/nuevo" class="btn btn-success">
+            <i class="bi bi-person-plus-fill"></i> Crear Usuario
+        </a>
+        <a href="/vehiculos/nuevo" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Agregar Vehículo
+        </a>
+        <a href="/envios/nuevo" class="btn btn-success">
+            <i class="bi bi-box-seam"></i> Nuevo Envío
+        </a>
+        <a href="/perfil" class="btn btn-outline-light">
+            <i class="bi bi-person-circle"></i> Mi Perfil
+        </a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="text-center mt-5 p-3">
+    <p class="mb-0">© 2025 EnviExpress – Panel de Administrador</p>
+    <small class="text-muted">Sistema de Gestión de Envíos v1.0</small>
+</footer>
+
+<script>
+    setTimeout(function () {
+        const mensaje = document.getElementById("mensajeExito");
+        if (mensaje) mensaje.style.display = "none";
+    }, 4000);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

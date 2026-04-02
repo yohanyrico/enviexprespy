@@ -1,0 +1,176 @@
+{# templates/form-vehiculo.html #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario de Vehículo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+   <style>
+    :root {
+        --azul-profundo: #002B5B;
+        --azul-medio: #004085;
+        --azul-oscuro: #001a33;
+        --naranja: #FF8C00;
+        --naranja-hover: #E67E00;
+        --blanco: #ffffff;
+        --texto-gris: #4a5568;
+    }
+
+    body { 
+        /* Fondo degradado solicitado */
+        background: linear-gradient(135deg, var(--azul-profundo), var(--azul-medio), var(--azul-oscuro)); 
+        min-height: 100vh; 
+        color: var(--blanco); 
+        font-family: 'Montserrat', sans-serif; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding: 20px;
+    }
+
+    /* CONTENEDOR DEL FORMULARIO */
+    .form-container { 
+        max-width: 600px; 
+        width: 100%;
+        margin: 20px auto; 
+        padding: 40px; 
+        background-color: var(--blanco); 
+        border-radius: 15px; 
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4); 
+        color: var(--azul-oscuro); /* Texto oscuro dentro del formulario blanco */
+    }
+
+    h2 { 
+        color: var(--azul-profundo); 
+        text-align: center; 
+        margin-bottom: 30px; 
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: -0.5px;
+    }
+
+    /* ESTILO DE LOS CAMPOS (INPUTS) */
+    .form-label {
+        font-weight: 600;
+        color: var(--azul-medio);
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px;
+        transition: 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: var(--naranja);
+        box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.15);
+        outline: none;
+    }
+
+    /* BOTÓN PRINCIPAL - NARANJA */
+    .btn-primary { 
+        background-color: var(--naranja); 
+        border: none; 
+        padding: 14px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        width: 100%;
+        color: var(--blanco);
+        text-transform: uppercase;
+        transition: 0.3s;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover { 
+        background-color: var(--naranja-hover); 
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3);
+    }
+
+    /* ENLACES SUTILES */
+    .text-muted {
+        color: var(--texto-gris);
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.9rem;
+    }
+
+    .text-muted a {
+        color: var(--azul-medio);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .text-muted a:hover {
+        text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="form-container">
+        <h2>
+            <i class="bi bi-truck"></i>
+            <!-- Equivalente a th:text="${vehiculo.vehiculoId != null ? 'Editar' : 'Nuevo'}" -->
+            {{ 'Editar Vehículo' if vehiculo and vehiculo.vehiculo_id else 'Nuevo Vehículo' }}
+        </h2>
+
+        <form action="/vehiculos/guardar" method="post">
+
+            <!-- Equivalente a th:field="*{vehiculoId}" -->
+            <input type="hidden" name="vehiculo_id"
+                   value="{{ vehiculo.vehiculo_id if vehiculo and vehiculo.vehiculo_id else '' }}" />
+
+            <div class="mb-3">
+                <label for="placa" class="form-label">
+                    <i class="bi bi-credit-card-2-front"></i> Placa:
+                </label>
+                <input type="text" class="form-control" name="placa" id="placa"
+                       value="{{ vehiculo.placa if vehiculo else '' }}"
+                       placeholder="Ej: ABC123" required maxlength="20" />
+            </div>
+
+            <div class="mb-3">
+                <label for="tipo" class="form-label">
+                    <i class="bi bi-tag"></i> Tipo de Vehículo:
+                </label>
+                <!-- Equivalente a th:field="*{tipo}" con opciones -->
+                <select class="form-select" name="tipo" id="tipo" required>
+                    <option value="">Seleccione un tipo</option>
+                    {% for t in tipos %}
+                    <option value="{{ t }}"
+                        {{ 'selected' if vehiculo and vehiculo.tipo == t else '' }}>
+                        {{ t }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="capacidad_kg" class="form-label">
+                    <i class="bi bi-box-seam"></i> Capacidad de Carga (kg):
+                </label>
+                <input type="number" class="form-control" name="capacidad_kg" id="capacidad_kg"
+                       value="{{ vehiculo.capacidad_kg if vehiculo else '' }}"
+                       placeholder="Ej: 500" required step="0.01" min="0" />
+                <small class="form-text text-muted">Ingrese la capacidad máxima en kilogramos</small>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+                <a href="/vehiculos" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

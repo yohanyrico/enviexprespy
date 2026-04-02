@@ -1,0 +1,233 @@
+{# templates/form.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ 'Editar Usuario' if usuario and usuario.id_usuario else 'Nuevo Usuario' }} | ENVIEXPRESS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #00235a;
+            --primary-blue: #003a8c;
+            --accent-orange: #ff8c00;
+            --text-light: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --input-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        body { 
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-container { 
+            max-width: 650px; 
+            margin: 50px auto; 
+            padding: 40px; 
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
+        }
+
+        h2 { 
+            color: var(--text-light); 
+            text-align: center; 
+            margin-bottom: 35px; 
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-label { 
+            color: var(--accent-orange); 
+            font-size: 0.85rem; 
+            font-weight: 600; 
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--input-bg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 10px;
+            padding: 12px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-orange);
+            color: white;
+            box-shadow: 0 0 12px rgba(255, 140, 0, 0.25);
+        }
+
+        .form-control::placeholder { color: rgba(255, 255, 255, 0.4); }
+
+        /* Estilo para las opciones del select */
+        option { background-color: var(--primary-dark); color: white; }
+
+        .btn-orange {
+            background-color: var(--accent-orange);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-orange:hover {
+            background-color: #e67e00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+            color: white;
+        }
+
+        .btn-outline-custom {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 10px;
+            padding: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-outline-custom:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+
+        .form-text { color: rgba(255, 255, 255, 0.5) !important; }
+        
+        hr { border-color: rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="form-container">
+        <h2>
+            <i class="bi bi-person-circle text-orange"></i>
+            {{ 'Editar Usuario' if usuario and usuario.id_usuario else 'Nuevo Usuario' }}
+        </h2>
+
+        <form action="/usuarios/guardar" method="post">
+
+            <input type="hidden" name="id_usuario"
+                   value="{{ usuario.id_usuario if usuario and usuario.id_usuario else '' }}" />
+
+            <div class="mb-3">
+                <label for="user_name" class="form-label">
+                    <i class="bi bi-person-badge"></i> Nombre de usuario:*
+                </label>
+                <input type="text" class="form-control" name="user_name" id="user_name"
+                       value="{{ usuario.user_name if usuario else '' }}"
+                       placeholder="Ej: yrico2026" required maxlength="255" />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">
+                    <i class="bi bi-key-fill"></i> Contraseña:*
+                </label>
+                <input type="password" class="form-control" name="password" id="password"
+                       placeholder="Ingrese contraseña segura"
+                       {{ '' if usuario and usuario.id_usuario else 'required' }} />
+                <small class="form-text">
+                    {% if usuario and usuario.id_usuario %}
+                    <i class="bi bi-info-circle"></i> Deja en blanco para mantener la actual.
+                    {% else %}
+                    <i class="bi bi-shield-lock"></i> Se recomienda incluir números y símbolos.
+                    {% endif %}
+                </small>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="nombre" class="form-label">
+                        <i class="bi bi-person-fill"></i> Nombre:*
+                    </label>
+                    <input type="text" class="form-control" name="nombre" id="nombre"
+                           value="{{ usuario.nombre if usuario else '' }}"
+                           placeholder="Ej: Yohany" required maxlength="100" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="apellido" class="form-label">
+                        <i class="bi bi-person-fill"></i> Apellido:*
+                    </label>
+                    <input type="text" class="form-control" name="apellido" id="apellido"
+                           value="{{ usuario.apellido if usuario else '' }}"
+                           placeholder="Ej: Rico" required maxlength="100" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="correo" class="form-label">
+                    <i class="bi bi-envelope-fill"></i> Correo electrónico:*
+                </label>
+                <input type="email" class="form-control" name="correo" id="correo"
+                       value="{{ usuario.correo if usuario else '' }}"
+                       placeholder="correo@ejemplo.com" required maxlength="120" />
+            </div>
+
+            <div class="mb-3">
+                <label for="telefono" class="form-label">
+                    <i class="bi bi-telephone-fill"></i> Teléfono de contacto:
+                </label>
+                <input type="tel" class="form-control" name="telefono" id="telefono"
+                       value="{{ usuario.telefono if usuario else '' }}"
+                       placeholder="Ej: 3001234567" maxlength="20" />
+            </div>
+
+            {% if rol == 'ADMIN' %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="rol" class="form-label">
+                        <i class="bi bi-shield-lock-fill"></i> Rol de Sistema:*
+                    </label>
+                    <select class="form-select" name="rol" id="rol" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="ADMIN" {{ 'selected' if usuario and usuario.rol == 'ADMIN' else '' }}>Administrador</option>
+                        <option value="CLIENTE" {{ 'selected' if usuario and usuario.rol == 'CLIENTE' else '' }}>Cliente</option>
+                        <option value="MENSAJERO" {{ 'selected' if usuario and usuario.rol == 'MENSAJERO' else '' }}>Mensajero</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="activo" class="form-label">
+                        <i class="bi bi-toggle-on"></i> Estado de Cuenta:*
+                    </label>
+                    <select class="form-select" name="activo" id="activo" required>
+                        <option value="true" {{ 'selected' if usuario and usuario.activo else '' }}>Activo</option>
+                        <option value="false" {{ 'selected' if usuario and not usuario.activo else '' }}>Inactivo</option>
+                    </select>
+                </div>
+            </div>
+            {% else %}
+            <input type="hidden" name="rol" value="{{ usuario.rol if usuario else 'CLIENTE' }}" />
+            <input type="hidden" name="activo" value="{{ usuario.activo if usuario else 'true' }}" />
+            {% endif %}
+
+            <hr class="my-4">
+
+            <div class="d-grid gap-3">
+                <button type="submit" class="btn btn-orange">
+                    <i class="bi bi-check-all"></i> {{ 'Actualizar' if usuario and usuario.id_usuario else 'Registrar' }} Usuario
+                </button>
+                <a href="/usuarios" class="btn btn-outline-custom">
+                    <i class="bi bi-arrow-left-circle"></i> Cancelar y volver
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

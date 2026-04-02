@@ -1,0 +1,156 @@
+    {# templates/login.html #}
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Iniciar sesión</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul-rey: #0046ad;
+            --azul-oscuro: #002d70;
+            --naranja: #ff7b00;
+            --naranja-hover: #e66f00;
+            --blanco: #ffffff;
+            --bg-light: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            /* Fondo con un degradado sutil de la paleta */
+            background: linear-gradient(135deg, #002B5B, #004085, #001a33);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--azul-oscuro);
+            margin: 0;
+        }
+
+        .login-card {
+            background: var(--blanco); /* Card blanca para limpieza visual */
+            border: none;
+            border-radius: 18px;    
+            padding: 40px;
+            width: 380px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            color: var(--azul-rey);
+            /* Quitamos el glow neón por un estilo más corporativo */
+            letter-spacing: -1px;
+        }
+
+        .login-title span {
+            color: var(--naranja);
+        }
+
+        input { 
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px; 
+            border-radius: 10px; 
+            border: 2px solid #e1e8ef;
+            background: #f8fafc;
+            color: var(--azul-oscuro);
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--azul-rey);
+            background: white;
+        }
+
+        button {
+            background: var(--naranja);
+            border: none;
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 123, 0, 0.3);
+        }
+
+        button:hover { 
+            background: var(--naranja-hover); 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(255, 123, 0, 0.4);
+        }
+
+        .msg { 
+            text-align: center; 
+            margin-top: 20px; 
+            font-weight: 500; 
+            color: #667c94;
+            font-size: 0.9rem;
+        }
+
+        .msg a {
+            color: var(--azul-rey);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .msg a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    </head>
+    <body>
+        <div class="login-card">
+            <h2 class="login-title">Iniciar Sesión</h2>
+
+            <!-- Equivalente a th:action="@{/login}" -->
+            <form action="/login" method="post">
+                <label for="username">Usuario:</label>
+                <input type="text" class="form-control" name="username" id="username" required />
+
+                <label for="password" class="mt-2">Contraseña:</label>
+                <input type="password" class="form-control" name="password" id="password" required />
+
+                <button type="submit">Ingresar</button>
+            </form>
+
+            <!-- Equivalente a th:if="${param.error}" -->
+            {% if error %}
+            <p class="msg" style="color:red;">Usuario o contraseña incorrectos</p>
+            {% endif %}
+
+            <!-- Equivalente a th:if="${param.logout}" -->
+            {% if logout %}
+            <div id="id_sesioncerrada">
+                <p class="msg" style="color:#00ff88;">Sesión cerrada correctamente</p>
+            </div>
+            {% endif %}
+
+            <!-- Equivalente a th:if="${param.denied}" -->
+            {% if denied %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>Acceso denegado.</strong> No tienes permisos para ver esta página.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+        </div>
+
+        <script>
+            setTimeout(function () {
+                const mensaje = document.getElementById("id_sesioncerrada");
+                if (mensaje) mensaje.style.display = "none";
+            }, 2000);
+        </script>
+    </body>
+    </html>

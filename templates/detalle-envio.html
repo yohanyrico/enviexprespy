@@ -1,0 +1,248 @@
+{# templates/detalle-envio.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del Envío | ENVIEXPRESS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-dark: #00235a;
+            --primary-blue: #003a8c;
+            --accent-orange: #ff8c00;
+            --text-light: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        body { 
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        .detalle-container { 
+            max-width: 1000px; 
+            margin: 40px auto; 
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 24px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
+            overflow: hidden; 
+        }
+
+        .detalle-header { 
+            background: rgba(0, 0, 0, 0.3);
+            padding: 35px; 
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detalle-header h2 { font-weight: 800; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; }
+        .detalle-header .guia-badge { 
+            background: var(--accent-orange); 
+            color: white; 
+            padding: 5px 20px; 
+            border-radius: 50px; 
+            font-weight: 800;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .detalle-body { padding: 40px; }
+
+        .info-section { 
+            margin-bottom: 25px; 
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 18px;
+            border-left: 5px solid var(--accent-orange);
+        }
+
+        .info-section h5 { 
+            color: var(--accent-orange); 
+            font-weight: bold; 
+            margin-bottom: 20px; 
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1.2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+        .info-value { font-size: 1.05rem; color: var(--text-light); margin-bottom: 20px; font-weight: 500; }
+        
+        .badge-status {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .btn-orange {
+            background-color: var(--accent-orange);
+            color: white; border: none; padding: 14px 30px;
+            font-weight: bold; text-transform: uppercase;
+            border-radius: 12px; transition: all 0.3s;
+        }
+
+        .btn-orange:hover {
+            background-color: #e67e00;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 140, 0, 0.4);
+            color: white;
+        }
+
+        .costo-box {
+            background: rgba(76, 209, 55, 0.1);
+            border: 1px solid #4cd137;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .costo-valor { font-size: 1.8rem; color: #4cd137; font-weight: 800; }
+
+        .address-box {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+    </style>
+</head>
+<body>
+<div class="container py-5">
+    <div class="detalle-container">
+        <div class="detalle-header">
+            <h2><i class="bi bi-receipt"></i> RESUMEN DE GUÍA</h2>
+            <div class="guia-badge">{{ envio.numero_guia }}</div>
+        </div>
+
+        <div class="detalle-body">
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-8">
+                    <div class="info-section h-100">
+                        <h5><i class="bi bi-info-circle"></i> Estado y Servicio</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="info-label">Estado Actual:</div>
+                                <div class="info-value">
+                                    {% set estado_class = {
+                                        'Registrado': 'bg-secondary',
+                                        'En_Bodega': 'bg-primary',
+                                        'En_Ruta': 'bg-warning text-dark',
+                                        'En_Destino': 'bg-info text-dark',
+                                        'Entregado': 'bg-success',
+                                        'Fallido': 'bg-danger'
+                                    } %}
+                                    <span class="badge-status {{ estado_class.get(envio.estado, 'bg-secondary') }}">
+                                        {{ envio.estado.replace('_', ' ') }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-label">Tipo de Envío:</div>
+                                <div class="info-value">
+                                    <span class="text-uppercase fw-bold text-info">{{ envio.tipo_servicio }}</span>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="info-label">Contenido y Descripción:</div>
+                                <div class="info-value text-wrap border-top border-secondary pt-2 mt-1">
+                                    {{ envio.instrucciones if envio.instrucciones else 'Sin descripción detallada' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-section h-100 text-center">
+                        <h5><i class="bi bi-cash-stack"></i> Liquidación</h5>
+                        <div class="info-label">Costo Total:</div>
+                        <div class="costo-box mt-2">
+                            <div class="costo-valor">${{ "{:,.0f}".format(envio.costo_envio) if envio.costo_envio else '0' }}</div>
+                        </div>
+                        <div class="info-label mt-3">Peso:</div>
+                        <div class="info-value">{{ envio.peso }} kg</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="info-section h-100">
+                        <h5><i class="bi bi-geo-alt-fill"></i> Punto de Recogida</h5>
+                        <div class="address-box">
+                            <div class="info-label">Ubicación:</div>
+                            <div class="info-value">{{ envio.lugar_recogida.ciudad if envio.lugar_recogida else 'N/A' }}</div>
+                            <div class="info-label">Dirección:</div>
+                            <div class="info-value text-orange">{{ envio.lugar_recogida.direccion if envio.lugar_recogida else 'N/A' }}</div>
+                            <div class="info-label">Contacto / Localidad:</div>
+                            <div class="info-value small opacity-75">{{ envio.lugar_recogida.referencia if envio.lugar_recogida else 'N/A' }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-section h-100">
+                        <h5><i class="bi bi-truck"></i> Punto de Entrega</h5>
+                        <div class="address-box">
+                            <div class="info-label">Ubicación:</div>
+                            <div class="info-value">{{ envio.lugar_entrega.ciudad if envio.lugar_entrega else 'N/A' }}</div>
+                            <div class="info-label">Dirección:</div>
+                            <div class="info-value text-orange">{{ envio.lugar_entrega.direccion if envio.lugar_entrega else 'N/A' }}</div>
+                            <div class="info-label">Contacto / Localidad:</div>
+                            <div class="info-value small opacity-75">{{ envio.lugar_entrega.referencia if envio.lugar_entrega else 'N/A' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h5><i class="bi bi-person-badge"></i> Personal y Transporte</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-label">Cliente:</div>
+                        <div class="info-value">
+                            <i class="bi bi-person-circle"></i> {{ envio.cliente.nombre if envio.cliente else 'N/A' }} {{ envio.cliente.apellido if envio.cliente else '' }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-label">Mensajero:</div>
+                        <div class="info-value">
+                            <i class="bi bi-bicycle"></i> {{ envio.mensajero.nombre if envio.mensajero else 'No asignado' }} {{ envio.mensajero.apellido if envio.mensajero else '' }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="info-label">Vehículo:</div>
+                        <div class="info-value">
+                            <i class="bi bi-shield-check"></i> {{ envio.vehiculo.placa if envio.vehiculo else 'Pendiente' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center mt-5">
+                <a href="/envios/imprimir/{{ envio.envio_id }}" target="_blank" class="btn btn-orange">
+                    <i class="bi bi-printer"></i> Imprimir Guía
+                </a>
+                <a href="/envios/editar/{{ envio.envio_id }}" class="btn btn-outline-light" style="border-radius: 12px;">
+                    <i class="bi bi-pencil"></i> Modificar
+                </a>
+                <a href="/envios" class="btn btn-link text-white opacity-50 text-decoration-none">
+                    <i class="bi bi-arrow-left"></i> Volver al listado
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

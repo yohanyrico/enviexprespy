@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Imprimir Guía {{ envio.numero_guia }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: white; color: black; font-family: 'Courier New', Courier, monospace; }
+        .guia-print {
+            border: 2px dashed #000;
+            padding: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .header-guia { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+        .qr-placeholder { width: 100px; height: 100px; border: 1px solid #000; display: flex; align-items: center; text-align: center; font-size: 10px; }
+        @media print {
+            .no-print { display: none; }
+            .guia-print { border: 2px solid #000; margin: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print text-center py-3">
+        <button onclick="window.print()" class="btn btn-primary btn-lg">🖨️ IMPRIMIR AHORA</button>
+        <a href="/envios" class="btn btn-secondary btn-lg">VOLVER</a>
+    </div>
+
+    <div class="guia-print">
+        <div class="header-guia d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 fw-bold">ENVIEXPRESS</h1>
+                <p class="mb-0">Tu Aliado de Confinza</p>
+            </div>
+            <div class="text-end">
+                <h2 class="h4 mb-0">GUÍA N°: {{ envio.numero_guia }}</h2>
+                <small>Fecha: {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</small>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-6 border-end">
+                <p class="fw-bold text-uppercase border-bottom">Remitente</p>
+                <p class="mb-1"><strong>Cliente:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</p>
+                <p class="mb-1"><strong>Origen:</strong> {{ envio.lugar_recogida.ciudad }}</p>
+                <p class="mb-1"><strong>Dirección:</strong> {{ envio.lugar_recogida.direccion }}</p>
+                <p class="mb-1"><strong>Contacto:</strong> {{ envio.lugar_recogida.referencia }}</p>
+            </div>
+            <div class="col-6">
+                <p class="fw-bold text-uppercase border-bottom">Destinatario</p>
+                <p class="mb-1"><strong>Destino:</strong> {{ envio.lugar_entrega.ciudad }}</p>
+                <p class="mb-1"><strong>Dirección:</strong> {{ envio.lugar_entrega.direccion }}</p>
+                <p class="mb-1"><strong>Contacto:</strong> {{ envio.lugar_entrega.referencia }}</p>
+            </div>
+        </div>
+
+        <div class="row border-top pt-3">
+            <div class="col-8">
+                <p><strong>Descripción del Contenido:</strong></p>
+                <p class="border p-2" style="min-height: 60px;">{{ envio.instrucciones }}</p>
+            </div>
+            <div class="col-4 text-center">
+                <div class="qr-placeholder mx-auto mb-2">SCAN QR TRACKING</div>
+                <p class="small mb-0">Peso: {{ envio.peso }} kg</p>
+                <p class="small fw-bold">Servicio: {{ envio.tipo_servicio }}</p>
+            </div>
+        </div>
+
+        <div class="mt-4 border-top pt-3 text-center">
+            <p class="small">Firma de recibido: ___________________________ C.C: ______________</p>
+        </div>
+    </div>
+</body>
+</html>

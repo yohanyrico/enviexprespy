@@ -1,0 +1,326 @@
+{# templates/usuarios.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios – EnviExpress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --azul-profundo: #002B5B;
+            --azul-medio: #004085;
+            --azul-oscuro: #001a33;
+            --naranja: #FF8C00;
+            --naranja-hover: #E67E00;
+            --blanco: #ffffff;
+            --btn-editar: #0d6efd;
+            --btn-eliminar: #dc3545;
+        }
+        body {
+            background: linear-gradient(135deg, var(--azul-profundo), var(--azul-medio), var(--azul-oscuro));
+            min-height: 100vh;
+            color: var(--blanco);
+            font-family: 'Montserrat', sans-serif;
+            padding-top: 80px;
+            margin: 0;
+        }
+        .navbar {
+            backdrop-filter: blur(12px);
+            background: rgba(0, 43, 91, 0.8);
+            border-bottom: 2px solid var(--naranja);
+        }
+        .title-glow {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--blanco);
+            margin-bottom: 30px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        /* Botón Nuevo */
+        .btn-green {
+            background: var(--naranja);
+            border: none;
+            padding: 10px 20px;
+            color: var(--blanco) !important;
+            font-weight: 700;
+            border-radius: 10px;
+            transition: .3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-green:hover {
+            transform: scale(1.05);
+            background: var(--naranja-hover);
+            box-shadow: 0 4px 15px rgba(255,140,0,0.4);
+        }
+
+        /* Contenedor Reportes Agrupados */
+        .actions-bar {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        /* Estilo Dropdown Reportes */
+        .dropdown-reportes .btn-dropdown {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--naranja);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .dropdown-reportes .btn-dropdown:hover {
+            background: var(--naranja);
+        }
+        .dropdown-menu {
+            background: #0f172a;
+            border: 1px solid var(--naranja);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .dropdown-item {
+            color: white;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .dropdown-item:hover {
+            background: rgba(255, 140, 0, 0.2);
+            color: var(--naranja);
+        }
+
+        /* Tabla */
+        .table-container {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .table { color: var(--blanco); margin-bottom: 0; }
+        .table thead th { color: var(--naranja); text-transform: uppercase; font-size: 0.85rem; border-bottom: 2px solid var(--naranja); padding: 15px; }
+        .table tbody td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        /* Botones de Acción (Azul y Rojo) */
+        .btn-edit {
+            background: var(--btn-editar);
+            color: white !important;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        .btn-edit:hover { background: #0b5ed7; transform: scale(1.1); }
+
+        .btn-delete {
+            background: var(--btn-eliminar);
+            color: white !important;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        .btn-delete:hover { background: #bb2d3b; transform: scale(1.1); }
+
+        /* Modal Reporte Visual */
+        .modal-reporte { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; }
+        .modal-reporte.open { display: flex; }
+        .modal-card {
+            background: #0f172a;
+            border: 1px solid var(--naranja);
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+        .stat-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-box .num { font-size: 1.8rem; font-weight: 800; color: var(--naranja); }
+        .bar-track { background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; margin-top: 5px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--naranja); }
+
+        @media print {
+            body * { visibility: hidden; }
+            .modal-card, .modal-card * { visibility: visible; }
+            .modal-card { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold fs-3 text-warning" href="/home">ENVI<span class="text-light">EXPRESS</span></a>
+        <div class="ms-auto d-flex gap-2">
+            <a href="/home" class="btn btn-outline-light btn-sm"><i class="bi bi-house-fill"></i></a>
+            <form action="/logout" method="post" style="margin:0;">
+                <button class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right"></i></button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1 class="title-glow"><i class="bi bi-people-fill"></i> Gestión de Usuarios</h1>
+
+    <div class="actions-bar">
+        <a class="btn-green" href="/usuarios/nuevo">
+            <i class="bi bi-person-plus-fill"></i> Nuevo Usuario
+        </a>
+
+        <div class="dropdown dropdown-reportes">
+            <button class="btn btn-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-file-earmark-bar-graph"></i> Generar Reportes
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="exportarPDF()"><i class="bi bi-file-earmark-pdf-fill text-danger"></i> Exportar a PDF</a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportarCSV()"><i class="bi bi-file-earmark-excel-fill text-success"></i> Exportar a Excel/CSV</a></li>
+                <li><hr class="dropdown-divider" style="border-color: rgba(255,255,255,0.1);"></li>
+                <li><a class="dropdown-item" href="#" onclick="abrirReporteVisual()"><i class="bi bi-bar-chart-fill text-primary"></i> Ver Reporte Visual</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="tablaUsuarios">
+                <thead>
+                    <tr>
+                        <th class="text-center">ID</th>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th class="text-center">Rol</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr>
+                        <td class="text-center">{{ u.id_usuario }}</td>
+                        <td><span class="fw-bold">{{ u.user_name }}</span></td>
+                        <td>{{ u.nombre }} {{ u.apellido }}</td>
+                        <td>{{ u.correo }}</td>
+                        <td class="text-center"><span class="badge bg-info">{{ u.rol }}</span></td>
+                        <td class="text-center">
+                            <span class="badge {{ 'bg-success' if u.activo else 'bg-danger' }}">
+                                {{ 'Activo' if u.activo else 'Inactivo' }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a class="btn-edit" href="/usuarios/editar/{{ u.id_usuario }}">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a class="btn-delete" href="/usuarios/eliminar/{{ u.id_usuario }}"
+                                   onclick="return confirm('¿Eliminar usuario?')">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal-reporte" id="modalReporte">
+    <div class="modal-card">
+        <button class="btn-close-modal" onclick="cerrarModal()" style="position: absolute; top:15px; right:20px; background:none; border:none; color:white; font-size:1.5rem;">&times;</button>
+        <h3 class="text-center mb-4" style="color:var(--naranja)">Estadísticas de Sistema</h3>
+        <div class="row g-3 mb-4" id="statGrid"></div>
+        <div id="rolBars"></div>
+        <button class="btn btn-warning w-100 mt-4 fw-bold" onclick="window.print()">
+            <i class="bi bi-printer"></i> Imprimir Reporte
+        </button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function leerUsuarios() {
+    return Array.from(document.querySelectorAll('#tablaUsuarios tbody tr')).map(tr => {
+        const celdas = tr.querySelectorAll('td');
+        return {
+            id: celdas[0].innerText,
+            usuario: celdas[1].innerText,
+            nombre: celdas[2].innerText,
+            correo: celdas[3].innerText,
+            rol: celdas[4].innerText,
+            activo: celdas[5].innerText
+        };
+    });
+}
+
+function exportarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+    doc.text("Reporte de Usuarios - EnviExpress", 14, 15);
+    const data = leerUsuarios().map(u => [u.id, u.usuario, u.nombre, u.correo, u.rol, u.activo]);
+    doc.autoTable({ head: [['ID', 'Usuario', 'Nombre', 'Correo', 'Rol', 'Estado']], body: data, startY: 20, theme: 'grid' });
+    doc.save('usuarios.pdf');
+}
+
+function exportarCSV() {
+    const data = leerUsuarios();
+    let csv = "ID,Usuario,Nombre,Correo,Rol,Estado\n";
+    data.forEach(u => csv += `${u.id},${u.usuario},${u.nombre},${u.correo},${u.rol},${u.activo}\n`);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'usuarios.csv'; a.click();
+}
+
+function abrirReporteVisual() {
+    const usuarios = leerUsuarios();
+    const total = usuarios.length;
+    const activos = usuarios.filter(u => u.activo.trim() === 'Activo').length;
+    
+    document.getElementById('statGrid').innerHTML = `
+        <div class="col-6"><div class="stat-box"><div class="num">${total}</div><div class="small">Total</div></div></div>
+        <div class="col-6"><div class="stat-box"><div class="num text-success">${activos}</div><div class="small">Activos</div></div></div>
+    `;
+
+    const roles = {};
+    usuarios.forEach(u => roles[u.rol] = (roles[u.rol] || 0) + 1);
+    
+    let bars = '';
+    Object.entries(roles).forEach(([rol, count]) => {
+        const porc = (count / total) * 100;
+        bars += `<div class="mb-2"><small>${rol} (${count})</small><div class="bar-track"><div class="bar-fill" style="width:${porc}%"></div></div></div>`;
+    });
+    document.getElementById('rolBars').innerHTML = bars;
+    document.getElementById('modalReporte').classList.add('open');
+}
+
+function cerrarModal() { document.getElementById('modalReporte').classList.remove('open'); }
+</script>
+</body>
+</html>

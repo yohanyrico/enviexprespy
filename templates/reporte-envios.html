@@ -1,0 +1,193 @@
+{# templates/reporte-envios.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        @page { 
+            margin: 1.5cm 1cm; 
+            size: letter;
+        }
+        body { 
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            color: #333; 
+            line-height: 1.4;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            border-bottom: 5px solid #ff8c00; 
+            padding-bottom: 20px; 
+            background-color: #00235a;
+            color: white;
+            padding-top: 25px;
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 28pt; 
+            letter-spacing: 2px;
+            font-weight: 800;
+        }
+        .header h1 span { color: #ff8c00; }
+        .header h2 { 
+            margin: 5px 0; 
+            font-size: 13pt; 
+            text-transform: uppercase;
+            opacity: 0.9;
+            letter-spacing: 1.5px;
+        }
+        .info-container { 
+            margin-bottom: 20px; 
+            padding: 15px; 
+            background-color: #f8f9fa; 
+            border-left: 5px solid #00235a;
+        }
+        .info-table {
+            width: 100%;
+            border: none;
+        }
+        .info-table td {
+            border: none;
+            padding: 2px 0;
+            font-size: 9.5pt;
+            background: transparent !important;
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            font-size: 8.5pt; 
+        }
+        th, td { 
+            border: 1px solid #dee2e6; 
+            padding: 8px 6px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #003a8c; 
+            color: white; 
+            text-transform: uppercase;
+            font-size: 7.5pt;
+            font-weight: bold;
+        }
+        tr:nth-child(even) { background-color: #f2f6ff; }
+        
+        /* Badges de Estado */
+        .badge { 
+            padding: 3px 7px; 
+            border-radius: 4px; 
+            font-size: 7pt; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            display: block;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .estado-Registrado { background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; }
+        .estado-En_Bodega { background-color: #cfe2ff; color: #084298; border: 1px solid #b6d4fe; }
+        .estado-En_Ruta { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .estado-En_Destino { background-color: #cff4fc; color: #055160; border: 1px solid #b6effb; }
+        .estado-Entregado { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .estado-Fallido { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+        
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .val-guia { color: #003a8c; font-weight: bold; font-family: monospace; font-size: 9pt; }
+
+        .summary { 
+            margin-top: 25px; 
+            padding: 15px 20px; 
+            background-color: #00235a; 
+            color: white;
+            border-radius: 6px;
+            text-align: right;
+        }
+        .summary .total-label { font-size: 9pt; opacity: 0.8; text-transform: uppercase; }
+        .summary .total-val {
+            font-size: 18pt;
+            color: #ff8c00;
+            display: block;
+            margin-top: 2px;
+        }
+        .footer { 
+            margin-top: 40px; 
+            text-align: center; 
+            font-size: 8pt; 
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span>ENVI</span>EXPRESS</h1>
+        <h2>Reporte Oficial de Operaciones</h2>
+    </div>
+
+    <div class="info-container">
+        <table class="info-table">
+            <tr>
+                <td><strong>Fecha de generación:</strong> {{ fecha }}</td>
+                <td class="text-right"><strong>Total Registros:</strong> {{ total }} envíos</td>
+            </tr>
+            <tr>
+                <td>
+                    {% if desde %}<strong>Desde:</strong> {{ desde }}{% endif %}
+                    {% if hasta %} &nbsp;<strong>Hasta:</strong> {{ hasta }}{% endif %}
+                </td>
+                <td class="text-right"><strong>Generado por:</strong> Sistema Admin Logística</td>
+            </tr>
+        </table>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 12%;">Nº Guía</th>
+                <th style="width: 18%;">Cliente</th>
+                <th style="width: 25%;">Ruta (Origen - Destino)</th>
+                <th style="width: 8%;" class="text-center">Peso</th>
+                <th style="width: 12%;" class="text-right">Costo</th>
+                <th style="width: 13%;" class="text-center">Estado</th>
+                <th style="width: 12%;" class="text-center">Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for envio in envios %}
+            <tr>
+                <td class="val-guia">{{ envio.numero_guia }}</td>
+                <td>{{ envio.cliente_nombre }}</td>
+                <td>
+                    <small>{{ envio.origen_ciudad }}</small> 
+                    <span style="color: #ff8c00; font-weight: bold;">➔</span> 
+                    <small>{{ envio.destino_ciudad }}</small>
+                </td>
+                <td class="text-center">{{ "{:.1f}".format(envio.peso|float) }} kg</td>
+                <td class="text-right"><strong>${{ "{:,.2f}".format(envio.costo_envio|float) }}</strong></td>
+                <td>
+                    <span class="badge estado-{{ envio.estado }}">
+                        {{ envio.estado.replace('_', ' ') }}
+                    </span>
+                </td>
+                <td class="text-center">{{ envio.fecha_creacion }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if total_costos %}
+    <div class="summary">
+        <span class="total-label">Ventas acumuladas en este reporte</span>
+        <strong class="total-val">${{ "{:,.2f}".format(total_costos|float) }}</strong>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        <p>Este reporte es un documento oficial de <strong>EnviExpress Colombia</strong>. Confidencialidad Nivel 2.</p>
+        <p>Generado el {{ fecha }} - Bogotá D.C. © 2026</p>
+    </div>
+</body>
+</html>

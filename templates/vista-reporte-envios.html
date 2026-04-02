@@ -1,0 +1,291 @@
+{# templates/vista-reporte-envios.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Envíos | ENVIEXPRESS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #00235a;
+            --primary-blue: #003a8c;
+            --accent-orange: #ff8c00;
+            --text-light: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.08);
+        }
+
+        body { 
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+            min-height: 100vh; 
+            color: var(--text-light); 
+            font-family: 'Montserrat', sans-serif;
+            padding: 40px 20px; 
+        }
+
+        .title-glow { 
+            color: var(--text-light); 
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(255, 140, 0, 0.3); 
+            text-align: center; 
+            margin-bottom: 40px; 
+        }
+
+        .text-orange { color: var(--accent-orange) !important; }
+
+        /* Tarjetas de Filtro */
+        .filter-card { 
+            background: var(--card-bg); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 15px; 
+            padding: 20px; 
+            backdrop-filter: blur(10px);
+            height: 100%;
+        }
+
+        .filter-header { 
+            color: var(--accent-orange); 
+            font-size: 0.85rem;
+            font-weight: 700; 
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 140, 0, 0.2);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-label { font-size: 0.75rem; opacity: 0.8; margin-bottom: 5px; }
+
+        .form-control, .form-select { 
+            background: rgba(0, 0, 0, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            color: white !important; 
+            border-radius: 10px;
+        }
+
+        .form-control:focus, .form-select:focus { 
+            background: rgba(0, 0, 0, 0.3); 
+            border-color: var(--accent-orange); 
+            box-shadow: 0 0 12px rgba(255, 140, 0, 0.2);
+            color: white; 
+        }
+
+        .form-select option { background: var(--primary-dark); color: white; }
+
+        .btn-clean { 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            color: white; 
+            transition: 0.3s;
+        }
+        .btn-clean:hover { background: rgba(255,255,255,0.15); color: var(--accent-orange); }
+
+        /* Contenedor de Tabla */
+        .table-container { 
+            background: var(--card-bg); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 20px; 
+            padding: 30px; 
+            backdrop-filter: blur(10px);
+            margin-top: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .table { color: var(--text-light); margin-bottom: 0; }
+        .table thead th { 
+            background: rgba(255, 140, 0, 0.1); 
+            color: var(--accent-orange); 
+            font-weight: 700; 
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            border-bottom: 2px solid var(--accent-orange);
+            padding: 15px;
+        }
+
+        .table tbody td { padding: 15px; vertical-align: middle; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .table tbody tr:hover { background: rgba(255, 255, 255, 0.05); transition: 0.3s; }
+
+        /* Botones */
+        .btn-orange { 
+            background: var(--accent-orange); 
+            border: none; 
+            color: white; 
+            font-weight: 700; 
+            border-radius: 12px;
+            padding: 12px 25px;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-orange:hover { 
+            background: #e67e00; 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+            color: white;
+        }
+
+        .btn-outline-custom {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 12px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline-custom:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+        .bg-entregado { background: #198754; color: white; }
+        .bg-ruta { background: #ffc107; color: #000; }
+        .bg-fallido { background: #dc3545; color: white; }
+        .bg-registrado { background: #6c757d; color: white; }
+    </style>
+</head>
+<body class="container">
+    <h2 class="title-glow">
+        <i class="bi bi-bar-chart-line text-orange"></i> Panel de Reportes Maestro
+    </h2>
+
+    <form method="get" action="/envios/reporte" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="filter-card">
+                    <div class="filter-header"><i class="bi bi-search"></i> Identificación</div>
+                    <label for="numero_guia" class="form-label">Nº Guía o Cliente</label>
+                    <div class="input-group">
+                        <input type="text" name="numero_guia" id="numero_guia" class="form-control"
+                               placeholder="Buscar..." value="{{ numero_guia or '' }}">
+                        <button type="button" class="btn btn-clean" onclick="document.getElementById('numero_guia').value = ''">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="filter-card">
+                    <div class="filter-header"><i class="bi bi-info-circle"></i> Estado Operativo</div>
+                    <label for="estado" class="form-label">Estado actual</label>
+                    <select name="estado" id="estado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        {% for e in estados %}
+                        <option value="{{ e }}" {{ 'selected' if estado == e else '' }}>
+                            {{ e.replace('_', ' ') }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="filter-card">
+                    <div class="filter-header"><i class="bi bi-calendar-range"></i> Período</div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Desde</label>
+                            <input type="date" name="desde" class="form-control" value="{{ desde or '' }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Hasta</label>
+                            <input type="date" name="hasta" class="form-control" value="{{ hasta or '' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-orange btn-lg px-5">
+                <i class="bi bi-funnel"></i> Aplicar Filtros Inteligentes
+            </button>
+        </div>
+    </form>
+
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Guía</th>
+                        <th>Cliente</th>
+                        <th>Ruta</th>
+                        <th class="text-center">Peso</th>
+                        <th class="text-end">Costo</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for envio in envios %}
+                    <tr>
+                        <td class="fw-bold text-orange">{{ envio.numero_guia }}</td>
+                        <td>{{ envio.cliente.nombre if envio.cliente else 'N/A' }}</td>
+                        <td class="small">
+                            {{ envio.lugar_recogida.ciudad if envio.lugar_recogida else '---' }} 
+                            <i class="bi bi-arrow-right text-orange mx-1"></i>
+                            {{ envio.lugar_entrega.ciudad if envio.lugar_entrega else '---' }}
+                        </td>
+                        <td class="text-center">{{ envio.peso }} kg</td>
+                        <td class="text-end fw-bold text-success">
+                            ${{ "{:,.0f}".format(envio.costo_envio or 0) }}
+                        </td>
+                        <td class="text-center">
+                            {% set est = envio.estado|string %}
+                            <span class="badge-status 
+                                {% if 'Entregado' in est %}bg-entregado
+                                {% elif 'Ruta' in est %}bg-ruta
+                                {% elif 'Fallido' in est %}bg-fallido
+                                {% else %}bg-registrado{% endif %}">
+                                {{ est.replace('_', ' ') }}
+                            </span>
+                        </td>
+                        <td class="text-center opacity-75">
+                            {{ envio.fecha_creacion.strftime('%d/%m/%Y') if envio.fecha_creacion else 'N/A' }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 opacity-50">No se encontraron registros coincidentes.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <a href="/envios" class="btn btn-outline-custom">
+                <i class="bi bi-arrow-left"></i> Volver al Inicio
+            </a>
+            
+            {% if envios %}
+            <a href="/envios/reporte?formato=pdf&numero_guia={{ numero_guia or '' }}&estado={{ estado or '' }}&desde={{ desde or '' }}&hasta={{ hasta or '' }}"
+               class="btn btn-orange">
+                <i class="bi bi-file-earmark-pdf"></i> Descargar Reporte PDF
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

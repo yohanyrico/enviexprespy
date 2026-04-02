@@ -1,0 +1,153 @@
+{# templates/error/500.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Error del Servidor - EnviExpress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-dark: #00235a;
+            --primary-blue: #003a8c;
+            --accent-orange: #ff8c00;
+            --error-red: #ff4444;
+            --text-light: #ffffff;
+        }
+
+        body { 
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+            min-height: 100vh; 
+            color: var(--text-light); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 0;
+        }
+
+        .error-container { 
+            text-align: center; 
+            max-width: 600px; 
+            width: 90%;
+            padding: 50px 40px; 
+            background: rgba(255, 255, 255, 0.08); 
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .error-code { 
+            font-size: 9rem; 
+            font-weight: 900; 
+            color: var(--error-red); 
+            text-shadow: 0 0 30px rgba(255, 68, 68, 0.4); 
+            margin: 0; 
+            line-height: 1;
+        }
+
+        .error-title { 
+            font-size: 2rem; 
+            font-weight: 700;
+            color: var(--text-light); 
+            margin: 20px 0; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .error-message { 
+            font-size: 1.1rem; 
+            margin-bottom: 30px; 
+            color: rgba(255, 255, 255, 0.7); 
+        }
+
+        .btn-home { 
+            background: var(--accent-orange); 
+            border: none; 
+            padding: 14px 30px; 
+            color: white; 
+            font-weight: 700; 
+            border-radius: 12px; 
+            text-decoration: none; 
+            display: inline-block; 
+            text-transform: uppercase;
+            transition: all 0.3s ease; 
+            margin: 8px;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .btn-home:hover { 
+            transform: translateY(-3px); 
+            background: #e67e00; 
+            color: white; 
+            box-shadow: 0 8px 20px rgba(255, 140, 0, 0.5);
+        }
+
+        .btn-back { 
+            background: rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.3); 
+            padding: 14px 30px; 
+            color: white; 
+            font-weight: 700; 
+            border-radius: 12px; 
+            text-decoration: none; 
+            display: inline-block; 
+            text-transform: uppercase;
+            transition: 0.3s; 
+            margin: 8px; 
+        }
+
+        .btn-back:hover { 
+            background: rgba(255, 255, 255, 0.2); 
+            color: white; 
+        }
+
+        .error-details { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-top: 25px; 
+            text-align: left; 
+            font-size: 0.85rem; 
+            color: rgba(255, 255, 255, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'Courier New', Courier, monospace;
+            word-break: break-all;
+        }
+
+        .bi-exclamation-octagon {
+            color: var(--error-red);
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1 class="error-code">500</h1>
+        <i class="bi bi-exclamation-octagon"></i>
+        <h2 class="error-title">Fallo en el Sistema</h2>
+        <p class="error-message">
+            Tenemos un problema logístico interno. Nuestro equipo técnico ya está trabajando para restablecer la ruta de datos.
+        </p>
+
+        {% if message %}
+        <div class="error-details">
+            <strong style="color: var(--error-red);">LOG TÉCNICO:</strong><br>
+            {{ message }}
+        </div>
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <a href="/" class="btn-home">
+                <i class="bi bi-house-fill"></i> Panel Principal
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <style>
+        @page { margin: 1cm; size: landscape; } /* Paisaje para ver más columnas */
+        body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; font-size: 9pt; }
+        .header { 
+            text-align: center; border-bottom: 4px solid #ff8c00; 
+            background-color: #00235a; color: white; padding: 20px; 
+        }
+        .header h1 span { color: #ff8c00; }
+        .info { 
+            margin: 20px 0; padding: 10px; background: #f8f9fa; 
+            border-left: 5px solid #00235a; display: block;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background-color: #003a8c; color: white; text-transform: uppercase; padding: 8px; border: 1px solid #dee2e6; }
+        td { padding: 8px; border: 1px solid #dee2e6; }
+        tr:nth-child(even) { background-color: #f2f6ff; }
+        .status { font-weight: bold; text-align: center; border-radius: 3px; padding: 3px; }
+        .guia { font-family: monospace; font-weight: bold; background: #eee; padding: 2px 5px; }
+        .footer { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span>ENVI</span>EXPRESS</h1>
+        <h2>Reporte Operativo de Envíos</h2>
+    </div>
+
+    <div class="info">
+        <strong>Fecha de Emisión:</strong> {{ fecha }}<br>
+        <strong>Total de Registros:</strong> {{ envios|length }} Envíos encontrados.
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Guía</th>
+                <th>Cliente</th>
+                <th>Mensajero</th>
+                <th>Origen</th>
+                <th>Destino</th>
+                <th>Servicio</th>
+                <th>Costo</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in envios %}
+            <tr>
+                <td class="guia">{{ e.numero_guia }}</td>
+                <td>{{ e.cliente.nombre }} {{ e.cliente.apellido }}</td>
+                <td>{{ e.mensajero.nombre if e.mensajero else 'No asignado' }}</td>
+                <td>{{ e.lugar_recogida.direccion[:25] if e.lugar_recogida else '-' }}</td>
+                <td>{{ e.lugar_entrega.direccion[:25] if e.lugar_entrega else '-' }}</td>
+                <td style="text-align: center;">{{ e.tipo_servicio }}</td>
+                <td style="text-align: right;">${{ e.costo_envio }}</td>
+                <td class="status">{{ e.estado.replace('_', ' ') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Documento generado automáticamente por el Sistema EnviExpress © 2026.
+    </div>
+</body>
+</html>

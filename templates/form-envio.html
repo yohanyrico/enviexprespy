@@ -1,0 +1,320 @@
+{# templates/form-envio.html #}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if envio %}Editar Envío{% else %}Nuevo Envío{% endif %} | ENVIEXPRESS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #001a41;
+            --accent-orange: #ff8c00;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #003a8c 100%);
+            color: white;
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .form-container {
+            max-width: 1150px;
+            margin: 30px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .address-card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            height: 100%;
+        }
+
+        .section-title {
+            color: var(--accent-orange);
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--accent-orange);
+            padding-left: 10px;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .localidad-wrapper {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .localidad-wrapper.active {
+            display: block;
+        }
+
+        .btn-orange {
+            background: var(--accent-orange);
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 12px 45px;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .btn-orange:hover {
+            background: #e67e00;
+            transform: scale(1.02);
+            color: white;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 25px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-4">
+        <div class="form-container">
+            <h2 class="fw-bold mb-4 text-center">
+                <i class="bi bi-pencil-square me-2"></i>
+                {{ 'EDITAR ENVÍO' if envio else 'NUEVO ENVÍO' }}
+            </h2>
+
+            <form action="/envios/guardar" method="post">
+                <input type="hidden" name="envio_id" value="{{ envio.envio_id if envio else '' }}">
+
+                <div class="mb-4">
+                    <label class="small fw-bold opacity-75">CLIENTE REMITENTE</label>
+                    <select class="form-select" name="cliente_id" required>
+                        <option value="">Seleccione el cliente...</option>
+                        {% for c in clientes %}
+                        <option value="{{ c.id_usuario }}" {{ 'selected' if envio and
+                            envio.usuario_cliente_id==c.id_usuario else '' }}>
+                            {{ c.nombre }} {{ c.apellido }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="address-card">
+                            <div class="section-title">Datos de Recogida</div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-6">
+                                    <label class="small opacity-75">Departamento</label>
+                                    <select class="form-select select-depto" id="depto_recogida" name="depto_recogida"
+                                        data-ciudad="ciudad_recogida_select" required>
+                                        <option value="">Seleccione...</option>
+                                        {% set d_r = envio.lugar_recogida.ciudad.split('(')[1].replace(')', '') if envio
+                                        and '(' in envio.lugar_recogida.ciudad else '' %}
+                                        {% for d in ["ANTIOQUIA", "BOGOTÁ, D.C.", "ATLÁNTICO", "VALLE DEL CAUCA",
+                                        "SANTANDER", "CUNDINAMARCA"] %}
+                                        <option value="{{ d }}" {{ 'selected' if d==d_r else '' }}>{{ d }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small opacity-75">Ciudad</label>
+                                    <select class="form-select" id="ciudad_recogida_select" name="ciudad_recogida"
+                                        required>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="localidad-wrapper mb-2" id="wrapper_loc_recogida">
+                                <label class="small text-orange fw-bold">Localidad (Bogotá)</label>
+                                <select class="form-select" name="localidad_recogida">
+                                    <option value="">Seleccione...</option>
+                                    {% set loc_r = envio.lugar_recogida.referencia.split('|')[0].replace('Localidad: ',
+                                    '').strip() if envio and 'Localidad:' in envio.lugar_recogida.referencia else '' %}
+                                    {% for loc in ["Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme",
+                                    "Tunjuelito", "Bosa", "Kennedy", "Fontibón", "Engativá", "Suba", "Barrios Unidos",
+                                    "Teusaquillo", "Los Mártires", "Antonio Nariño", "Puente Aranda", "La Candelaria",
+                                    "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"] %}
+                                    <option value="{{ loc }}" {{ 'selected' if loc==loc_r else '' }}>{{ loc }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <input type="text" class="form-control mb-2" name="direccion_recogida"
+                                placeholder="Dirección Exacta"
+                                value="{{ envio.lugar_recogida.direccion if envio else '' }}" required>
+                            {% set tel_r = envio.lugar_recogida.referencia.split('Tel: ')[1] if envio and 'Tel: ' in
+                            envio.lugar_recogida.referencia else '' %}
+                            <input type="tel" class="form-control" name="telefono_recogida" placeholder="Teléfono"
+                                value="{{ tel_r }}" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="address-card">
+                            <div class="section-title">Datos de Entrega</div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-6">
+                                    <label class="small opacity-75">Departamento</label>
+                                    <select class="form-select select-depto" id="depto_entrega" name="depto_entrega"
+                                        data-ciudad="ciudad_entrega_select" required>
+                                        <option value="">Seleccione...</option>
+                                        {% set d_e = envio.lugar_entrega.ciudad.split('(')[1].replace(')', '') if envio
+                                        and '(' in envio.lugar_entrega.ciudad else '' %}
+                                        {% for d in ["ANTIOQUIA", "BOGOTÁ, D.C.", "ATLÁNTICO", "VALLE DEL CAUCA",
+                                        "SANTANDER", "CUNDINAMARCA"] %}
+                                        <option value="{{ d }}" {{ 'selected' if d==d_e else '' }}>{{ d }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="small opacity-75">Ciudad</label>
+                                    <select class="form-select" id="ciudad_entrega_select" name="ciudad_entrega"
+                                        required></select>
+                                </div>
+                            </div>
+
+                            <div class="localidad-wrapper mb-2" id="wrapper_loc_entrega">
+                                <label class="small text-orange fw-bold">Localidad (Solo Bogotá)</label>
+                                <select class="form-select" name="localidad_entrega">
+                                    <option value="">Seleccione...</option>
+                                    {% set loc_e = envio.lugar_entrega.referencia.split('|')[0].replace('Localidad: ',
+                                    '').strip() if envio and 'Localidad:' in envio.lugar_entrega.referencia else '' %}
+                                    {% for loc in ["Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme",
+                                    "Tunjuelito", "Bosa", "Kennedy", "Fontibón", "Engativá", "Suba", "Barrios Unidos",
+                                    "Teusaquillo", "Los Mártires", "Antonio Nariño", "Puente Aranda", "La Candelaria",
+                                    "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"] %}
+                                    <option value="{{ loc }}" {{ 'selected' if loc==loc_e else '' }}>{{ loc }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <input type="text" class="form-control mb-2" name="direccion_entrega"
+                                placeholder="Dirección Destino"
+                                value="{{ envio.lugar_entrega.direccion if envio else '' }}" required>
+                            {% set tel_e = envio.lugar_entrega.referencia.split('Tel: ')[1] if envio and 'Tel: ' in
+                            envio.lugar_entrega.referencia else '' %}
+                            <input type="tel" class="form-control" name="telefono_entrega" placeholder="Teléfono"
+                                value="{{ tel_e }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4 g-3">
+                    <div class="col-md-4">
+                        <label class="small fw-bold opacity-75">DESCRIPCIÓN DEL CONTENIDO</label>
+                        {% set desc = envio.instrucciones.split('|')[0].replace('CONTENIDO:', '').strip() if envio and
+                        'CONTENIDO:' in envio.instrucciones else '' %}
+                        <input type="text" class="form-control" name="descripcion" placeholder="¿Qué lleva el paquete?"
+                            value="{{ desc }}" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="small fw-bold opacity-75">PESO (KG)</label>
+                        <input type="number" class="form-control" name="peso" step="0.1"
+                            value="{{ envio.peso if envio else '1.0' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small fw-bold opacity-75">TIPO SERVICIO</label>
+                        <select class="form-select" name="tipo_servicio" required>
+                            <option value="BASICA" {{ 'selected' if envio and envio.tipo_servicio=='BASICA' else '' }}>
+                                BASICA</option>
+                            <option value="EXPRESS" {{ 'selected' if envio and envio.tipo_servicio=='EXPRESS' else ''
+                                }}>EXPRESS</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="small fw-bold opacity-75">TARIFA APLICADA</label>
+                        <select class="form-select" name="tarifa_id" required>
+                            {% for t in tarifas %}
+                            <option value="{{ t.id }}" {{ 'selected' if envio and envio.tarifa_id==t.id else '' }}>{{
+                                t.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-5">
+                    <a href="/envios" class="btn-back">
+                        <i class="bi bi-arrow-left"></i> VOLVER AL LISTADO
+                    </a>
+                    <button type="submit" class="btn btn-orange shadow">
+                        {{ 'GUARDAR CAMBIOS' if envio else 'GENERAR GUÍA' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const ciudadesPorDepto = {
+            "ANTIOQUIA": ["Medellín", "Bello", "Itagüí", "Envigado"],
+            "BOGOTÁ, D.C.": ["BOGOTÁ, D.C."],
+            "ATLÁNTICO": ["Barranquilla", "Soledad"],
+            "VALLE DEL CAUCA": ["Cali", "Palmira", "Buenaventura"],
+            "SANTANDER": ["Bucaramanga", "Floridablanca", "Girón"],
+            "CUNDINAMARCA": ["Soacha", "Chía", "Zipaquirá", "Funza"]
+        };
+
+        function updateCities(selectElement, savedCity = null) {
+            const depto = selectElement.value;
+            const targetId = selectElement.getAttribute('data-ciudad');
+            const ciudadSelect = document.getElementById(targetId);
+            const wrapperLocalidad = selectElement.closest('.address-card').querySelector('.localidad-wrapper');
+
+            ciudadSelect.innerHTML = '<option value="">Seleccione ciudad...</option>';
+
+            if (ciudadesPorDepto[depto]) {
+                ciudadesPorDepto[depto].forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c; opt.text = c;
+                    if (savedCity && savedCity.trim() === c.trim()) opt.selected = true;
+                    ciudadSelect.appendChild(opt);
+                });
+            }
+
+            if (depto === "BOGOTÁ, D.C.") wrapperLocalidad.classList.add('active');
+            else wrapperLocalidad.classList.remove('active');
+        }
+
+        // Al cargar la página, inicializar datos si existen
+        document.addEventListener('DOMContentLoaded', function () {
+            const savedCityRecogida = "{{ envio.lugar_recogida.ciudad.split('(')[0].strip() if envio else '' }}";
+            const savedCityEntrega = "{{ envio.lugar_entrega.ciudad.split('(')[0].strip() if envio else '' }}";
+
+            const selRec = document.getElementById('depto_recogida');
+            const selEnt = document.getElementById('depto_entrega');
+
+            if (selRec.value) updateCities(selRec, savedCityRecogida);
+            if (selEnt.value) updateCities(selEnt, savedCityEntrega);
+
+            // Listeners para cambios manuales
+            document.querySelectorAll('.select-depto').forEach(select => {
+                select.addEventListener('change', () => updateCities(select));
+            });
+        });
+    </script>
+</body>
+
+</html>
