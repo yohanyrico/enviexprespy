@@ -33,6 +33,21 @@
         background: rgba(0, 45, 112, 0.85); 
         border-bottom: 2px solid var(--naranja); 
     }
+    .logo-enviexpress {
+    font-weight: bold;
+    font-size: 1.75rem; /* Equivalente a fs-3 */
+    color: #ff8000 !important; /* Naranja Enviexpress */
+    text-decoration: none;
+}
+
+.logo-enviexpress span {
+    color: #ffffff; /* Blanco para EXPRESS */
+}
+
+.logo-enviexpress:hover {
+    filter: brightness(1.1); /* Brilla un poco al pasar el mouse */
+    color: #ff8000;
+}
 
     /* PROFILE CARD - Ahora sobre fondo blanco para resaltar datos */
     .profile-card { 
@@ -143,9 +158,9 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold fs-3 text-success" href="/home">
-            ENVI<span class="text-light">EXPRESS</span>
-        </a>
+        <a class="navbar-brand fw-bold fs-3" href="/home" style="color: #ff8000;">
+    ENVI<span class="text-light">EXPRESS</span>
+</a>
         <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -249,7 +264,7 @@
                     </div>
 
                     <div class="d-flex justify-content-between">
-                        <a href="/home_cliente" class="btn btn-secondary">
+                        <a href="/home" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Cancelar
                         </a>
                         <button type="submit" class="btn btn-green">

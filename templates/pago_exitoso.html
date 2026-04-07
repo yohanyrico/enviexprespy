@@ -1,0 +1,124 @@
+{# templates/pago_exitoso.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Pago Exitoso! – EnviExpress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #00235a;
+            --primary-blue: #003a8c;
+            --accent-orange: #ff8c00;
+            --success-green: #4ade80;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+            min-height: 100vh;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 50px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .check-icon {
+            font-size: 6rem;
+            color: var(--success-green);
+            filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.4));
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .btn-orange {
+            background-color: var(--accent-orange);
+            color: white;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 15px 30px;
+            transition: all 0.3s;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-orange:hover {
+            background-color: #e67e00;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 140, 0, 0.4);
+            color: white;
+        }
+
+        .invoice-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container text-center">
+        <div class="detail-card mx-auto">
+            <div class="check-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            
+            <h1 class="fw-extrabold mb-3">¡Pago Confirmado!</h1>
+            
+            <p class="fs-5 opacity-75 mb-4">
+                Gracias <strong>{{ usuario }}</strong>, tu suscripción al plan 
+                <span class="text-warning fw-bold">{{ plan|upper }}</span> ya se encuentra activa.
+            </p>
+            
+            <div class="invoice-box p-4 mt-4 text-start">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-envelope-check-fill text-info fs-4 me-3"></i>
+                    <h6 class="mb-0 fw-bold">Factura Electrónica Enviada</h6>
+                </div>
+                <p class="small opacity-75 mb-0 ms-5">
+                    Hemos enviado el comprobante legal en formato PDF a tu correo registrado. Revísalo para tu registro contable.
+                </p>
+            </div>
+
+            <div class="mt-5">
+                <a href="/home_cliente" class="btn btn-orange btn-lg w-100">
+                    <i class="bi bi-speedometer2 me-2"></i> Ir a mi Panel de Control
+                </a>
+            </div>
+            
+            <p class="mt-4 small opacity-50">Transacción segura procesada por EnviExpress © 2026</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

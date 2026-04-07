@@ -1,93 +1,104 @@
+{# templates/mapa_operativo.html #}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planificación Operativa | EnviExpress</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
+        :root {
+            --azul-oscuro: #001a33;
+            --azul-navy: #002b5b;
+            --naranja: #ff8c00;
+            --blanco: #ffffff;
+        }
+
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Montserrat', sans-serif; }
-        
-        /* Contenedor para dividir Mapa y Panel Lateral */
         .main-wrapper { display: flex; width: 100%; height: 100vh; }
 
-        #map { flex: 1; height: 100%; background: #001a33; position: relative; }
+        #map { flex: 1; height: 100%; background: var(--azul-oscuro); position: relative; }
 
-        /* PANEL LATERAL DE RUTAS */
+        /* PANEL LATERAL */
         #side-panel {
-            width: 320px; background: #ffffff; border-left: 2px solid #ff8c00;
-            display: flex; flex-direction: column; box-shadow: -4px 0 15px rgba(0,0,0,0.1); z-index: 1001;
+            width: 320px; background: var(--blanco); border-left: 3px solid var(--naranja);
+            display: flex; flex-direction: column; box-shadow: -4px 0 15px rgba(0,0,0,0.2); z-index: 1001;
         }
-        .panel-header { padding: 20px; background: #002b5b; color: white; text-align: center; }
-        .panel-header h5 { margin: 0; font-weight: 800; text-transform: uppercase; font-size: 1rem; }
+        .panel-header { padding: 20px; background: var(--azul-navy); color: white; text-align: center; }
+        .panel-header h5 { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
         
-        #lista-rutas { flex: 1; overflow-y: auto; padding: 15px; }
+        #lista-rutas { flex: 1; overflow-y: auto; padding: 15px; background: #f4f7f6; }
         
         .ruta-card {
-            background: #f8f9fa; border-left: 5px solid #ff8c00; padding: 12px;
-            margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            cursor: pointer; transition: 0.2s;
+            background: var(--blanco); border-left: 5px solid var(--naranja); padding: 15px;
+            margin-bottom: 12px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            cursor: pointer; transition: 0.3s;
         }
-        .ruta-card:hover { background: #f1f1f1; transform: translateX(5px); }
-        .ruta-card b { color: #002b5b; display: block; margin-bottom: 4px; }
-        .ruta-card span { font-size: 0.85rem; color: #666; }
+        .ruta-card:hover { transform: translateX(5px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .ruta-card b { color: var(--azul-navy); display: block; margin-bottom: 5px; }
+        .ruta-card span { font-size: 0.85rem; color: #555; font-weight: 500; }
 
-        /* BARRA SUPERIOR BLANCA */
+        /* TOOLBAR SUPERIOR */
         .header-tool { 
             position: absolute; top: 15px; left: 20px; z-index: 1000; 
-            background: #ffffff; padding: 10px 20px; border-radius: 50px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; gap: 15px; align-items: center; border: 1px solid #ccc;
+            background: var(--blanco); padding: 12px 25px; border-radius: 50px; 
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: flex; gap: 15px; align-items: center; border: 1px solid #eee;
         }
         .filter-btn {
-            background: #f8f9fa; border: 2px solid; padding: 6px 12px; 
-            border-radius: 20px; cursor: pointer; font-weight: 800; transition: 0.3s;
+            background: #f8f9fa; border: 2px solid; padding: 8px 16px; 
+            border-radius: 20px; cursor: pointer; font-weight: 800; transition: 0.3s; font-size: 0.8rem;
         }
         .btn-c { border-color: #FFD700; color: #b8860b; }
         .btn-d { border-color: #007bff; color: #0056b3; }
-        .btn-off { opacity: 0.2; background: #eee !important; border-color: #bbb !important; color: #888 !important; }
+        .btn-off { opacity: 0.3; background: #ddd !important; border-color: #999 !important; color: #666 !important; }
 
         .calendar-box {
-            display: flex; align-items: center; gap: 8px;
-            background: #f1f1f1; padding: 4px 12px; border-radius: 20px; border: 1px solid #ccc;
+            display: flex; align-items: center; gap: 10px;
+            background: #f1f3f5; padding: 5px 15px; border-radius: 25px;
         }
-        .date-input { border: none; background: transparent; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+        .date-input { border: none; background: transparent; font-weight: 700; font-size: 0.85rem; color: var(--azul-navy); outline: none; }
 
-        .pin { display: flex; align-items: center; justify-content: center; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); width: 30px; height: 30px; border: 1px solid white; }
-        .pin span { transform: rotate(45deg); color: white; font-weight: bold; font-size: 14px; }
-        .bg-c { background: #FFD700; }
-        .bg-d { background: #007bff; }
+        /* ICONOS MAPA */
+        .pin { display: flex; align-items: center; justify-content: center; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); width: 32px; height: 32px; border: 2px solid white; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
+        .pin span { transform: rotate(45deg); color: white; font-weight: 900; font-size: 14px; }
+        .bg-c { background: #FFD700; } /* Gold para Origen */
+        .bg-d { background: #007bff; } /* Blue para Destino */
 
+        /* PANEL ASIGNACIÓN */
         .assignment-panel { 
-            position: absolute; bottom: 30px; left: 40%; transform: translateX(-50%); 
-            z-index: 1000; background: rgba(0, 26, 51, 0.95); padding: 15px 25px; 
-            border-radius: 15px; border: 2px solid #ff8c00; color: white;
-            display: flex; gap: 15px; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-70%); 
+            z-index: 1000; background: rgba(0, 43, 91, 0.95); padding: 18px 30px; 
+            border-radius: 20px; border: 2px solid var(--naranja); color: white;
+            display: flex; gap: 20px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
         }
-        select { background: #fff; color: #333; border: none; padding: 8px; border-radius: 5px; }
-        .btn-asignar { background: #ff8c00; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .assignment-panel select { padding: 10px; border-radius: 8px; font-weight: 600; border: none; min-width: 180px; }
+        .btn-asignar { background: var(--naranja); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-asignar:hover { background: #e67e00; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
     <div class="main-wrapper">
         <div class="header-tool">
-            <a href="/envios" style="text-decoration:none; color:#002b5b; display:flex; align-items:center; gap:5px;">
-                <i class="bi bi-arrow-left-circle-fill" style="font-size: 1.5rem;"></i>
-                <b>VOLVER</b>
+            <a href="/envios" style="text-decoration:none; color:var(--azul-navy); display:flex; align-items:center; gap:8px;">
+                <i class="bi bi-arrow-left-circle-fill" style="font-size: 1.8rem;"></i>
+                <b style="letter-spacing: 1px;">SALIR</b>
             </a>
-            <div style="width: 1px; height: 20px; background: #ddd;"></div>
+            <div style="width: 1px; height: 30px; background: #ddd;"></div>
             <button class="filter-btn btn-c" id="btnC" onclick="toggleLayer('c')">ORIGEN (C)</button>
             <button class="filter-btn btn-d" id="btnD" onclick="toggleLayer('d')">DESTINO (D)</button>
             
             <div class="calendar-box">
-                <i class="bi bi-calendar-range" style="color: #ff8c00;"></i>
-                <span>Desde:</span>
-                <input type="date" id="dateStart" class="date-input">
-                <span>Hasta:</span>
-                <input type="date" id="dateEnd" class="date-input">
-                <button onclick="aplicarFiltros()" style="background:#002b5b; color:white; border:none; padding:5px 12px; border-radius:10px; cursor:pointer; font-weight:bold;">APLICAR</button>
+                <i class="bi bi-calendar-check" style="color: var(--naranja);"></i>
+                <input type="date" id="dateStart" class="date-input" title="Fecha inicio">
+                <i class="bi bi-arrow-right-short"></i>
+                <input type="date" id="dateEnd" class="date-input" title="Fecha fin">
+                <button onclick="aplicarFiltros()" style="background:var(--azul-navy); color:white; border:none; padding:6px 15px; border-radius:15px; cursor:pointer; font-weight:bold; margin-left:10px;">FILTRAR</button>
             </div>
         </div>
 
@@ -95,43 +106,49 @@
 
         <div id="side-panel">
             <div class="panel-header">
-                <h5>Rutas Activas</h5>
+                <h5>Rutas en Curso</h5>
             </div>
             <div id="lista-rutas">
                 {% for m in rutas_activas %}
                 <div class="ruta-card" onclick="window.location.href='/envios/ver-ruta/{{ m.id_usuario }}'">
-                    <b>Ruta: {{ m.nombre }} {{ m.apellido }}</b>
-                    <span>Estado: En ejecución</span>
+                    <b><i class="bi bi-bicycle"></i> {{ m.nombre }} {{ m.apellido }}</b>
+                    <span>Estado: <span class="badge bg-success">Activo</span></span>
                     <div class="text-end mt-2">
-                        <small class="text-primary">Ver detalle <i class="bi bi-chevron-right"></i></small>
+                        <small class="text-primary fw-bold">Gestionar <i class="bi bi-arrow-right"></i></small>
                     </div>
                 </div>
                 {% else %}
-                <p style="text-align:center; color:#999; margin-top:20px;">No se han asignado rutas aún.</p>
+                <div class="text-center py-5">
+                    <i class="bi bi-map-fill" style="font-size: 3rem; color: #ccc;"></i>
+                    <p style="color:#999; margin-top:10px;">No hay rutas hoy.</p>
+                </div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
     <div class="assignment-panel">
-        <span>Pedidos Visibles: <b id="totalPuntos" style="color:#ff8c00; font-size:1.2rem;">0</b></span>
+        <div>Pedidos Seleccionados: <b id="totalPuntos" style="color:var(--naranja); font-size:1.5rem;">0</b></div>
         <select id="mensajeroSelect">
-            <option value="">¿Quién entrega?</option>
+            <option value="">-- Seleccionar Mensajero --</option>
             {% for m in mensajeros %}
-                <option value="{{ m.id_usuario }}" data-nombre="{{ m.nombre }} {{ m.apellido }}">
+                <option value="{{ m.id_usuario }}">
                     {{ m.nombre }} {{ m.apellido }}
                 </option>
             {% endfor %}
         </select>
-        <button class="btn-asignar" onclick="confirmarRuta()">ASIGNAR SELECCIÓN</button>
+        <button class="btn-asignar" onclick="confirmarRuta()">ASIGNAR AHORA</button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
     <script>
-        var map = L.map('map', { zoomControl: false }).setView([4.6097, -74.0817], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        // Inicialización del Mapa centrado en Bogotá
+        var map = L.map('map', { zoomControl: false }).setView([4.65, -74.10], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+            attribution: '&copy; EnviExpress Logística' 
+        }).addTo(map);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         const layerC = L.layerGroup().addTo(map);
@@ -140,23 +157,34 @@
         const todosMarcadores = [];
 
         function crearIcono(letra, colorClass) {
-            return L.divIcon({ className: '', html: `<div class="pin ${colorClass}"><span>${letra}</span></div>`, iconSize: [30, 30], iconAnchor: [15, 30] });
+            return L.divIcon({ 
+                className: '', 
+                html: `<div class="pin ${colorClass}"><span>${letra}</span></div>`, 
+                iconSize: [32, 32], 
+                iconAnchor: [16, 32] 
+            });
         }
 
-        // CARGA DE DATOS
+        // Carga de datos dinámica de Jinja2
         {% for e in envios %}
             {% set f_iso = e.fecha_creacion.date().isoformat() if e.fecha_creacion else '' %}
             
             {% if e.lugar_recogida and e.lugar_recogida.latitud %}
                 todosMarcadores.push(L.marker([{{ e.lugar_recogida.latitud }}, {{ e.lugar_recogida.longitud }}], { 
-                    icon: crearIcono('C', 'bg-c'), envioId: {{ e.envio_id }}, fecha: "{{ f_iso }}", tipo: 'c' 
-                }).bindPopup("Guía: {{ e.numero_guia }} (Origen)"));
+                    icon: crearIcono('C', 'bg-c'), 
+                    envioId: {{ e.envio_id }}, 
+                    fecha: "{{ f_iso }}", 
+                    tipo: 'c' 
+                }).bindPopup("<b>Guía: {{ e.numero_guia }}</b><br>Origen: {{ e.lugar_recogida.direccion }}"));
             {% endif %}
 
             {% if e.lugar_entrega and e.lugar_entrega.latitud %}
                 todosMarcadores.push(L.marker([{{ e.lugar_entrega.latitud }}, {{ e.lugar_entrega.longitud }}], { 
-                    icon: crearIcono('D', 'bg-d'), envioId: {{ e.envio_id }}, fecha: "{{ f_iso }}", tipo: 'd' 
-                }).bindPopup("Guía: {{ e.numero_guia }} (Destino)"));
+                    icon: crearIcono('D', 'bg-d'), 
+                    envioId: {{ e.envio_id }}, 
+                    fecha: "{{ f_iso }}", 
+                    tipo: 'd' 
+                }).bindPopup("<b>Guía: {{ e.numero_guia }}</b><br>Destino: {{ e.lugar_entrega.direccion }}"));
             {% endif %}
         {% endfor %}
 
@@ -166,27 +194,26 @@
             const start = document.getElementById('dateStart').value;
             const end = document.getElementById('dateEnd').value;
             
-            layerC.clearLayers(); layerD.clearLayers();
-            let idsVisibles = new Set();
+            layerC.clearLayers(); 
+            layerD.clearLayers();
+            
+            let idsUnicosVisibles = new Set();
 
             todosMarcadores.forEach(m => {
                 const cumpleTipo = (m.options.tipo === 'c' && showC) || (m.options.tipo === 'd' && showD);
+                
                 let cumpleFecha = true;
                 if (start && m.options.fecha < start) cumpleFecha = false;
                 if (end && m.options.fecha > end) cumpleFecha = false;
 
                 if (cumpleTipo && cumpleFecha) {
-                    if (m.options.tipo === 'c') m.addTo(layerC); else m.addTo(layerD);
-                    idsVisibles.add(m.options.envioId);
+                    if (m.options.tipo === 'c') m.addTo(layerC); 
+                    else m.addTo(layerD);
+                    idsUnicosVisibles.add(m.options.envioId);
                 }
             });
 
-            document.getElementById('totalPuntos').innerText = idsVisibles.size;
-            
-            if(idsVisibles.size > 0) {
-                const group = new L.featureGroup([...layerC.getLayers(), ...layerD.getLayers()]);
-                map.fitBounds(group.getBounds().pad(0.1));
-            }
+            document.getElementById('totalPuntos').innerText = idsUnicosVisibles.size;
         }
 
         function toggleLayer(tipo) {
@@ -200,41 +227,75 @@
             aplicarFiltros();
         }
 
+        // Configuración de Herramientas de Dibujo
         const drawControl = new L.Control.Draw({
-            draw: { polyline: false, circle: false, marker: false, polygon: true, rectangle: true },
-            edit: { featureGroup: drawnItems, remove: true }
+            draw: { 
+                polyline: false, circle: false, marker: false, circlemarker: false,
+                polygon: { shapeOptions: { color: '#ff8c00' } }, 
+                rectangle: { shapeOptions: { color: '#ff8c00' } } 
+            },
+            edit: { featureGroup: drawnItems }
         });
         map.addControl(drawControl);
-        map.on(L.Draw.Event.CREATED, (e) => { drawnItems.clearLayers(); drawnItems.addLayer(e.layer); });
+
+        map.on(L.Draw.Event.CREATED, (e) => { 
+            drawnItems.clearLayers(); 
+            drawnItems.addLayer(e.layer); 
+            calcularSeleccionDibujo(e.layer);
+        });
+
+        function calcularSeleccionDibujo(layer) {
+            let idsSeleccionados = new Set();
+            const bounds = layer.getBounds();
+
+            [layerC, layerD].forEach(group => {
+                group.eachLayer(m => {
+                    if (bounds.contains(m.getLatLng())) {
+                        idsSeleccionados.add(m.options.envioId);
+                    }
+                });
+            });
+            document.getElementById('totalPuntos').innerText = idsSeleccionados.size;
+        }
 
         function confirmarRuta() {
-            const select = document.getElementById('mensajeroSelect');
-            const mId = select.value;
-            const mNombre = select.options[select.selectedIndex].text;
-            if (!mId) return alert("Selecciona un mensajero");
+            const mId = document.getElementById('mensajeroSelect').value;
+            if (!mId) return alert("Por favor, selecciona un mensajero.");
 
             let idsSet = new Set();
+            
+            // Si hay un dibujo activo, filtramos por área
             if (drawnItems.getLayers().length > 0) {
                 let area = drawnItems.getLayers()[0];
                 [layerC, layerD].forEach(group => {
-                    group.eachLayer(m => { if (area.getBounds().contains(m.getLatLng())) idsSet.add(m.options.envioId); });
+                    group.eachLayer(m => { 
+                        if (area.getBounds().contains(m.getLatLng())) idsSet.add(m.options.envioId); 
+                    });
                 });
             } else {
+                // Si no hay dibujo, tomamos todo lo que es visible según filtros
                 layerC.eachLayer(m => idsSet.add(m.options.envioId));
                 layerD.eachLayer(m => idsSet.add(m.options.envioId));
             }
 
-            if (idsSet.size === 0) return alert("No hay pedidos seleccionados");
+            if (idsSet.size === 0) return alert("No hay pedidos seleccionados para asignar.");
+            
             const arrayIds = Array.from(idsSet);
+
+            if (!confirm(`¿Asignar ${arrayIds.length} envíos al mensajero seleccionado?`)) return;
 
             fetch("/envios/asignar-mensajero-masivo", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ envio_ids: arrayIds, id_mensajero: mId })
-            }).then(res => res.json()).then(data => {
-                // Alerta y recarga para que el servidor pinte la nueva ruta en el panel lateral y limpie el mapa
-                alert("Ruta asignada con éxito.");
-                location.reload(); 
+            })
+            .then(res => {
+                if(res.ok) {
+                    alert("¡Ruta asignada exitosamente!");
+                    location.reload();
+                } else {
+                    alert("Error al asignar la ruta.");
+                }
             });
         }
 

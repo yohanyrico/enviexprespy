@@ -57,6 +57,12 @@
             font-weight: 500;
         }
 
+        .form-control[readonly] {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: #ff8c00 !important;
+            border: 1px solid var(--accent-orange);
+        }
+
         .localidad-wrapper {
             display: none;
             margin-top: 10px;
@@ -93,6 +99,16 @@
             align-items: center;
             gap: 8px;
         }
+        
+        .text-orange { color: var(--accent-orange); }
+
+        .cod-section {
+            background: rgba(255, 140, 0, 0.15);
+            border: 2px dashed #ff8c00;
+            padding: 20px;
+            border-radius: 18px;
+            margin: 25px 0;
+        }
     </style>
 </head>
 
@@ -110,15 +126,19 @@
 
                 <div class="mb-4">
                     <label class="small fw-bold opacity-75">CLIENTE REMITENTE</label>
-                    <select class="form-select" name="cliente_id" required>
-                        <option value="">Seleccione el cliente...</option>
-                        {% for c in clientes %}
-                        <option value="{{ c.id_usuario }}" {{ 'selected' if envio and
-                            envio.usuario_cliente_id==c.id_usuario else '' }}>
-                            {{ c.nombre }} {{ c.apellido }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                    {% if rol != 'ADMIN' %}
+                        <input type="text" class="form-control" value="{{ current_user.nombre }} {{ current_user.apellido }}" readonly>
+                        <input type="hidden" name="usuario_cliente_id" value="{{ current_user.id_usuario }}">
+                    {% else %}
+                        <select name="usuario_cliente_id" class="form-select" required>
+                            <option value="">Seleccione el cliente...</option>
+                            {% for c in clientes %}
+                                <option value="{{ c.id_usuario }}" {% if envio and envio.usuario_cliente_id == c.id_usuario %}selected{% endif %}>
+                                    {{ c.nombre }} {{ c.apellido }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
                 </div>
 
                 <div class="row g-4">
@@ -128,22 +148,13 @@
                             <div class="row g-2 mb-2">
                                 <div class="col-md-6">
                                     <label class="small opacity-75">Departamento</label>
-                                    <select class="form-select select-depto" id="depto_recogida" name="depto_recogida"
-                                        data-ciudad="ciudad_recogida_select" required>
+                                    <select class="form-select select-depto" id="depto_recogida" name="depto_recogida" data-ciudad="ciudad_recogida_select" required>
                                         <option value="">Seleccione...</option>
-                                        {% set d_r = envio.lugar_recogida.ciudad.split('(')[1].replace(')', '') if envio
-                                        and '(' in envio.lugar_recogida.ciudad else '' %}
-                                        {% for d in ["ANTIOQUIA", "BOGOTÁ, D.C.", "ATLÁNTICO", "VALLE DEL CAUCA",
-                                        "SANTANDER", "CUNDINAMARCA"] %}
-                                        <option value="{{ d }}" {{ 'selected' if d==d_r else '' }}>{{ d }}</option>
-                                        {% endfor %}
                                     </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="small opacity-75">Ciudad</label>
-                                    <select class="form-select" id="ciudad_recogida_select" name="ciudad_recogida"
-                                        required>
-                                    </select>
+                                    <select class="form-select" id="ciudad_recogida_select" name="ciudad_recogida" required></select>
                                 </div>
                             </div>
 
@@ -151,24 +162,14 @@
                                 <label class="small text-orange fw-bold">Localidad (Bogotá)</label>
                                 <select class="form-select" name="localidad_recogida">
                                     <option value="">Seleccione...</option>
-                                    {% set loc_r = envio.lugar_recogida.referencia.split('|')[0].replace('Localidad: ',
-                                    '').strip() if envio and 'Localidad:' in envio.lugar_recogida.referencia else '' %}
-                                    {% for loc in ["Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme",
-                                    "Tunjuelito", "Bosa", "Kennedy", "Fontibón", "Engativá", "Suba", "Barrios Unidos",
-                                    "Teusaquillo", "Los Mártires", "Antonio Nariño", "Puente Aranda", "La Candelaria",
-                                    "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"] %}
-                                    <option value="{{ loc }}" {{ 'selected' if loc==loc_r else '' }}>{{ loc }}</option>
+                                    {% for loc in ["Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme", "Kennedy", "Suba", "Engativá", "Bosa", "Fontibón", "Barrios Unidos", "Teusaquillo", "Los Mártires", "Antonio Nariño", "Puente Aranda", "La Candelaria", "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"] %}
+                                    <option value="{{ loc }}">{{ loc }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
 
-                            <input type="text" class="form-control mb-2" name="direccion_recogida"
-                                placeholder="Dirección Exacta"
-                                value="{{ envio.lugar_recogida.direccion if envio else '' }}" required>
-                            {% set tel_r = envio.lugar_recogida.referencia.split('Tel: ')[1] if envio and 'Tel: ' in
-                            envio.lugar_recogida.referencia else '' %}
-                            <input type="tel" class="form-control" name="telefono_recogida" placeholder="Teléfono"
-                                value="{{ tel_r }}" required>
+                            <input type="text" class="form-control mb-2" name="direccion_recogida" placeholder="Dirección Exacta" value="{{ envio.lugar_recogida.direccion if envio else '' }}" required>
+                            <input type="tel" class="form-control" name="telefono_recogida" placeholder="Teléfono" required>
                         </div>
                     </div>
 
@@ -178,21 +179,13 @@
                             <div class="row g-2 mb-2">
                                 <div class="col-md-6">
                                     <label class="small opacity-75">Departamento</label>
-                                    <select class="form-select select-depto" id="depto_entrega" name="depto_entrega"
-                                        data-ciudad="ciudad_entrega_select" required>
+                                    <select class="form-select select-depto" id="depto_entrega" name="depto_entrega" data-ciudad="ciudad_entrega_select" required>
                                         <option value="">Seleccione...</option>
-                                        {% set d_e = envio.lugar_entrega.ciudad.split('(')[1].replace(')', '') if envio
-                                        and '(' in envio.lugar_entrega.ciudad else '' %}
-                                        {% for d in ["ANTIOQUIA", "BOGOTÁ, D.C.", "ATLÁNTICO", "VALLE DEL CAUCA",
-                                        "SANTANDER", "CUNDINAMARCA"] %}
-                                        <option value="{{ d }}" {{ 'selected' if d==d_e else '' }}>{{ d }}</option>
-                                        {% endfor %}
                                     </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="small opacity-75">Ciudad</label>
-                                    <select class="form-select" id="ciudad_entrega_select" name="ciudad_entrega"
-                                        required></select>
+                                    <select class="form-select" id="ciudad_entrega_select" name="ciudad_entrega" required></select>
                                 </div>
                             </div>
 
@@ -200,68 +193,79 @@
                                 <label class="small text-orange fw-bold">Localidad (Solo Bogotá)</label>
                                 <select class="form-select" name="localidad_entrega">
                                     <option value="">Seleccione...</option>
-                                    {% set loc_e = envio.lugar_entrega.referencia.split('|')[0].replace('Localidad: ',
-                                    '').strip() if envio and 'Localidad:' in envio.lugar_entrega.referencia else '' %}
-                                    {% for loc in ["Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme",
-                                    "Tunjuelito", "Bosa", "Kennedy", "Fontibón", "Engativá", "Suba", "Barrios Unidos",
-                                    "Teusaquillo", "Los Mártires", "Antonio Nariño", "Puente Aranda", "La Candelaria",
-                                    "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"] %}
-                                    <option value="{{ loc }}" {{ 'selected' if loc==loc_e else '' }}>{{ loc }}</option>
+                                    {% for loc in ["Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme", "Kennedy", "Suba", "Engativá", "Bosa", "Fontibón", "Barrios Unidos", "Teusaquillo", "Los Mártires", "Antonio Nariño", "Puente Aranda", "La Candelaria", "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"] %}
+                                    <option value="{{ loc }}">{{ loc }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
 
-                            <input type="text" class="form-control mb-2" name="direccion_entrega"
-                                placeholder="Dirección Destino"
-                                value="{{ envio.lugar_entrega.direccion if envio else '' }}" required>
-                            {% set tel_e = envio.lugar_entrega.referencia.split('Tel: ')[1] if envio and 'Tel: ' in
-                            envio.lugar_entrega.referencia else '' %}
-                            <input type="tel" class="form-control" name="telefono_entrega" placeholder="Teléfono"
-                                value="{{ tel_e }}" required>
+                            <input type="text" class="form-control mb-2" name="direccion_entrega" placeholder="Dirección Destino" required>
+                            <input type="tel" class="form-control" name="telefono_entrega" placeholder="Teléfono" required>
                         </div>
                     </div>
                 </div>
 
                 <div class="row mt-4 g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-5">
                         <label class="small fw-bold opacity-75">DESCRIPCIÓN DEL CONTENIDO</label>
-                        {% set desc = envio.instrucciones.split('|')[0].replace('CONTENIDO:', '').strip() if envio and
-                        'CONTENIDO:' in envio.instrucciones else '' %}
-                        <input type="text" class="form-control" name="descripcion" placeholder="¿Qué lleva el paquete?"
-                            value="{{ desc }}" required>
+                        <input type="text" class="form-control" name="descripcion" placeholder="¿Qué lleva el paquete?" required>
                     </div>
                     <div class="col-md-2">
                         <label class="small fw-bold opacity-75">PESO (KG)</label>
-                        <input type="number" class="form-control" name="peso" step="0.1"
-                            value="{{ envio.peso if envio else '1.0' }}">
+                        <input type="number" class="form-control" name="peso" step="0.1" value="1.0">
                     </div>
-                    <div class="col-md-3">
-                        <label class="small fw-bold opacity-75">TIPO SERVICIO</label>
-                        <select class="form-select" name="tipo_servicio" required>
-                            <option value="BASICA" {{ 'selected' if envio and envio.tipo_servicio=='BASICA' else '' }}>
-                                BASICA</option>
-                            <option value="EXPRESS" {{ 'selected' if envio and envio.tipo_servicio=='EXPRESS' else ''
-                                }}>EXPRESS</option>
-                        </select>
+                    <div class="col-md-5">
+                        <label class="small fw-bold opacity-75 text-orange">INSTRUCCIONES / OBSERVACIONES</label>
+                        <textarea class="form-control" name="instrucciones_especiales" rows="1" placeholder="Ej: Portería, apto 201, llamar al llegar..."></textarea>
                     </div>
-                    <div class="col-md-3">
-                        <label class="small fw-bold opacity-75">TARIFA APLICADA</label>
-                        <select class="form-select" name="tarifa_id" required>
-                            {% for t in tarifas %}
-                            <option value="{{ t.id }}" {{ 'selected' if envio and envio.tarifa_id==t.id else '' }}>{{
-                                t.nombre }}</option>
-                            {% endfor %}
-                        </select>
+                    {% if rol != 'ADMIN' %}
+                        <input type="hidden" name="tarifa_id" value="{{ tarifas[0].id if tarifas else '' }}">
+                    {% endif %}
+                </div>
+
+                <div class="cod-section">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="mb-0 text-orange fw-bold" style="color: #ff8c00 !important;">
+                                <i class="bi bi-cash-stack"></i> ¿COBRO CONTRA ENTREGA (COD)?
+                            </h6>
+                            <small class="text-white opacity-75">Activa para cobrar el valor del producto al entregar.</small>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="es_cod" id="switchCod" 
+                                   style="transform: scale(1.8); cursor: pointer;" 
+                                   {% if envio and envio.es_cod %}checked{% endif %}>
+                        </div>
+                    </div>
+
+                    <div id="campoValorCod" class="mt-3" style="display: {% if envio and envio.es_cod %}block{% else %}none{% endif %};">
+                        <label class="small fw-bold text-white mb-2">VALOR A COBRAR EN DESTINO ($)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-warning text-dark border-0 fw-bold">$</span>
+                            <input type="number" class="form-control" name="valor_a_cobrar" id="inputValorCod" 
+                                   placeholder="Monto a cobrar" value="{{ envio.valor_a_cobrar if envio else '' }}" 
+                                   style="background: white !important; color: black !important;">
+                        </div>
                     </div>
                 </div>
 
+                <div id="resumen_cotizacion" class="alert alert-info mt-3" style="display: none; background: rgba(0, 255, 255, 0.1); border: 1px solid cyan;">
+                    <h5 class="text-white mb-1"><i class="bi bi-calculator"></i> Cotización Estimada: <span id="precio_cotizado" class="text-warning fw-bold"></span></h5>
+                    <p class="small text-white opacity-75 mb-0" id="detalle_plan_info"></p>
+                </div>
+
                 <div class="d-flex justify-content-between align-items-center mt-5">
-                    <a href="/envios" class="btn-back">
+                    <a href="/home" class="btn-back">
                         <i class="bi bi-arrow-left"></i> VOLVER AL LISTADO
                     </a>
-                    <button type="submit" class="btn btn-orange shadow">
-                        {{ 'GUARDAR CAMBIOS' if envio else 'GENERAR GUÍA' }}
-                    </button>
+                    <div>
+                        <button type="button" onclick="cotizar()" class="btn btn-outline-info me-2">
+                            <i class="bi bi-search"></i> COTIZAR ANTES
+                        </button>
+                        <button type="submit" class="btn btn-orange shadow">
+                            {{ 'GUARDAR CAMBIOS' if envio else 'GENERAR GUÍA' }}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -269,13 +273,68 @@
 
     <script>
         const ciudadesPorDepto = {
-            "ANTIOQUIA": ["Medellín", "Bello", "Itagüí", "Envigado"],
+            "AMAZONAS": ["Leticia", "Puerto Nariño", "El Encanto", "La Chorrera", "Mirití-Paraná"],
+            "ANTIOQUIA": ["Medellín", "Bello", "Itagüí", "Envigado", "Apartadó", "Caucasia", "Rionegro", "Turbo", "Sabaneta", "Copacabana", "La Estrella", "Caldas", "Girardota", "Barbosa", "Cisneros"],
+            "ARAUCA": ["Arauca", "Arauquita", "Cravo Norte", "Fortul", "Puerto Rondón", "Saravena", "Tame"],
+            "ARCHIPIÉLAGO DE SAN ANDRÉS": ["San Andrés", "Providencia"],
+            "ATLÁNTICO": ["Barranquilla", "Soledad", "Malambo", "Sabanalarga", "Santo Tomás", "Baranoa", "Puerto Colombia"],
             "BOGOTÁ, D.C.": ["BOGOTÁ, D.C."],
-            "ATLÁNTICO": ["Barranquilla", "Soledad"],
-            "VALLE DEL CAUCA": ["Cali", "Palmira", "Buenaventura"],
-            "SANTANDER": ["Bucaramanga", "Floridablanca", "Girón"],
-            "CUNDINAMARCA": ["Soacha", "Chía", "Zipaquirá", "Funza"]
+            "BOLÍVAR": ["Cartagena", "Magangué", "Turbaco", "Arjona", "El Carmen de Bolívar", "Mompox", "Riohacha"],
+            "BOYACÁ": ["Tunja", "Duitama", "Sogamoso", "Paipa", "Chiquinquirá", "Villa de Leyva", "Moniquirá"],
+            "CALDAS": ["Manizales", "Villamaría", "Chinchiná", "La Dorada", "Riosucio", "Salamina"],
+            "CAQUETÁ": ["Florencia", "San Vicente del Caguán", "Puerto Rico", "Belén de los Andaquíes"],
+            "CASANARE": ["Yopal", "Aguazul", "Paz de Ariporo", "Tauramena", "Trinidad", "Villanueva"],
+            "CAUCA": ["Popayán", "Santander de Quilichao", "Patía", "Puerto Tejada", "Corinto"],
+            "CESAR": ["Valledupar", "Aguachica", "Bosconia", "Codazzi", "La Jagua de Ibirico"],
+            "CHOCÓ": ["Quibdó", "Istmina", "Condoto", "Riosucio", "Tadó", "Juradó"],
+            "CÓRDOBA": ["Montería", "Cereté", "Lorica", "Sahagún", "Montelíbano", "Planeta Rica"],
+            "CUNDINAMARCA": ["Soacha", "Chía", "Zipaquirá", "Funza", "Facatativá", "Fusagasugá", "Girardot", "Madrid", "Mosquera", "Cajicá"],
+            "GUAINÍA": ["Inírida", "Barranco Minas"],
+            "GUAVIARE": ["San José del Guaviare", "Calamar", "El Retorno", "Miraflores"],
+            "HUILA": ["Neiva", "Pitalito", "Garzón", "La Plata", "Campoalegre"],
+            "LA GUAJIRA": ["Riohacha", "Maicao", "Uribia", "Manaure", "Fonseca", "San Juan del Cesar"],
+            "MAGDALENA": ["Santa Marta", "Ciénaga", "Fundación", "Plato", "Aracataca"],
+            "META": ["Villavicencio", "Acacías", "Granada", "San Martín", "Puerto López"],
+            "NARIÑO": ["Pasto", "Ipiales", "Tumaco", "Túquerres", "La Unión"],
+            "NORTE DE SANTANDER": ["Cúcuta", "Los Patios", "Villa del Rosario", "Ocaña", "Pamplona", "Tibú"],
+            "PUTUMAYO": ["Mocoa", "Puerto Asís", "La Hormiga", "Orito", "Sibundoy", "Valle del Guamuez"],
+            "QUINDÍO": ["Armenia", "Calarcá", "Montenegro", "Quimbaya", "Circasia"],
+            "RISARALDA": ["Pereira", "Dosquebradas", "Santa Rosa de Cabal", "La Virginia", "Belén de Umbría"],
+            "SANTANDER": ["Bucaramanga", "Floridablanca", "Girón", "Piedecuesta", "Barrancabermeja", "Socorro", "San Gil"],
+            "SUCRE": ["Sincelejo", "Corozal", "Sampués", "San Marcos", "Tolú", "Coveñas"],
+            "TOLIMA": ["Ibagué", "Espinal", "Melgar", "Honda", "Líbano", "Chaparral"],
+            "VALLE DEL CAUCA": ["Cali", "Palmira", "Buenaventura", "Tuluá", "Cartago", "Buga", "Yumbo", "Jamundí", "Candelaria"],
+            "VAUPÉS": ["Mitú", "Carurú", "Taraira"],
+            "VICHADA": ["Puerto Carreño", "La Primavera", "Santa Rosalía", "Cumaribo"]
         };
+
+        function cotizar() {
+            const depto = document.getElementById('depto_entrega').value;
+            const ciudad = document.getElementById('ciudad_entrega_select').value;
+            const display = document.getElementById('resumen_cotizacion');
+            const precioDisplay = document.getElementById('precio_cotizado');
+            const detalleInfo = document.getElementById('detalle_plan_info');
+            
+            const cuotaUsuario = "{{ current_user.cuota_fija }}";
+            const rolActual = "{{ current_user.rol }}";
+
+            if (!depto || !ciudad) {
+                alert("Por favor seleccione el destino.");
+                return;
+            }
+
+            const esBogota = depto.includes("BOGOTÁ") || ciudad.includes("BOGOTÁ");
+            
+            if (esBogota) {
+                const formattedPrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(cuotaUsuario);
+                precioDisplay.innerText = `${formattedPrice} (Urbano)`;
+                detalleInfo.innerText = `Tarifa aplicada según tu Plan ${rolActual}.`;
+            } else {
+                precioDisplay.innerText = "$17.990 (Nacional - Plan Raíces)";
+                detalleInfo.innerText = "Tarifa estándar para envíos nacionales fuera de Bogotá.";
+            }
+            display.style.display = 'block';
+        }
 
         function updateCities(selectElement, savedCity = null) {
             const depto = selectElement.value;
@@ -298,20 +357,45 @@
             else wrapperLocalidad.classList.remove('active');
         }
 
-        // Al cargar la página, inicializar datos si existen
         document.addEventListener('DOMContentLoaded', function () {
-            const savedCityRecogida = "{{ envio.lugar_recogida.ciudad.split('(')[0].strip() if envio else '' }}";
-            const savedCityEntrega = "{{ envio.lugar_entrega.ciudad.split('(')[0].strip() if envio else '' }}";
+            // Lógica para mostrar/ocultar el valor de COD
+            const switchCod = document.getElementById('switchCod');
+            const campoValorCod = document.getElementById('campoValorCod');
+            const inputValorCod = document.getElementById('inputValorCod');
 
-            const selRec = document.getElementById('depto_recogida');
-            const selEnt = document.getElementById('depto_entrega');
+            if (switchCod) {
+                switchCod.addEventListener('change', function() {
+                    if(this.checked) {
+                        campoValorCod.style.display = 'block';
+                        inputValorCod.setAttribute('required', 'required');
+                        inputValorCod.focus();
+                    } else {
+                        campoValorCod.style.display = 'none';
+                        inputValorCod.removeAttribute('required');
+                        inputValorCod.value = "";
+                    }
+                });
+            }
 
-            if (selRec.value) updateCities(selRec, savedCityRecogida);
-            if (selEnt.value) updateCities(selEnt, savedCityEntrega);
+            const deptos = Object.keys(ciudadesPorDepto).sort();
+            const selectsDepto = document.querySelectorAll('.select-depto');
+            
+            const savedDeptoRec = "{{ envio.lugar_recogida.ciudad.split('(')[1].replace(')', '').strip() if envio and '(' in envio.lugar_recogida.ciudad else '' }}";
+            const savedDeptoEnt = "{{ envio.lugar_entrega.ciudad.split('(')[1].replace(')', '').strip() if envio and '(' in envio.lugar_entrega.ciudad else '' }}";
+            const savedCityRec = "{{ envio.lugar_recogida.ciudad.split('(')[0].strip() if envio else '' }}";
+            const savedCityEnt = "{{ envio.lugar_entrega.ciudad.split('(')[0].strip() if envio else '' }}";
 
-            // Listeners para cambios manuales
-            document.querySelectorAll('.select-depto').forEach(select => {
+            selectsDepto.forEach(select => {
+                deptos.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.text = d;
+                    if (select.id === 'depto_recogida' && d === savedDeptoRec) opt.selected = true;
+                    if (select.id === 'depto_entrega' && d === savedDeptoEnt) opt.selected = true;
+                    select.appendChild(opt);
+                });
+
                 select.addEventListener('change', () => updateCities(select));
+                if (select.value) updateCities(select, select.id === 'depto_recogida' ? savedCityRec : savedCityEnt);
             });
         });
     </script>

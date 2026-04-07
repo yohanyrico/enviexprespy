@@ -20,6 +20,7 @@
             --blanco: #ffffff;
             --btn-editar: #0d6efd;
             --btn-eliminar: #dc3545;
+            --btn-recarga: #198754;
         }
         body {
             background: linear-gradient(135deg, var(--azul-profundo), var(--azul-medio), var(--azul-oscuro));
@@ -43,7 +44,6 @@
             text-transform: uppercase;
         }
         
-        /* Botón Nuevo */
         .btn-green {
             background: var(--naranja);
             border: none;
@@ -63,7 +63,6 @@
             box-shadow: 0 4px 15px rgba(255,140,0,0.4);
         }
 
-        /* Contenedor Reportes Agrupados */
         .actions-bar {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -77,37 +76,6 @@
             gap: 15px;
         }
 
-        /* Estilo Dropdown Reportes */
-        .dropdown-reportes .btn-dropdown {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid var(--naranja);
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-        .dropdown-reportes .btn-dropdown:hover {
-            background: var(--naranja);
-        }
-        .dropdown-menu {
-            background: #0f172a;
-            border: 1px solid var(--naranja);
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        .dropdown-item {
-            color: white;
-            padding: 10px 20px;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .dropdown-item:hover {
-            background: rgba(255, 140, 0, 0.2);
-            color: var(--naranja);
-        }
-
-        /* Tabla */
         .table-container {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -119,64 +87,32 @@
         .table thead th { color: var(--naranja); text-transform: uppercase; font-size: 0.85rem; border-bottom: 2px solid var(--naranja); padding: 15px; }
         .table tbody td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        /* Botones de Acción (Azul y Rojo) */
-        .btn-edit {
-            background: var(--btn-editar);
-            color: white !important;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            transition: 0.3s;
-            text-decoration: none;
-        }
-        .btn-edit:hover { background: #0b5ed7; transform: scale(1.1); }
+        .btn-edit { background: var(--btn-editar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; }
+        .btn-delete { background: var(--btn-eliminar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; }
+        .btn-recharge { background: var(--btn-recarga); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; cursor: pointer; }
+        
+        .btn-edit:hover, .btn-delete:hover, .btn-recharge:hover { transform: scale(1.1); filter: brightness(1.2); }
 
-        .btn-delete {
-            background: var(--btn-eliminar);
-            color: white !important;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            transition: 0.3s;
-            text-decoration: none;
-        }
-        .btn-delete:hover { background: #bb2d3b; transform: scale(1.1); }
+        .modal-content { background: #0f172a; color: white; border: 1px solid var(--naranja); border-radius: 15px; }
+        .modal-header { border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .form-control { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: white; }
 
-        /* Modal Reporte Visual */
         .modal-reporte { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; }
         .modal-reporte.open { display: flex; }
-        .modal-card {
-            background: #0f172a;
-            border: 1px solid var(--naranja);
-            border-radius: 16px;
-            padding: 30px;
-            width: 90%;
-            max-width: 600px;
-            position: relative;
-        }
+        .modal-card { background: #0f172a; border: 1px solid var(--naranja); border-radius: 16px; padding: 30px; width: 90%; max-width: 600px; position: relative; }
+        
         .stat-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .stat-box .num { font-size: 1.8rem; font-weight: 800; color: var(--naranja); }
         .bar-track { background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; margin-top: 5px; overflow: hidden; }
         .bar-fill { height: 100%; background: var(--naranja); }
-
-        @media print {
-            body * { visibility: hidden; }
-            .modal-card, .modal-card * { visibility: visible; }
-            .modal-card { position: absolute; left: 0; top: 0; width: 100%; }
-        }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold fs-3 text-warning" href="/home">ENVI<span class="text-light">EXPRESS</span></a>
+        <a class="navbar-brand fw-bold fs-3 text-warning" href="/envios/">ENVI<span class="text-light">EXPRESS</span></a>
         <div class="ms-auto d-flex gap-2">
-            <a href="/home" class="btn btn-outline-light btn-sm"><i class="bi bi-house-fill"></i></a>
+            <a href="/envios/" class="btn btn-outline-light btn-sm"><i class="bi bi-house-fill"></i></a>
             <form action="/logout" method="post" style="margin:0;">
                 <button class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right"></i></button>
             </form>
@@ -192,15 +128,15 @@
             <i class="bi bi-person-plus-fill"></i> Nuevo Usuario
         </a>
 
-        <div class="dropdown dropdown-reportes">
-            <button class="btn btn-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown">
+        <div class="dropdown">
+            <button class="btn btn-outline-warning dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 <i class="bi bi-file-earmark-bar-graph"></i> Generar Reportes
             </button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-dark">
                 <li><a class="dropdown-item" href="#" onclick="exportarPDF()"><i class="bi bi-file-earmark-pdf-fill text-danger"></i> Exportar a PDF</a></li>
-                <li><a class="dropdown-item" href="#" onclick="exportarCSV()"><i class="bi bi-file-earmark-excel-fill text-success"></i> Exportar a Excel/CSV</a></li>
-                <li><hr class="dropdown-divider" style="border-color: rgba(255,255,255,0.1);"></li>
-                <li><a class="dropdown-item" href="#" onclick="abrirReporteVisual()"><i class="bi bi-bar-chart-fill text-primary"></i> Ver Reporte Visual</a></li>
+                <li><a class="dropdown-item" href="#" onclick="exportarCSV()"><i class="bi bi-file-earmark-excel-fill text-success"></i> Exportar a CSV</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" onclick="abrirReporteVisual()"><i class="bi bi-bar-chart-fill text-primary"></i> Ver Estadísticas</a></li>
             </ul>
         </div>
     </div>
@@ -213,8 +149,8 @@
                         <th class="text-center">ID</th>
                         <th>Usuario</th>
                         <th>Nombre</th>
-                        <th>Correo</th>
                         <th class="text-center">Rol</th>
+                        <th class="text-center">Tarifa</th> <th class="text-end">Saldo Actual</th>
                         <th class="text-center">Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -225,8 +161,29 @@
                         <td class="text-center">{{ u.id_usuario }}</td>
                         <td><span class="fw-bold">{{ u.user_name }}</span></td>
                         <td>{{ u.nombre }} {{ u.apellido }}</td>
-                        <td>{{ u.correo }}</td>
-                        <td class="text-center"><span class="badge bg-info">{{ u.rol }}</span></td>
+                        <td class="text-center">
+                            <span class="badge {{ 'bg-info' if u.rol == 'ADMIN' else 'bg-secondary' }}">
+                                {{ u.rol }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if u.tarifa %}
+                                {% set plan = u.tarifa.nombre.upper() %}
+                                <strong style="font-size: 0.85rem; 
+                                    {% if 'BRONCE' in plan %} color: #cd7f32;
+                                    {% elif 'PLATA' in plan %} color: #c0c0c0;
+                                    {% elif 'ORO' in plan %} color: #ffd700;
+                                    {% elif 'DIAMANTE' in plan %} color: #b9f2ff; text-shadow: 0 0 5px rgba(185,242,255,0.5);
+                                    {% endif %}">
+                                    <i class="bi bi-gem"></i> {{ plan }}
+                                </strong>
+                            {% else %}
+                                <span class="text-muted small">Sin Plan</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold text-warning">
+                            $ {{ "{:,.0f}".format(u.saldo_plan).replace(',', '.') }}
+                        </td>
                         <td class="text-center">
                             <span class="badge {{ 'bg-success' if u.activo else 'bg-danger' }}">
                                 {{ 'Activo' if u.activo else 'Inactivo' }}
@@ -234,16 +191,44 @@
                         </td>
                         <td class="text-center">
                             <div class="d-flex gap-2 justify-content-center">
-                                <a class="btn-edit" href="/usuarios/editar/{{ u.id_usuario }}">
-                                    <i class="bi bi-pencil-fill"></i>
-                                </a>
-                                <a class="btn-delete" href="/usuarios/eliminar/{{ u.id_usuario }}"
-                                   onclick="return confirm('¿Eliminar usuario?')">
-                                    <i class="bi bi-trash-fill"></i>
-                                </a>
+                                <button type="button" class="btn-recharge" data-bs-toggle="modal" data-bs-target="#modalRecarga{{ u.id_usuario }}">
+                                    <i class="bi bi-wallet2"></i>
+                                </button>
+                                <a class="btn-edit" href="/usuarios/editar/{{ u.id_usuario }}"><i class="bi bi-pencil-fill"></i></a>
+                                <a class="btn-delete" href="/usuarios/eliminar/{{ u.id_usuario }}" onclick="return confirm('¿Eliminar usuario?')"><i class="bi bi-trash-fill"></i></a>
                             </div>
                         </td>
                     </tr>
+
+                    <div class="modal fade" id="modalRecarga{{ u.id_usuario }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <form action="/envios/usuarios/procesar-recarga" method="POST" class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title"><i class="bi bi-cash-coin text-warning"></i> Cargar Saldo: {{ u.user_name }}</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="usuario_id" value="{{ u.id_usuario }}">
+                                    <div class="mb-4 text-center">
+                                        <small class="text-secondary">Saldo actual:</small>
+                                        <h3 class="text-warning">$ {{ "{:,.0f}".format(u.saldo_plan).replace(',', '.') }}</h3>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Monto a Recargar ($)</label>
+                                        <input type="number" name="monto" class="form-control" placeholder="Ej: 50000" required min="1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Concepto</label>
+                                        <input type="text" name="concepto" class="form-control" value="Recarga manual por Administrador">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn-green border-0">Confirmar Recarga</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                     {% endfor %}
                 </tbody>
             </table>
@@ -252,14 +237,14 @@
 </div>
 
 <div class="modal-reporte" id="modalReporte">
-    <div class="modal-card">
-        <button class="btn-close-modal" onclick="cerrarModal()" style="position: absolute; top:15px; right:20px; background:none; border:none; color:white; font-size:1.5rem;">&times;</button>
-        <h3 class="text-center mb-4" style="color:var(--naranja)">Estadísticas de Sistema</h3>
+    <div class="modal-card text-light">
+        <h3 class="text-center mb-4" style="color:var(--naranja)">Estadísticas de Usuarios</h3>
         <div class="row g-3 mb-4" id="statGrid"></div>
         <div id="rolBars"></div>
-        <button class="btn btn-warning w-100 mt-4 fw-bold" onclick="window.print()">
-            <i class="bi bi-printer"></i> Imprimir Reporte
-        </button>
+        <div class="mt-4 d-flex gap-2">
+            <button class="btn btn-warning flex-grow-1 fw-bold" onclick="window.print()"><i class="bi bi-printer"></i> Imprimir</button>
+            <button class="btn btn-outline-light flex-grow-1" onclick="cerrarModal()">Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -272,9 +257,10 @@ function leerUsuarios() {
             id: celdas[0].innerText,
             usuario: celdas[1].innerText,
             nombre: celdas[2].innerText,
-            correo: celdas[3].innerText,
-            rol: celdas[4].innerText,
-            activo: celdas[5].innerText
+            rol: celdas[3].innerText,
+            tarifa: celdas[4].innerText,
+            saldo: celdas[5].innerText,
+            activo: celdas[6].innerText
         };
     });
 }
@@ -283,15 +269,15 @@ function exportarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'mm', 'a4');
     doc.text("Reporte de Usuarios - EnviExpress", 14, 15);
-    const data = leerUsuarios().map(u => [u.id, u.usuario, u.nombre, u.correo, u.rol, u.activo]);
-    doc.autoTable({ head: [['ID', 'Usuario', 'Nombre', 'Correo', 'Rol', 'Estado']], body: data, startY: 20, theme: 'grid' });
-    doc.save('usuarios.pdf');
+    const data = leerUsuarios().map(u => [u.id, u.usuario, u.nombre, u.rol, u.tarifa, u.saldo, u.activo]);
+    doc.autoTable({ head: [['ID', 'Usuario', 'Nombre', 'Rol', 'Tarifa', 'Saldo', 'Estado']], body: data, startY: 20, theme: 'grid' });
+    doc.save('usuarios_enviexpress.pdf');
 }
 
 function exportarCSV() {
     const data = leerUsuarios();
-    let csv = "ID,Usuario,Nombre,Correo,Rol,Estado\n";
-    data.forEach(u => csv += `${u.id},${u.usuario},${u.nombre},${u.correo},${u.rol},${u.activo}\n`);
+    let csv = "ID,Usuario,Nombre,Rol,Tarifa,Saldo,Estado\n";
+    data.forEach(u => csv += `${u.id},${u.usuario},${u.nombre},${u.rol},${u.tarifa},"${u.saldo}",${u.activo}\n`);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -304,8 +290,8 @@ function abrirReporteVisual() {
     const activos = usuarios.filter(u => u.activo.trim() === 'Activo').length;
     
     document.getElementById('statGrid').innerHTML = `
-        <div class="col-6"><div class="stat-box"><div class="num">${total}</div><div class="small">Total</div></div></div>
-        <div class="col-6"><div class="stat-box"><div class="num text-success">${activos}</div><div class="small">Activos</div></div></div>
+        <div class="col-6"><div class="stat-box"><div class="num text-warning" style="font-size:2rem; font-weight:800;">${total}</div><div class="small">Total Usuarios</div></div></div>
+        <div class="col-6"><div class="stat-box"><div class="num text-success" style="font-size:2rem; font-weight:800;">${activos}</div><div class="small">Activos</div></div></div>
     `;
 
     const roles = {};
@@ -314,7 +300,7 @@ function abrirReporteVisual() {
     let bars = '';
     Object.entries(roles).forEach(([rol, count]) => {
         const porc = (count / total) * 100;
-        bars += `<div class="mb-2"><small>${rol} (${count})</small><div class="bar-track"><div class="bar-fill" style="width:${porc}%"></div></div></div>`;
+        bars += `<div class="mb-3"><div class="d-flex justify-content-between"><small>${rol}</small><small>${count}</small></div><div class="bar-track"><div class="bar-fill" style="width:${porc}%"></div></div></div>`;
     });
     document.getElementById('rolBars').innerHTML = bars;
     document.getElementById('modalReporte').classList.add('open');

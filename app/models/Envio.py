@@ -1,6 +1,6 @@
 # app/models/Envio.py
 
-from sqlalchemy import Column, BigInteger, String, Numeric, Text, DateTime, Enum, ForeignKey, func
+from sqlalchemy import Column, BigInteger, String, Numeric, Text, DateTime, Enum, ForeignKey, func, Boolean
 from sqlalchemy.orm import relationship, Session
 from app.config.database import Base
 from datetime import datetime
@@ -32,8 +32,12 @@ class Envio(Base):
     instrucciones = Column(Text, nullable=True)
     fecha_creacion = Column(DateTime, nullable=False, default=datetime.now)
 
+    # --- NUEVOS CAMPOS COD (COBRO CONTRA ENTREGA) ---
+    es_cod = Column(Boolean, default=False)
+    valor_a_cobrar = Column(Numeric(12, 2), default=0.00)
+
     tipo_servicio = Column(
-        Enum("BASICA", "EXPRESS", name="tiposervicio", native_enum=False),
+        Enum("BASICA", "EXPRESS", "NACIONAL", name="tiposervicio", native_enum=False),
         nullable=False,
         default="BASICA"
     )
@@ -61,13 +65,34 @@ class Envio(Base):
         cascade="all, delete-orphan"
     )
 
-    # --- FUNCIONES DE REPORTE (LÓGICA DE NEGOCIO) ---
+    # --- LÓGICA DE NEGOCIO / MÉTODOS DE CLASE ---
+
+    @classmethod
+    def generar_numero_guia(cls, db: Session) -> str:
+        """
+        Genera el siguiente número de guía consecutivo basado en la última guía registrada.
+        Formato: ENV000001, ENV000002, ...
+        """
+        ultima_guia = (
+            db.query(cls.numero_guia)
+            .filter(cls.numero_guia.isnot(None))
+            .order_by(cls.envio_id.desc())
+            .first()
+        )
+        
+        if ultima_guia and ultima_guia[0]:
+            try:
+                ultimo_numero = int(ultima_guia[0].replace("ENV", ""))
+                return f"ENV{str(ultimo_numero + 1).zfill(6)}"
+            except ValueError:
+                pass
+        
+        return "ENV000001"
 
     @classmethod
     def obtener_datos_reporte(cls, db: Session, ids: list = None):
         """
         Retorna los registros para el reporte de envíos. 
-        Si se pasan IDs, filtra por selección, sino trae todos.
         """
         query = db.query(cls)
         if ids:
@@ -78,7 +103,6 @@ class Envio(Base):
     def obtener_reporte_usuarios(cls, db: Session):
         """
         Extrae la lista de usuarios del sistema para el reporte de directorio.
-        Utiliza importación local para evitar errores de importación circular.
         """
         from app.models.Usuario import Usuario
         return db.query(Usuario).all()

@@ -25,7 +25,6 @@
             padding-top: 90px; 
         }
 
-        /* Navbar Estilo Cristal */
         .navbar { 
             backdrop-filter: blur(15px); 
             background: rgba(0, 35, 90, 0.7); 
@@ -41,6 +40,49 @@
         }
 
         .text-orange { color: var(--accent-orange) !important; }
+
+        /* Estilos del Banner de Plan */
+        .upgrade-banner {
+            background: rgba(255, 140, 0, 0.1);
+            border: 2px dashed var(--accent-orange);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: var(--accent-orange); transform: scale(1); }
+            50% { border-color: white; transform: scale(1.01); }
+            100% { border-color: var(--accent-orange); transform: scale(1); }
+        }
+
+        .planes-selector {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+        }
+
+        .plan-mini-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .plan-mini-card:hover {
+            border-color: var(--accent-orange);
+            background: rgba(255, 140, 0, 0.1);
+            transform: translateY(-5px);
+        }
 
         /* Tarjetas de Acciones */
         .quick-card { 
@@ -59,10 +101,13 @@
             border-color: var(--accent-orange);
         }
 
-        .quick-card i { color: var(--accent-orange); transition: 0.3s; }
-        .quick-card:hover i { transform: scale(1.1); }
+        /* Estilos Billetera Virtual Inteligente */
+        .wallet-card {
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+        }
 
-        /* Botones Naranja */
         .btn-orange { 
             background: var(--accent-orange); 
             border: none; 
@@ -72,79 +117,35 @@
             border-radius: 10px; 
             transition: .3s; 
             text-transform: uppercase;
-            font-size: 0.85rem;
         }
 
         .btn-orange:hover { 
             background: #e67e00; 
-            color: white;
             box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
-            transform: scale(1.03);
         }
 
-        .section-title { 
-            color: var(--accent-orange); 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            font-size: 1.2rem;
-        }
+        .section-title { color: var(--accent-orange); text-transform: uppercase; font-size: 1.2rem; }
 
-        /* Info Usuario */
         .user-info { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            padding: 6px 18px; 
-            background: rgba(255, 255, 255, 0.1); 
-            border-radius: 25px; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
+            display: flex; align-items: center; gap: 10px; padding: 6px 18px; 
+            background: rgba(255, 255, 255, 0.1); border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.2); 
         }
-
-        .user-name { color: var(--text-light); font-weight: 600; margin: 0; }
 
         .welcome-badge { 
-            background: rgba(255, 140, 0, 0.1); 
-            padding: 10px 25px; 
-            border-radius: 30px; 
-            border: 1px solid rgba(255, 140, 0, 0.3); 
-            display: inline-block; 
-            margin-top: 15px; 
+            background: rgba(255, 140, 0, 0.1); padding: 10px 25px; border-radius: 30px; 
+            border: 1px solid rgba(255, 140, 0, 0.3); display: inline-block; margin-top: 15px; 
         }
 
-        .welcome-badge .username-highlight { 
-            color: var(--accent-orange); 
-            font-weight: 700; 
-            text-shadow: 0 0 8px rgba(255, 140, 0, 0.2); 
-        }
-
-        footer { 
-            background: rgba(0,0,0,0.2); 
-            border-top: 1px solid rgba(255,255,255,0.05); 
-            padding: 20px 0;
-        }
-
-        .btn-outline-custom {
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            transition: 0.3s;
-        }
-        
-        .btn-outline-custom:hover {
-            background: rgba(255,255,255,0.1);
-            color: var(--accent-orange);
-        }
+        footer { background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); padding: 20px 0; }
     </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-extrabold fs-3" href="/home_cliente" style="letter-spacing: -1px;">
-            <span class="text-orange">ENVI</span><span class="text-light">EXPRESS</span>
-        </a>
-        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+               <a class="navbar-brand fw-bold fs-3" href="/home_cliente" style="color: #ff8000;">
+    ENVI<span class="text-light">EXPRESS</span>
+</a>
         <div id="nav" class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto gap-3 align-items-center">
                 <li class="nav-item">
@@ -155,9 +156,7 @@
                 </li>
                 <li class="nav-item">
                     <form action="/logout" method="post" class="m-0">
-                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                            <i class="bi bi-box-arrow-right"></i> Salir
-                        </button>
+                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3">Salir</button>
                     </form>
                 </li>
             </ul>
@@ -165,12 +164,112 @@
     </div>
 </nav>
 
-<div class="container text-center mb-5">
+<div class="container text-center mb-4">
     <h1 class="title-glow">Panel de Cliente</h1>
-    <p class="fs-5 opacity-75">Gestiona tus envíos y paquetes desde tu plataforma personal.</p>
+    
+    {% if request.query_params.get('error') == 'saldo_insuficiente' %}
+    <div class="alert alert-danger alert-dismissible fade show mt-3 mx-auto" role="alert" style="max-width: 800px;">
+        <i class="bi bi-exclamation-octagon-fill me-2"></i>
+        <strong>¡Atención!</strong> Tu saldo actual no cubre la tarifa del plan. Por favor, realiza una recarga.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
     <div class="welcome-badge">
-        <i class="bi bi-shield-check text-orange me-2"></i>
-        Sesión activa: <span class="username-highlight">{{ username }}</span>
+    <i class="bi bi-shield-check text-orange me-2"></i>
+    Sesión activa: <span class="text-orange fw-bold">{{ usuario.nombre }} {{ usuario.apellido }}</span>
+</div>
+
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            {% set color_wallet = 'rgba(0, 58, 140, 0.8)' %}
+            {% set border_wallet = '#ff8c00' %}
+            
+            {% if saldo < 12000 %}
+                {% set color_wallet = 'rgba(220, 53, 69, 0.9)' %}
+                {% set border_wallet = '#ffffff' %}
+            {% elif saldo < 30000 %}
+                {% set color_wallet = 'rgba(255, 140, 0, 0.9)' %}
+                {% set border_wallet = '#00235a' %}
+            {% endif %}
+
+            <div class="card wallet-card p-4 shadow-lg" 
+                 style="background: {{ color_wallet }}; border-left: 8px solid {{ border_wallet }}; transition: all 0.5s ease;">
+                <div class="row align-items-center">
+                    <div class="col-md-7 text-start text-white">
+                        <p class="text-uppercase small fw-bold mb-1 opacity-75">
+                            {% if saldo < 12000 %}
+                                <i class="bi bi-exclamation-triangle-fill"></i> SALDO INSUFICIENTE
+                            {% else %}
+                                Saldo de Envío Disponible
+                            {% endif %}
+                        </p>
+                        <h1 class="display-5 fw-bold mb-0">
+                            $ {{ "{:,.0f}".format(saldo).replace(',', '.') if saldo else '0' }}
+                        </h1>
+                       <p class="small mt-2 mb-0">
+    <i class="bi bi-info-circle"></i>
+    Tu tarifa plana: <strong>$ {{ "{:,.0f}".format(usuario.cuota_fija).replace(',', '.') if usuario.cuota_fija else '0' }}</strong> por guía.
+</p>
+                    </div>
+                    <div class="col-md-5 text-end border-start border-white border-opacity-25">
+                        <i class="bi bi-wallet2 display-3 opacity-50 mb-3 d-block text-white"></i>
+                        
+                        {% if saldo < 12000 %}
+                            <button class="btn btn-light text-danger fw-bold w-100 shadow-sm" onclick="mostrarPlanes()">
+                                <i class="bi bi-lightning-charge-fill"></i> RECARGAR AHORA
+                            </button>
+                        {% else %}
+                            <a href="/envios/nuevo" class="btn btn-orange w-100 shadow-sm text-white">
+                                <i class="bi bi-plus-circle me-1"></i> NUEVO ENVÍO
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="upgrade-banner">
+        <div class="text-start">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-gem text-orange"></i> ¡Lleva tus envíos al siguiente nivel!</h5>
+            <p class="small mb-0 opacity-75">Descubre beneficios exclusivos adquiriendo un plan hoy mismo.</p>
+        </div>
+        <button class="btn-orange" onclick="mostrarPlanes()">Adquirir Plan</button>
+    </div>
+
+    <div id="seccionPlanes" class="planes-selector">
+        <h3 class="section-title mb-4">Planes Disponibles</h3>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="plan-mini-card">
+                    <h5 class="fw-bold">BRONCE</h5>
+                    <p class="small opacity-50">Plan Básico</p>
+                    <a href="/planes/detallado/bronce" class="btn btn-outline-light btn-sm w-100">Ver Detalle</a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="plan-mini-card">
+                    <h5 class="fw-bold">PLATA</h5>
+                    <p class="small opacity-50">Plan Estándar</p>
+                    <a href="/planes/detallado/plata" class="btn btn-outline-light btn-sm w-100">Ver Detalle</a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="plan-mini-card" style="border-color: var(--accent-orange);">
+                    <h5 class="fw-bold text-orange">ORO</h5>
+                    <p class="small opacity-50">Plan Premium</p>
+                    <a href="/planes/detallado/oro" class="btn btn-orange btn-sm w-100">Ver Detalle</a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="plan-mini-card">
+                    <h5 class="fw-bold">DIAMANTE</h5>
+                    <p class="small opacity-50">Plan Elite</p>
+                    <a href="/planes/detallado/diamante" class="btn btn-outline-light btn-sm w-100">Ver Detalle</a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -181,89 +280,51 @@
             <div class="quick-card">
                 <i class="bi bi-geo-alt fs-1"></i>
                 <h5 class="mt-3 fw-bold">Rastrear</h5>
-                <p class="small opacity-50">Localiza tu paquete</p>
-                <a href="/seguimiento" class="btn btn-orange w-100">
-                    Ir ahora
-                </a>
+                <a href="/seguimiento" class="btn btn-orange w-100 text-white">Ir ahora</a>
             </div>
         </div>
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-plus-square fs-1"></i>
                 <h5 class="mt-3 fw-bold">Nuevo Envío</h5>
-                <p class="small opacity-50">Crea una solicitud</p>
-                <a href="/envios/nuevo" class="btn btn-orange w-100">
-                    Crear
-                </a>
+                <a href="/envios/nuevo" class="btn btn-orange w-100 text-white">Crear</a>
             </div>
         </div>
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-collection fs-1"></i>
                 <h5 class="mt-3 fw-bold">Mis Guías</h5>
-                <p class="small opacity-50">Historial de envíos</p>
-                <a href="/envios" class="btn btn-orange w-100">
-                    Ver todas
-                </a>
+                <a href="/envios/mis-guias" class="btn btn-orange w-100 text-white">Ver todas</a>
             </div>
         </div>
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-gear fs-1"></i>
                 <h5 class="mt-3 fw-bold">Mi Perfil</h5>
-                <p class="small opacity-50">Ajustes de cuenta</p>
-                <a href="/perfil" class="btn btn-orange w-100">
-                    Gestionar
-                </a>
+                <a href="/perfil" class="btn btn-orange w-100 text-white">Gestionar</a>
             </div>
         </div>
-    </div>
-</section>
-
-<section class="container py-5">
-    <h2 class="fw-bold mb-4 section-title"><i class="bi bi-star-fill"></i> Servicios Premium</h2>
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="quick-card h-100">
-                <i class="bi bi-send-check fs-1"></i>
-                <h4 class="mt-3">Express</h4>
-                <p class="opacity-75">Prioridad máxima para documentos y paquetes pequeños.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="quick-card h-100">
-                <i class="bi bi-truck fs-1"></i>
-                <h4 class="mt-3">Carga Pesada</h4>
-                <p class="opacity-75">Transporte especializado para mercancía de gran volumen.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="quick-card h-100">
-                <i class="bi bi-headset fs-1"></i>
-                <h4 class="mt-3">Soporte 24/7</h4>
-                <p class="opacity-75">Atención personalizada para todas tus necesidades logísticas.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="container text-center py-5">
-    <div class="p-5 rounded-4" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,140,0,0.2);">
-        <h2 class="fw-bold section-title mb-3">¿Necesitas ayuda inmediata?</h2>
-        <p class="mb-4">Nuestro equipo de soporte técnico está disponible para asistirte por WhatsApp.</p>
-        <a href="https://wa.me/573203460836" class="btn btn-orange btn-lg px-5" target="_blank">
-            <i class="bi bi-whatsapp"></i> Chat de Soporte
-        </a>
     </div>
 </section>
 
 <footer class="text-center">
     <div class="container">
-        <p class="mb-0 opacity-50">© 2026 ENVIEXPRESS – Gestión Logística Profesional</p>
+        <p class="mb-0 opacity-50 text-white">© 2026 ENVIEXPRESS – Gestión Logística Profesional</p>
         <small class="text-orange fw-bold">Bogotá, Colombia</small>
     </div>
 </footer>
 
+<script>
+    function mostrarPlanes() {
+        const seccion = document.getElementById('seccionPlanes');
+        if (seccion.style.display === 'block') {
+            seccion.style.display = 'none';
+        } else {
+            seccion.style.display = 'block';
+            seccion.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

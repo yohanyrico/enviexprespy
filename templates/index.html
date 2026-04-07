@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.css" rel="stylesheet" />
-<script src="https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.js"></script>
     <style>
     /* VARIABLES DE COLOR PARA FÁCIL EDICIÓN */
     :root {
@@ -35,10 +35,25 @@
         backdrop-filter: blur(15px); 
         background: rgba(0, 45, 112, 0.8); 
         border-bottom: 2px solid var(--naranja); 
-        padding: 15px 0; 
+        padding: 10px 0; 
     }
-    .navbar-brand { font-size: 1.8rem; font-weight: 800; color: var(--blanco); }
-    .navbar-brand span { color: var(--naranja); }
+    
+    /* LOGO INTEGRADO EN NAVBAR */
+    .navbar-brand { 
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.9rem; 
+        font-weight: 800; 
+        color: var(--naranja) !important; 
+    }
+    .navbar-brand img {
+        height: 100px;
+        width: auto;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .navbar-brand span { color: var(--blanco); }
 
     .btn-login { 
         background: transparent; 
@@ -63,15 +78,16 @@
     .btn-registro:hover { background: var(--naranja-hover); transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 123, 0, 0.4); }
 
     /* HERO - Títulos potentes */
-    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; padding: 100px 20px 50px; }
+    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; padding: 120px 20px 50px; }
     .hero-title { 
         font-size: 4rem; 
         font-weight: 900; 
         text-shadow: 0 0 20px rgba(0,0,0,0.2); 
         color: var(--blanco); 
-        margin-bottom: 20px; 
+        margin-bottom: 10px; 
     }
     .hero-title span { color: var(--naranja); }
+    .hero-tagline { font-size: 1.2rem; font-weight: 600; color: var(--naranja); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
     .hero-subtitle { font-size: 1.5rem; color: rgba(255,255,255,0.9); margin-bottom: 40px; font-weight: 300; }
 
     /* BOTONES HERO */
@@ -93,6 +109,7 @@
         backdrop-filter: blur(10px); 
     }
     .quick-track h4 { color: var(--blanco); margin-bottom: 20px; font-weight: 600; }
+    .track-input-group { display: flex; gap: 10px; }
     .track-input { 
         flex: 1; 
         padding: 15px; 
@@ -121,6 +138,9 @@
     .feature-icon { font-size: 2.5rem; color: var(--naranja); min-width: 60px; }
     .feature-content h5 { color: var(--azul-rey); margin-bottom: 5px; font-weight: 600; }
 
+    /* CTA SECTION */
+    .cta-section { padding: 80px 20px; text-align: center; background: rgba(0,0,0,0.2); }
+
     /* FOOTER */
     .footer { padding: 40px 20px; background: var(--azul-oscuro); border-top: 4px solid var(--naranja); text-align: center; color: var(--blanco); }
     .footer-links a { color: var(--blanco); text-decoration: none; transition: 0.3s; margin: 0 10px; }
@@ -130,17 +150,19 @@
 
     @media (max-width: 768px) {
         .hero-title { font-size: 2.5rem; }
-        .hero-buttons { flex-direction: column; }
+        .hero-buttons { display: flex; flex-direction: column; gap: 15px; }
         .track-input-group { flex-direction: column; }
     }
 </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand text-success" href="/">ENVI<span class="text-light">EXPRESS</span></a>
+        <a class="navbar-brand">
+            <img src="{{ url_for('static', path='/img/hero-enviexpress.jpg') }}" alt="EnviExpress Logo">
+            ENVI<span>EXPRESS</span>
+        </a>
         <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -150,7 +172,6 @@
                 <li class="nav-item"><a class="nav-link" href="#caracteristicas">Características</a></li>
                 <li class="nav-item"><a class="nav-link" href="/seguimiento">Rastrear</a></li>
                 <li class="nav-item">
-                    <!-- Equivalente a th:href="@{/login}" -->
                     <a href="/login" class="btn btn-login">
                         <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
                     </a>
@@ -165,14 +186,14 @@
     </div>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
     <div class="container">
+        <p class="hero-tagline">Tu mejor aliado</p>
         <h1 class="hero-title"><i class="bi bi-lightning-fill"></i> EnviExpress</h1>
         <p class="hero-subtitle">Envíos rápidos, seguros y confiables en toda Colombia</p>
 
-        <div class="hero-buttons">
-            <a href="/registro" class="btn-hero btn-primary-hero">
+        <div class="hero-buttons mb-5">
+            <a href="/registro" class="btn-hero btn-primary-hero me-md-3">
                 <i class="bi bi-rocket-takeoff"></i> Comenzar Ahora
             </a>
             <a href="#servicios" class="btn-hero btn-secondary-hero">
@@ -180,14 +201,12 @@
             </a>
         </div>
 
-        <!-- Rastreo Rápido -->
         <div class="quick-track">
             <h4><i class="bi bi-search"></i> Rastrear mi Envío</h4>
-            <!-- Equivalente a th:action="@{/seguimiento/buscar}" -->
             <form action="/seguimiento/buscar" method="post">
                 <div class="track-input-group">
                     <input type="text" name="numeroGuia" class="track-input"
-                        placeholder="Ingresa tu número de guía (ej: ENV123456)"
+                        placeholder="Ingresa tu número de guía"
                         required maxlength="20" pattern="[A-Za-z0-9]+"
                         title="Solo letras y números" />
                     <button type="submit" class="btn-track">
@@ -199,7 +218,6 @@
     </div>
 </section>
 
-<!-- SERVICIOS -->
 <section class="servicios" id="servicios">
     <div class="container">
         <h2 class="section-title">Nuestros Servicios</h2>
@@ -215,7 +233,7 @@
                 <div class="servicio-card">
                     <i class="bi bi-truck servicio-icon"></i>
                     <h3>Estándar</h3>
-                    <p>Envíos confiables de 2 a 5 días hábiles a precios accesibles.</p>
+                    <p>Envíos confiables 24 horas hábiles a precios accesibles.</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -229,7 +247,6 @@
     </div>
 </section>
 
-<!-- CARACTERÍSTICAS -->
 <section class="caracteristicas" id="caracteristicas">
     <div class="container">
         <h2 class="section-title">¿Por qué EnviExpress?</h2>
@@ -266,34 +283,32 @@
     </div>
 </section>
 
-<!-- CTA -->
 <section class="cta-section">
     <div class="container">
         <h2><i class="bi bi-box-seam"></i> ¿Listo para enviar?</h2>
         <p>Únete a miles de clientes satisfechos que confían en EnviExpress</p>
-        <a href="/registro" class="btn-hero btn-primary-hero">
+        <a href="/registro" class="btn-hero btn-primary-hero mt-3">
             <i class="bi bi-rocket-takeoff"></i> Crear Cuenta Gratis
         </a>
     </div>
 </section>
 
-<!-- FOOTER -->
 <footer class="footer">
     <div class="container">
-        <div class="footer-links">
+        <div class="footer-links mb-4">
             <a href="#servicios">Servicios</a>
             <a href="#caracteristicas">Características</a>
             <a href="/seguimiento">Rastrear Envío</a>
             <a href="/login">Iniciar Sesión</a>
             <a href="/registro">Registrarse</a>
         </div>
-        <div class="social-icons">
+        <div class="social-icons mb-4">
             <a href="https://wa.me/573203460836" target="_blank"><i class="bi bi-whatsapp"></i></a>
             <a href="#" target="_blank"><i class="bi bi-facebook"></i></a>
             <a href="#" target="_blank"><i class="bi bi-instagram"></i></a>
             <a href="#" target="_blank"><i class="bi bi-twitter"></i></a>
         </div>
-        <p class="mb-0">&copy; 2025 EnviExpress. Todos los derechos reservados.</p>
+        <p class="mb-0">&copy; 2026 EnviExpress. Todos los derechos reservados.</p>
         <small class="text-muted">Sistema de Gestión de Envíos Profesional</small>
     </div>
 </footer>

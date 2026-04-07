@@ -51,6 +51,26 @@
             margin-top: 10px;
         }
 
+        /* --- NUEVA CASILLA DEL PLAN ADQUIRIDO --- */
+        .plan-box {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 30px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .plan-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--accent-orange); display: block; margin-bottom: 2px; letter-spacing: 1px; }
+        .plan-name { font-size: 1.3rem; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        /* Colores específicos por nombre de plan */
+        .plan-bronce { border-color: #cd7f32 !important; color: #cd7f32 !important; }
+        .plan-plata { border-color: #c0c0c0 !important; color: #c0c0c0 !important; }
+        .plan-oro { border-color: #ffd700 !important; color: #ffd700 !important; }
+        .plan-diamante { border-color: #b9f2ff !important; color: #b9f2ff !important; text-shadow: 0 0 10px rgba(185,242,255,0.5); }
+        /* ---------------------------------------- */
+
         .detalle-body { padding: 40px; }
 
         .info-section { 
@@ -89,6 +109,10 @@
             color: white; border: none; padding: 14px 30px;
             font-weight: bold; text-transform: uppercase;
             border-radius: 12px; transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-orange:hover {
@@ -122,6 +146,27 @@
         <div class="detalle-header">
             <h2><i class="bi bi-receipt"></i> RESUMEN DE GUÍA</h2>
             <div class="guia-badge">{{ envio.numero_guia }}</div>
+            
+            <br>
+            {% if envio.tarifa %}
+                {% set plan_nombre = envio.tarifa.nombre.upper() %}
+                <div class="plan-box 
+                    {% if 'BRONCE' in plan_nombre %}plan-bronce
+                    {% elif 'PLATA' in plan_nombre %}plan-plata
+                    {% elif 'ORO' in plan_nombre %}plan-oro
+                    {% elif 'DIAMANTE' in plan_nombre %}plan-diamante
+                    {% endif %}">
+                    <span class="plan-label">Plan Adquirido</span>
+                    <span class="plan-name">
+                        <i class="bi bi-gem"></i> {{ plan_nombre }}
+                    </span>
+                </div>
+            {% else %}
+                <div class="plan-box">
+                    <span class="plan-label">Plan Adquirido</span>
+                    <span class="plan-name">ESTÁNDAR</span>
+                </div>
+            {% endif %}
         </div>
 
         <div class="detalle-body">
@@ -148,7 +193,7 @@
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="info-label">Tipo de Envío:</div>
+                                <div class="info-label">Tipo de Servicio:</div>
                                 <div class="info-value">
                                     <span class="text-uppercase fw-bold text-info">{{ envio.tipo_servicio }}</span>
                                 </div>
@@ -232,10 +277,14 @@
                 <a href="/envios/imprimir/{{ envio.envio_id }}" target="_blank" class="btn btn-orange">
                     <i class="bi bi-printer"></i> Imprimir Guía
                 </a>
-                <a href="/envios/editar/{{ envio.envio_id }}" class="btn btn-outline-light" style="border-radius: 12px;">
+                
+                {% if rol == 'ADMIN' or envio.estado == 'Registrado' %}
+                <a href="/envios/editar/{{ envio.envio_id }}" class="btn btn-outline-light d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px;">
                     <i class="bi bi-pencil"></i> Modificar
                 </a>
-                <a href="/envios" class="btn btn-link text-white opacity-50 text-decoration-none">
+                {% endif %}
+
+                <a href="{{ '/envios' if rol == 'ADMIN' else '/envios/mis-guias' }}" class="btn btn-link text-white opacity-50 text-decoration-none">
                     <i class="bi bi-arrow-left"></i> Volver al listado
                 </a>
             </div>

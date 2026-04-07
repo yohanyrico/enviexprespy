@@ -40,30 +40,42 @@
         display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
       }
       
-      .table-container { background: var(--transparencia-blanca); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 15px; padding: 20px; backdrop-filter: blur(10px); }
-      .table { width: 100%; color: var(--blanco); background: transparent; }
-      .table thead th { color: var(--naranja); font-weight: 700; border-bottom: 2px solid var(--naranja); padding: 15px; text-transform: uppercase; font-size: 0.85rem; }
-      .table tbody td { padding: 15px; vertical-align: middle; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-
-      /* COLORES DINÁMICOS POR NOMBRE */
-      .badge-tarifa {
-        padding: 8px 15px; border-radius: 8px; font-weight: 800; text-transform: uppercase;
-        font-size: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2);
-        display: inline-flex; align-items: center; justify-content: center; min-width: 140px;
+      .planes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
       }
-      .t-bronce { background: #cd7f32; color: #fff; }
-      .t-plata { background: #c0c0c0; color: #000; }
-      .t-oro { background: #ffd700; color: #000; }
-      .t-diamante { background: #b9f2ff; color: #002b5b; box-shadow: 0 0 10px rgba(185, 242, 255, 0.5); }
-      .t-nacional { background: #4caf50; color: #fff; }
-      .t-default { background: #6c757d; color: #fff; }
-      
-      .btn-edit-custom { background-color: var(--btn-editar); color: white !important; padding: 8px 12px; border-radius: 8px; transition: 0.3s; text-decoration: none; display: inline-flex; }
-      .btn-delete-custom { background-color: var(--btn-eliminar); color: white !important; padding: 8px 12px; border-radius: 8px; transition: 0.3s; text-decoration: none; display: inline-flex; }
-      .btn-edit-custom:hover, .btn-delete-custom:hover { transform: scale(1.1); filter: brightness(1.2); }
-      .precio-highlight { color: #4ade80; font-weight: 800; font-size: 1.1rem; }
 
-      /* MODAL */
+      .plan-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        transition: 0.4s;
+        backdrop-filter: blur(10px);
+      }
+
+      .plan-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--naranja);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      }
+
+      .plan-bronce { border-top: 5px solid #cd7f32; }
+      .plan-plata { border-top: 5px solid #c0c0c0; }
+      .plan-oro { border-top: 5px solid #ffd700; }
+      .plan-diamante { border-top: 5px solid #b9f2ff; box-shadow: 0 0 15px rgba(185, 242, 255, 0.1); }
+      .plan-nacional { border-top: 5px solid #4caf50; }
+
+      .plan-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; color: var(--blanco); }
+      .plan-desc { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 20px; min-height: 45px; line-height: 1.4; }
+      .plan-price { font-size: 2.2rem; font-weight: 800; color: var(--naranja); margin-bottom: 15px; }
+      .plan-features { list-style: none; padding: 0; text-align: left; margin-bottom: 25px; font-size: 0.85rem; }
+      .plan-features li { margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+      .plan-features i { color: #4ade80; }
+
       .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 9999; align-items: center; justify-content: center; }
       .modal-overlay.open { display: flex; }
       .modal-card { background: #0f172a; border: 1px solid var(--naranja); border-radius: 18px; padding: 30px; width: 90%; max-width: 450px; position: relative; }
@@ -74,7 +86,7 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
       <div class="container">
-        <a class="navbar-brand fw-bold fs-3 text-success" href="/home">ENVI<span class="text-light">EXPRESS</span></a>
+          <a class="navbar-brand fw-bold fs-3" href="/home" style="color: var(--naranja);">ENVI<span style="color: var(--blanco);">EXPRESS</span></a>
         <div class="ms-auto d-flex gap-2">
           <a href="/home" class="btn btn-outline-light btn-sm"><i class="bi bi-house-fill"></i></a>
         </div>
@@ -82,55 +94,71 @@
     </nav>
 
     <div class="container">
-      <h1 class="title-glow"><i class="bi bi-currency-dollar"></i> Tarifas</h1>
+      <h1 class="title-glow"><i class="bi bi-box-seam"></i> Nuestros Planes</h1>
 
       <div class="actions-bar">
         <a class="btn-naranja" href="/tarifas/nueva"><i class="bi bi-plus-circle-fill"></i> Nueva Tarifa</a>
         <button class="btn btn-outline-warning fw-bold" onclick="abrirModal()" style="border-radius:10px; padding: 10px 20px;"><i class="bi bi-file-earmark-bar-graph"></i> Generar Reporte</button>
       </div>
 
-      <div class="table-container">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle" id="tablaTarifas">
-            <thead>
-              <tr>
-                <th class="text-center">ID</th>
-                <th class="text-center">Tipo de Envío</th>
-                <th class="text-center">Precio por Kg</th>
-                <th class="text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for t in tarifas %}
-                <tr>
-                  <td class="text-center fw-bold">{{ t.id }}</td>
-                  <td class="text-center">
-                    {% set n = t.nombre|lower if t.nombre else '' %}
-                    <span class="badge-tarifa 
-                        {% if 'bronce' in n %}t-bronce
-                        {% elif 'plata' in n %}t-plata
-                        {% elif 'oro' in n %}t-oro
-                        {% elif 'diamante' in n %}t-diamante
-                        {% elif 'nacional' in n %}t-nacional
-                        {% else %}t-default{% endif %}">
-                      <i class="bi bi-tag-fill me-2"></i> {{ t.nombre if t.nombre else 'SIN NOMBRE' }}
-                    </span>
-                  </td>
-                  <td class="text-center">
-                    <span class="precio-highlight">${{ '{:,.0f}'.format(t.precio_kg) }}</span>
-                  </td>
-                  <td class="text-center">
-                    <div class="d-flex gap-2 justify-content-center">
-                      <a class="btn-edit-custom" href="/tarifas/editar/{{ t.id }}"><i class="bi bi-pencil-fill"></i></a>
-                      <a class="btn-delete-custom" href="/tarifas/eliminar/{{ t.id }}" onclick="return confirm('¿Está seguro de eliminar esta tarifa?')"><i class="bi bi-trash-fill"></i></a>
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+      <div class="planes-grid">
+        {% for t in tarifas %}
+          {% set n = t.nombre|lower if t.nombre else '' %}
+          <div class="plan-card 
+            {% if 'bronce' in n %}plan-bronce
+            {% elif 'plata' in n %}plan-plata
+            {% elif 'oro' in n %}plan-oro
+            {% elif 'diamante' in n %}plan-diamante
+            {% elif 'nacional' in n %}plan-nacional
+            {% else %}plan-default{% endif %}">
+            
+            <div class="plan-title">
+              {% if 'bronce' in n %}Plan Bronce
+              {% elif 'plata' in n %}Plan Plata
+              {% elif 'oro' in n %}Plan Oro
+              {% elif 'diamante' in n %}Plan Diamante
+              {% elif 'nacional' in n %}Plan Raíces
+              {% else %}{{ t.nombre }}{% endif %}
+            </div>
+
+            <p class="plan-desc">
+              {% if 'bronce' in n %}Plan Básico: Sencillo, económico, ideal para envíos ocasionales.
+              {% elif 'plata' in n %}Plan Estándar: Balance entre precio y beneficios para usuarios frecuentes.
+              {% elif 'oro' in n %}Plan Premium: Mayor rapidez y ventajas exclusivas de alta calidad.
+              {% elif 'diamante' in n %}Plan Elite: El nivel más alto, con beneficios VIP y máxima prioridad.
+              {% elif 'nacional' in n %}Plan Colombia: Enfocado en envíos nacionales con identidad local.
+              {% else %}Tarifa especial personalizada para tus necesidades.{% endif %}
+            </p>
+
+            <div class="plan-price">${{ '{:,.0f}'.format(t.precio_kg) }}</div>
+
+            <ul class="plan-features">
+                <li><i class="bi bi-check-circle-fill"></i> 
+                    {% if 'bronce' in n %}Hasta 10 envíos incluidos{% elif 'plata' in n %}Hasta 30 envíos incluidos{% elif 'oro' in n %}Hasta 50 envíos incluidos{% elif 'diamante' in n %}Hasta 100 envíos incluidos{% else %}Envíos ilimitados{% endif %}
+                </li>
+                <li><i class="bi bi-check-circle-fill"></i> Rastreo en tiempo real</li>
+                <li><i class="bi bi-check-circle-fill"></i> Soporte prioritario</li>
+            </ul>
+
+            <div class="d-flex gap-2 justify-content-center">
+                <a class="btn btn-sm btn-primary w-100 fw-bold" href="/tarifas/editar/{{ t.id }}" style="border-radius: 8px;"><i class="bi bi-pencil-square"></i> Editar</a>
+                <a class="btn btn-sm btn-danger fw-bold" href="/tarifas/eliminar/{{ t.id }}" onclick="return confirm('¿Eliminar plan?')" style="border-radius: 8px;"><i class="bi bi-trash"></i></a>
+            </div>
+          </div>
+        {% endfor %}
       </div>
+
+      <table class="table" id="tablaTarifas" style="display: none;">
+        <tbody>
+          {% for t in tarifas %}
+          <tr>
+            <td>{{ t.id }}</td>
+            <td>{{ t.nombre }}</td>
+            <td>${{ t.precio_kg }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
     <div class="modal-overlay" id="modalReporte">
@@ -162,9 +190,9 @@
       function exportarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text('Tarifario Oficial - EnviExpress', 14, 15);
+        doc.text('Listado de Planes y Tarifas - EnviExpress', 14, 15);
         doc.autoTable({
-          head: [['ID', 'Tipo de Servicio', 'Precio x Kg']],
+          head: [['ID', 'Nombre del Plan', 'Costo']],
           body: leerDatos(),
           startY: 20,
           headStyles: { fillColor: [255, 140, 0] }
@@ -174,12 +202,12 @@
       }
       
       function exportarCSV() {
-        let csv = 'ID,Nombre,Precio_Kg\n';
+        let csv = 'ID,Nombre_Plan,Costo\n';
         leerDatos().forEach((row) => (csv += row.join(',') + '\n'));
         const blob = new Blob([csv], { type: 'text/csv' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'tarifas.csv';
+        a.download = 'tarifas_planes.csv';
         a.click();
         cerrarModal();
       }

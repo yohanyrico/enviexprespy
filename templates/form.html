@@ -177,13 +177,29 @@
                        placeholder="correo@ejemplo.com" required maxlength="120" />
             </div>
 
-            <div class="mb-3">
-                <label for="telefono" class="form-label">
-                    <i class="bi bi-telephone-fill"></i> Teléfono de contacto:
-                </label>
-                <input type="tel" class="form-control" name="telefono" id="telefono"
-                       value="{{ usuario.telefono if usuario else '' }}"
-                       placeholder="Ej: 3001234567" maxlength="20" />
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="telefono" class="form-label">
+                        <i class="bi bi-telephone-fill"></i> Teléfono de contacto:
+                    </label>
+                    <input type="tel" class="form-control" name="telefono" id="telefono"
+                           value="{{ usuario.telefono if usuario else '' }}"
+                           placeholder="Ej: 3001234567" maxlength="20" />
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="tarifa_id" class="form-label">
+                        <i class="bi bi-gem"></i> Plan Adquirido:
+                    </label>
+                    <select class="form-select" name="tarifa_id" id="tarifa_id">
+                        <option value="">Sin plan asignado</option>
+                        {% for t in tarifas %}
+                        <option value="{{ t.id }}" {{ 'selected' if usuario and usuario.tarifa_id == t.id else '' }}>
+                            {{ t.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
             {% if rol == 'ADMIN' %}

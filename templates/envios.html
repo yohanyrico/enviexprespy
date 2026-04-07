@@ -14,8 +14,6 @@
             --naranja-vibrante: #ff8c00; --blanco: #ffffff;
             --bg-glass: rgba(255, 255, 255, 0.05);
             --btn-editar: #0d6efd; --btn-eliminar: #dc3545;
-            /* Colores de Tarifas */
-            --bronce: #cd7f32; --plata: #c0c0c0; --oro: #ffd700; --diamante: #b9f2ff; --nacional: #4caf50;
         }
         body {
             background: linear-gradient(135deg, var(--azul-profundo), var(--azul-medio), var(--azul-oscuro));
@@ -44,12 +42,18 @@
         .btn-delete-custom { background-color: var(--btn-eliminar); }
         .btn-view-custom { background: rgba(255, 140, 0, 0.2); border: 1px solid var(--naranja-vibrante); color: var(--naranja-vibrante) !important; }
 
-        .badge-tarifa { padding: 5px 10px; border-radius: 6px; font-weight: 800; text-transform: uppercase; font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.2); }
-        .t-bronce { background: var(--bronce); color: #fff; }
-        .t-plata { background: var(--plata); color: #000; }
-        .t-oro { background: var(--oro); color: #000; }
-        .t-diamante { background: var(--diamante); color: #000; box-shadow: 0 0 10px var(--diamante); }
-        .t-nacionales { background: var(--nacional); color: #fff; }
+        /* Badge de Localidad Estilizado */
+        .badge-localidad { 
+            background: rgba(255, 140, 0, 0.1); 
+            color: var(--naranja-vibrante); 
+            border: 1px solid var(--naranja-vibrante);
+            padding: 5px 10px; 
+            border-radius: 6px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            font-size: 0.75rem;
+            display: inline-block;
+        }
 
         .table { background: var(--bg-glass); border-radius: 10px; overflow: hidden; color: var(--blanco); width: 100%; border-collapse: collapse; }
         .table thead { background: rgba(255, 255, 255, 0.1); color: var(--naranja-vibrante); font-weight: 700; border-bottom: 2px solid var(--naranja-vibrante); }
@@ -68,7 +72,6 @@
             <div class="d-flex gap-2 align-items-center">
                 <a class="btn btn-neon" href="/envios/nuevo"><i class="bi bi-plus-circle"></i> Nuevo</a>
                 
-                {# --- HERRAMIENTAS EXCLUSIVAS ADMIN --- #}
                 {% if rol == 'ADMIN' %}
                 <form action="/envios/planificar-ruta" method="POST" style="margin:0;">
                     <button type="submit" class="btn btn-neon">
@@ -87,8 +90,8 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="#" onclick="descargar('excel')">
-                                <i class="bi bi-file-excel text-success"></i> Exportar a Excel/CSV
+                            <a class="dropdown-item" href="#" onclick="descargar('csv')">
+                                <i class="bi bi-file-earmark-spreadsheet text-success"></i> Exportar a CSV
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
@@ -105,7 +108,6 @@
             </div>
             
             <div class="d-flex gap-2 align-items-center">
-                {# --- ASIGNACIÓN EXCLUSIVA ADMIN --- #}
                 {% if rol == 'ADMIN' %}
                 <select id="mensajeroSelect" class="form-select bg-dark text-white border-warning w-auto">
                     <option value="">Asignar Mensajero...</option>
@@ -117,7 +119,6 @@
                 <button class="btn btn-neon text-danger border-danger" onclick="quitarMasivo()" title="Quitar de Ruta"><i class="bi bi-person-x-fill"></i></button>
                 {% endif %}
 
-                {# --- BOTÓN HOME (ACCESIBLE PARA TODOS) --- #}
                 <a class="btn btn-neon" href="/home"><i class="bi bi-house-fill"></i></a>
             </div>
         </div>
@@ -129,7 +130,7 @@
                         <th class="text-center"><input class="form-check-input" type="checkbox" id="selectAll"></th>
                         <th>Guía</th>
                         <th>Cliente</th>
-                        <th>Tarifa</th>
+                        <th class="text-center">Localidad</th>
                         <th>Mensajero</th>
                         <th>Origen → Destino</th>
                         <th>Estado</th>
@@ -144,20 +145,15 @@
                         </td>
                         <td><span class="guia-text">{{ e.numero_guia }}</span></td>
                         <td>{{ e.cliente.nombre if e.cliente else 'N/A' }}</td>
-                        <td>
-                            {% if e.tarifa %}
-                                {% set t_nom = e.tarifa.nombre.lower() if e.tarifa.nombre else '' %}
-                                <span class="badge-tarifa 
-                                    {% if 'bronce' in t_nom %}t-bronce
-                                    {% elif 'plata' in t_nom %}t-plata
-                                    {% elif 'oro' in t_nom %}t-oro
-                                    {% elif 'diamante' in t_nom %}t-diamante
-                                    {% elif 'nacional' in t_nom %}t-nacionales
-                                    {% else %}t-default{% endif %}">
-                                    {{ e.tarifa.nombre }}
+                        <td class="text-center">
+                            {% set ref = e.lugar_entrega.referencia.upper() if e.lugar_entrega else '' %}
+                            {% if 'LOCALIDAD:' in ref %}
+                                <span class="badge-localidad">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>
+                                    {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim }}
                                 </span>
                             {% else %}
-                                <span class="badge bg-secondary">Sin Tarifa</span>
+                                <span class="text-muted small">BOGOTÁ D.C.</span>
                             {% endif %}
                         </td>
                         <td>{{ e.mensajero.nombre if e.mensajero else 'Sin asignar' }}</td>
@@ -226,12 +222,9 @@
         }
 
         function descargar(formato) {
-            const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked'))
-                             .map(cb => cb.value);
-            
+            const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
             let url = `/envios/reporte?formato=${formato}`;
             if (ids.length > 0) url += `&ids=${ids.join(',')}`;
-            
             window.location.href = url;
         }
     </script>

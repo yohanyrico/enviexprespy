@@ -1,10 +1,15 @@
 import os
+import uvicorn
 from fastapi import FastAPI
-from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+
+# Importar configuración de DB y Templates
 from app.config.database import engine, Base, SessionLocal
 from app.config.data_initializer import init_database
+# IMPORTANTE: Usamos la configuración centralizada de templates para evitar errores
+from app.config.templates import templates 
+from fastapi.staticfiles import StaticFiles
 
 # Importar los routers
 from app.controllers.LandingController import router as landing_router
@@ -15,41 +20,33 @@ from app.controllers.VehiculoController import router as vehiculo_router
 from app.controllers.TarifaController import router as tarifa_router
 from app.controllers.SeguimientoController import router as seguimiento_router
 from app.controllers.RutaController import router as ruta_router 
-from app.controllers.AppMensajeroController import router as app_mensajero_router # <--- NUEVO
-
-# Importar modelos
-from app.models.Usuario import Usuario
-from app.models.Envio import Envio
-from app.models.Lugar import Lugar
-from app.models.Ruta import Ruta
-from app.models.Seguimiento import Seguimiento
-from app.models.Tarifa import Tarifa
-from app.models.Vehiculo import Vehiculo
-
-# Configuración de templates
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+from app.controllers.AppMensajeroController import router as app_mensajero_router
+from app.controllers import UsuarioController
 
 app = FastAPI(
     title="EnvíExpress API",
-    description="Sistema de gestión de envíos",
+    description="Sistema de gestión de envíos y logística profesional",
     version="1.0.0"
 )
 
-# Middlewares
-app.add_middleware(SessionMiddleware, secret_key="tu_clave_secreta_muy_segura")
+app.include_router(UsuarioController.router, prefix="/envios")
+# --- Middlewares ---
+# Secret key debe ser consistente para mantener sesiones de usuario
+app.add_middleware(SessionMiddleware, secret_key="enviexpress_super_secret_key_2026")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Permitir que Flutter se conecte
+    allow_origins=["*"], # Correcto para desarrollo con Flutter
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Crear tablas
+# --- Base de Datos ---
+# Crea las tablas si no existen
 Base.metadata.create_all(bind=engine)
 
-# Incluir rutas
+# --- Inclusión de Routers ---
 app.include_router(landing_router)
 app.include_router(home_router)
 app.include_router(usuario_router)
@@ -58,19 +55,23 @@ app.include_router(vehiculo_router)
 app.include_router(tarifa_router)
 app.include_router(seguimiento_router)
 app.include_router(ruta_router)
-app.include_router(app_mensajero_router) # <--- NUEVO: Registro de la ruta para la App
+app.include_router(app_mensajero_router)
 
+# --- Eventos de Ciclo de Vida ---
 @app.on_event("startup")
 def startup_event():
+    """Inicializa datos base (roles, estados, etc.) al arrancar"""
     db = SessionLocal()
     try:
         init_database(db)
     finally:
         db.close()
+        
+        app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
+# --- Ejecución del Servidor ---
 if __name__ == "__main__":
-    import uvicorn
-    # Puerto 8080 según tu configuración
+    # Puerto 8080 coincide con tu entorno de desarrollo
     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
     
     #uvicorn main:app --reload --port 8080
