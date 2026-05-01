@@ -3,65 +3,127 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Envíos – EnviExpress</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet" />
 
+    <script>
+        (function () {
+            history.pushState(null, null, window.location.href);
+            window.addEventListener("popstate", function () {
+                history.pushState(null, null, window.location.href);
+            });
+            window.addEventListener("pageshow", function (event) {
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
+
     <style>
         :root {
-            --azul-profundo: #002b5b; --azul-medio: #004085; --azul-oscuro: #001a33;
-            --naranja-vibrante: #ff8c00; --blanco: #ffffff;
-            --bg-glass: rgba(255, 255, 255, 0.05);
-            --btn-editar: #0d6efd; --btn-eliminar: #dc3545;
+            --milano-red:    #B20C06;
+            --milano-hover:  #8E0A05;
+            --white:         #FDFFFF;
+            --chinese-black: #101010;
+            --slate-gray:    #738589;
+            --text-light:    #ffffff;
+            --bg-glass: rgba(0, 0, 0, 0.05);
         }
         body {
-            background: linear-gradient(135deg, var(--azul-profundo), var(--azul-medio), var(--azul-oscuro));
-            min-height: 100vh; padding: 30px; color: var(--blanco);
+            background-color: var(--white);
+            min-height: 100vh; padding: 30px; color: var(--chinese-black);
             font-family: 'Montserrat', sans-serif; margin: 0;
+            padding-top: 20px;
         }
-        h2 { text-align: center; font-size: 2.4rem; font-weight: 800; text-transform: uppercase; margin-bottom: 40px; }
-        
+        h2 { text-align: center; font-size: 2.4rem; font-weight: 800; text-transform: uppercase; margin-bottom: 40px; color: var(--chinese-black); }
+
         .btn-neon {
-            background: rgba(255, 140, 0, 0.1); border: 2px solid var(--naranja-vibrante);
-            color: var(--naranja-vibrante); font-weight: 700; border-radius: 12px;
+            background: var(--milano-red); border: none;
+            color: var(--text-light); font-weight: 700; border-radius: 12px;
             padding: 10px 20px; transition: 0.3s; text-decoration: none;
             display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
         }
-        .btn-neon:hover { background: var(--naranja-vibrante); color: var(--blanco); transform: translateY(-2px); box-shadow: 0 0 15px rgba(255,140,0,0.4); }
+        .btn-neon:hover { background: var(--milano-hover); color: var(--white); transform: translateY(-2px); box-shadow: 0 0 15px rgba(178,12,6,0.4); }
 
         .dropdown-menu-dark {
-            background-color: var(--azul-oscuro);
-            border: 1px solid var(--naranja-vibrante);
+            background-color: var(--chinese-black);
+            border: 1px solid var(--milano-red);
         }
-        .dropdown-item { color: var(--blanco); font-weight: 600; }
-        .dropdown-item:hover { background-color: var(--naranja-vibrante); color: white; }
+        .dropdown-item { color: var(--white); font-weight: 600; }
+        .dropdown-item:hover { background-color: var(--milano-red); color: white; }
 
         .btn-action-custom { border: none; padding: 6px 10px; border-radius: 8px; transition: 0.3s; color: white !important; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-        .btn-edit-custom { background-color: var(--btn-editar); }
-        .btn-delete-custom { background-color: var(--btn-eliminar); }
-        .btn-view-custom { background: rgba(255, 140, 0, 0.2); border: 1px solid var(--naranja-vibrante); color: var(--naranja-vibrante) !important; }
+        .btn-edit-custom { background-color: #0d6efd; }
+        .btn-delete-custom { background-color: var(--milano-red); }
+        .btn-view-custom { background: var(--slate-gray); }
 
-        /* Badge de Localidad Estilizado */
-        .badge-localidad { 
-            background: rgba(255, 140, 0, 0.1); 
-            color: var(--naranja-vibrante); 
-            border: 1px solid var(--naranja-vibrante);
-            padding: 5px 10px; 
-            border-radius: 6px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            font-size: 0.75rem;
-            display: inline-block;
+        .st-box { padding: 5px 10px; border-radius: 6px; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; display: inline-block; min-width: 130px; text-align: center; }
+        .bg-booking { background-color: #eaff00; color: #000; }
+        .bg-colectado { background-color: #057af7fd; color: #fff; }
+        .bg-ruta { background-color: #ff8c00; color: #fff; }
+        .bg-entregado { background-color: #28a745; color: #fff; }
+        .bg-cancelado { background-color: var(--milano-red); color: #fff; }
+        .bg-retorno { background-color: #6c757d; color: #fff; }
+        .bg-en_bodega { background-color: #a407ff; color: #edf1f5; }
+        .bg-devolucion { background-color: #7c2d0ee7; color: #fff; }
+        .bg-rechazado { background-color: #dc3545; color: #fff; }
+
+        .table { background: #fff; border-radius: 10px; overflow: hidden; color: var(--chinese-black); width: 100%; border-collapse: collapse; }
+        .table thead { background: var(--chinese-black); color: var(--white); font-weight: 700; }
+        .container-box { background: #fff; border: 1px solid rgba(0,0,0,0.1); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
+
+        .search-input { background: #fff; border: 2px solid var(--chinese-black); color: var(--chinese-black); border-radius: 10px; padding: 8px 15px; width: 250px; }
+        .guia-text { color: var(--milano-red); background: #fff; padding: 4px 8px; border-radius: 6px; font-weight: 800; border: 1px solid var(--milano-red); }
+
+        /* Estilo para el botón de gestión/lápiz */
+        .btn-status-edit { background: none; border: none; color: var(--slate-gray); transition: 0.2s; cursor: pointer; padding: 0; text-decoration: none; }
+        .btn-status-edit:hover { color: var(--milano-red); transform: scale(1.1); }
+
+        .cliente-dd-wrap { position: relative; display: inline-block; }
+        .cliente-dd-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; font-size: 13px; font-family: 'Montserrat', sans-serif;
+            border: 2px solid var(--chinese-black); border-radius: 10px;
+            background: #fff; color: var(--chinese-black);
+            cursor: pointer; white-space: nowrap; font-weight: 700;
         }
+        .cliente-dd-panel {
+            display: none; position: absolute; top: calc(100% + 4px); left: 0;
+            width: 220px; background: var(--chinese-black);
+            border: 1px solid var(--milano-red); border-radius: 10px;
+            z-index: 300; overflow: hidden;
+        }
+        .cliente-dd-panel.open { display: block; }
+        .cliente-dd-search { padding: 8px; border-bottom: 1px solid var(--milano-red); }
+        .cliente-dd-search input {
+            width: 100%; padding: 6px 10px; font-size: 13px;
+            border: 1px solid var(--milano-red); border-radius: 8px;
+            background: rgba(255,255,255,0.1); color: var(--white); outline: none;
+        }
+        .cliente-dd-list { max-height: 160px; overflow-y: auto; }
+        .cliente-dd-opt { padding: 8px 14px; font-size: 13px; cursor: pointer; color: var(--white); }
+        .cliente-dd-opt:hover { background: var(--milano-red); }
+        .cliente-dd-opt.hidden { display: none; }
 
-        .table { background: var(--bg-glass); border-radius: 10px; overflow: hidden; color: var(--blanco); width: 100%; border-collapse: collapse; }
-        .table thead { background: rgba(255, 255, 255, 0.1); color: var(--naranja-vibrante); font-weight: 700; border-bottom: 2px solid var(--naranja-vibrante); }
-        .container-box { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
-        
-        .search-input { background: rgba(0,0,0,0.2); border: 1px solid var(--naranja-vibrante); color: white; border-radius: 10px; padding: 8px 15px; width: 250px; }
-        
-        .guia-text { color: #000; background: #fff; padding: 4px 8px; border-radius: 6px; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .modal-overlay-custom {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); z-index: 500;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay-custom.open { display: flex; }
+        .modal-custom {
+            background: #fff; border: 2px solid var(--chinese-black);
+            border-radius: 16px; width: 100%; max-width: 480px; overflow: hidden;
+        }
+        .modal-custom-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px; border-bottom: 1px solid var(--milano-red);
+            background: var(--chinese-black); color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -69,108 +131,133 @@
         <h2><i class="bi bi-box-seam"></i> Gestión de Envíos</h2>
 
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <div class="d-flex gap-2 align-items-center">
-                <a class="btn btn-neon" href="/envios/nuevo"><i class="bi bi-plus-circle"></i> Nuevo</a>
-                
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <div class="d-flex gap-1">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Número de guía..." onkeypress="if(event.key === 'Enter') buscarGuiaManual()">
+                    <button class="btn-neon" onclick="buscarGuiaManual()" type="button"><i class="bi bi-search"></i></button>
+                </div>
+
                 {% if rol == 'ADMIN' %}
                 <form action="/envios/planificar-ruta" method="POST" style="margin:0;">
-                    <button type="submit" class="btn btn-neon">
-                        <i class="bi bi-map-fill"></i> Mapa Operativo
-                    </button>
+                    <button type="submit" class="btn-neon"><i class="bi bi-map-fill"></i> Mapa Operativo</button>
                 </form>
 
                 <div class="dropdown">
-                    <button class="btn btn-neon dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-file-earmark-pdf"></i> Generar Reportes
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark border-warning shadow">
-                        <li>
-                            <a class="dropdown-item" href="#" onclick="descargar('pdf')">
-                                <i class="bi bi-file-pdf text-danger"></i> Exportar a PDF
-                            </a>
+                    <button class="btn-neon dropdown-toggle" type="button" data-bs-toggle="dropdown"><i class="bi bi-file-earmark-pdf"></i> Reportes</button>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="#" onclick="descargar('pdf')">Exportar PDF</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="descargar('csv')">Exportar CSV</a></li>
+                    </ul>
+                </div>
+
+                <button class="btn-neon" onclick="imprimirGuiasSeleccionadas()">
+                    <i class="bi bi-printer-fill"></i> Imprimir Guías
+                </button>
+                {% endif %}
+
+                <div class="cliente-dd-wrap" id="clienteDdWrap">
+                    <button class="cliente-dd-btn" onclick="toggleClienteDd()"><i class="bi bi-person-fill"></i><span id="clienteLabel">Cliente</span></button>
+                    <div class="cliente-dd-panel" id="clienteDdPanel">
+                        <div class="cliente-dd-search"><input type="text" id="clienteSearchInput" placeholder="Buscar..." oninput="filtrarClientes(this.value)" /></div>
+                        <div class="cliente-dd-list" id="clienteDdList">
+                            <div class="cliente-dd-opt" onclick="seleccionarCliente('', 'Todos')">Todos</div>
+                            {% for c in clientes %}
+                            <div class="cliente-dd-opt" onclick="seleccionarCliente('{{ c.id_usuario }}', '{{ c.nombre }} {{ c.apellido }}')">
+                                {{ c.nombre }} {{ c.apellido }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-neon" style="background: var(--chinese-black); border-color: var(--chinese-black);" onclick="abrirModalFiltros()"><i class="bi bi-sliders"></i> Filtros</button>
+                <a class="btn btn-neon" href="/envios/nuevo"><i class="bi bi-plus-circle"></i> Nuevo</a>
+            </div>
+
+            <div class="d-flex gap-2 align-items-center">
+                {% if rol == 'ADMIN' %}
+                <div class="dropdown">
+                    <button class="btn-neon dropdown-toggle" type="button" data-bs-toggle="dropdown"><i class="bi bi-bicycle"></i> Gestión de Ruta</button>
+                    <ul class="dropdown-menu dropdown-menu-dark p-3" style="min-width: 250px;">
+                        <li><label class="text-white small fw-bold">Mensajero:</label>
+                            <select id="mensajeroSelect" class="form-select form-select-sm mt-1">
+                                <option value="">Seleccionar...</option>
+                                {% for m in mensajeros %}<option value="{{ m.id_usuario }}">{{ m.nombre }} {{ m.apellido }}</option>{% endfor %}
+                            </select>
                         </li>
-                        <li>
-                            <a class="dropdown-item" href="#" onclick="descargar('csv')">
-                                <i class="bi bi-file-earmark-spreadsheet text-success"></i> Exportar a CSV
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item" href="/envios/mapa-operativo">
-                                <i class="bi bi-graph-up text-info"></i> Ver Reporte Visual
-                            </a>
+                        <li class="mt-3 d-grid gap-2">
+                            <button class="btn btn-sm btn-success" onclick="asignarMasivo()">Asignar</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="quitarMasivo()">Quitar</button>
                         </li>
                     </ul>
                 </div>
                 {% endif %}
-
-                <input type="text" id="searchInput" class="search-input" placeholder="Buscar guía o cliente..." onkeyup="filtrarTabla()">
-            </div>
-            
-            <div class="d-flex gap-2 align-items-center">
-                {% if rol == 'ADMIN' %}
-                <select id="mensajeroSelect" class="form-select bg-dark text-white border-warning w-auto">
-                    <option value="">Asignar Mensajero...</option>
-                    {% for m in mensajeros %}
-                        <option value="{{ m.id_usuario }}">{{ m.nombre }} {{ m.apellido }}</option>
-                    {% endfor %}
-                </select>
-                <button class="btn btn-neon" onclick="asignarMasivo()" title="Asignar"><i class="bi bi-person-check-fill"></i></button>
-                <button class="btn btn-neon text-danger border-danger" onclick="quitarMasivo()" title="Quitar de Ruta"><i class="bi bi-person-x-fill"></i></button>
-                {% endif %}
-
-                <a class="btn btn-neon" href="/home"><i class="bi bi-house-fill"></i></a>
+                <a class="btn btn-neon" href="{{ '/home' if rol == 'ADMIN' else '/home_cliente' }}"><i class="bi bi-house-fill"></i></a>
             </div>
         </div>
-
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle" id="tablaEnvios">
-                <thead>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle text-center" id="tablaEnvios">
+                    <thead>
                     <tr>
-                        <th class="text-center"><input class="form-check-input" type="checkbox" id="selectAll"></th>
+                        <th>#</th>
+                        <th><input class="form-check-input" type="checkbox" id="selectAll"></th>
                         <th>Guía</th>
-                        <th>Cliente</th>
-                        <th class="text-center">Localidad</th>
-                        <th>Mensajero</th>
-                        <th>Origen → Destino</th>
                         <th>Estado</th>
-                        <th class="text-center">Acciones</th>
+                        <th>Gestión</th>
+                        <th>Ciudad Origen</th>
+                        <th>Origen</th>
+                        <th>Ciudad Destino</th>
+                        <th>Destino</th>
+                        <th>Recoge</th>
+                        <th>Entrega</th>
+                        <th>Ruta</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for e in envios %}
                     <tr>
-                        <td class="text-center">
-                            <input class="form-check-input" type="checkbox" name="envio_ids" value="{{ e.envio_id }}">
-                        </td>
+                        <td class="fw-bold">{{ loop.index }}</td>
+                        <td><input class="form-check-input" type="checkbox" name="envio_ids" value="{{ e.envio_id }}"></td>
                         <td><span class="guia-text">{{ e.numero_guia }}</span></td>
-                        <td>{{ e.cliente.nombre if e.cliente else 'N/A' }}</td>
-                        <td class="text-center">
-                            {% set ref = e.lugar_entrega.referencia.upper() if e.lugar_entrega else '' %}
-                            {% if 'LOCALIDAD:' in ref %}
-                                <span class="badge-localidad">
-                                    <i class="bi bi-geo-alt-fill me-1"></i>
-                                    {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim }}
-                                </span>
-                            {% else %}
-                                <span class="text-muted small">BOGOTÁ D.C.</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ e.mensajero.nombre if e.mensajero else 'Sin asignar' }}</td>
+                        
                         <td>
-                            <small>
-                                <b class="text-warning">C:</b> {{ e.lugar_recogida.direccion[:20] if e.lugar_recogida else 'N/A' }}<br/>
-                                <b class="text-info">D:</b> {{ e.lugar_entrega.direccion[:20] if e.lugar_entrega else 'N/A' }}
-                            </small>
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                {% if e.estado == 'Registrado' %}<span class="st-box bg-booking">REGISTRADO</span>
+                                {% elif e.estado == 'En_Bodega' or e.estado == 'Colectado' %}<span class="st-box bg-colectado">COLECTADO</span>
+                                {% elif e.estado == 'En_Ruta' %}<span class="st-box bg-ruta">EN RUTA</span>
+                                {% elif e.estado == 'Entregado' %}<span class="st-box bg-entregado">ENTREGADO</span>
+                                {% elif e.estado == 'Cancelado' %}<span class="st-box bg-cancelado">CANCELADO</span>
+                                {% elif e.estado == 'Devolucion' %}<span class="st-box bg-devolucion">DEVOLUCIÓN</span>
+                                {% elif e.estado == 'Retorno' %}<span class="st-box bg-retorno">RETORNO</span>
+                                {% elif e.estado == 'Rechazado' %}<span class="st-box bg-rechazado">RECHAZADO</span>
+                                {% else %}<span class="st-box bg-light">{{ e.estado }}</span>{% endif %}
+                            </div>
                         </td>
-                        <td class="text-center">
-                            <span class="badge bg-primary">{{ e.estado|replace('_', ' ') }}</span>
-                        </td>
+
                         <td>
-                            <div class="d-flex gap-2 justify-content-center">
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <a href="/envios/gestion/{{ e.envio_id }}" class="btn-status-edit" title="Gestionar">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <a href="/envios/clonar/{{ e.envio_id }}" class="btn-status-edit" title="Clonar pedido" style="color: #0d6efd;">
+                                    <i class="bi bi-copy"></i>
+                                </a>
+                            </div>
+                        </td>
+
+                        <td><small>{{ e.lugar_recogida.ciudad if e.lugar_recogida and e.lugar_recogida.ciudad else '---' }}</small></td>
+                        <td><small>{{ (e.lugar_recogida.direccion or '')[:20] if e.lugar_recogida else 'N/A' }}</small></td>
+                        <td><small>{{ e.lugar_entrega.ciudad if e.lugar_entrega and e.lugar_entrega.ciudad else '---' }}</small></td>
+                        <td><small>{{ (e.lugar_entrega.direccion or '')[:20] if e.lugar_entrega else 'N/A' }}</small></td>x
+                        <td><small>{{ e.mensajero.nombre if e.mensajero else '---' }}</small></td>
+                        <td><small>{{ e.mensajero_entrega.nombre if e.mensajero_entrega else '---' }}</small></td>
+                        <td><small class="fw-bold text-primary">{{ e.ruta.nombre_sector if e.ruta else '---' }}</small></td>
+                        
+                        <td>
+                            <div class="d-flex gap-1 justify-content-center">
                                 <a class="btn-action-custom btn-view-custom" href="/envios/detalle/{{ e.envio_id }}"><i class="bi bi-eye-fill"></i></a>
-                                <a class="btn-action-custom" style="background:#343a40;" href="/envios/imprimir/{{ e.envio_id }}" target="_blank"><i class="bi bi-printer-fill"></i></a>
-                                <a class="btn-action-custom btn-edit-custom" href="/envios/editar/{{ e.envio_id }}"><i class="bi bi-pencil-fill"></i></a>
+                                <a class="btn-action-custom btn-edit-custom" href="/envios/editar/{{ e.envio_id }}"><i class="bi bi-pencil-square"></i></a>
                                 <a class="btn-action-custom btn-delete-custom" href="/envios/eliminar/{{ e.envio_id }}" onclick="return confirm('¿Eliminar?')"><i class="bi bi-trash-fill"></i></a>
                             </div>
                         </td>
@@ -181,51 +268,83 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="modal-overlay-custom" id="modalFiltros" onclick="if(event.target===this)cerrarModalFiltros()">
+        <div class="modal-custom">
+            <div class="modal-custom-header"><h5><i class="bi bi-sliders me-2"></i>Filtros avanzados</h5><button class="btn btn-sm text-white" onclick="cerrarModalFiltros()">&#x2715;</button></div>
+            <div class="modal-custom-body p-3">
+                <div class="row g-2 mb-2"><div class="col-6"><label class="small fw-bold">Desde</label><input type="date" id="filtroFechaDesde" class="form-control"></div><div class="col-6"><label class="small fw-bold">Hasta</label><input type="date" id="filtroFechaHasta" class="form-control"></div></div>
+                <div class="mb-2"><label class="small fw-bold">Estado</label><select id="filtroEstado" class="form-select"><option value="">Todos</option><option value="REGISTRADO">Registrado</option><option value="EN_RUTA">En ruta</option><option value="ENTREGADO">Entregado</option></select></div>
+                <div class="row g-2 mb-2"><div class="col-6"><label class="small fw-bold">Origen</label><input type="text" id="filtroCiudadOrigen" class="form-control"></div><div class="col-6"><label class="small fw-bold">Destino</label><input type="text" id="filtroCiudadDestino" class="form-control"></div></div>
+                <div class="mb-2"><label class="small fw-bold">Mensajero</label><select id="filtroMensajero" class="form-select"><option value="">Todos</option>{% for m in mensajeros %}<option value="{{ m.id_usuario }}">{{ m.nombre }}</option>{% endfor %}</select></div>
+            </div>
+            <div class="p-3 border-top d-flex justify-content-end gap-2"><button class="btn btn-sm btn-secondary" onclick="limpiarFiltrosAvanzados()">Limpiar</button><button class="btn btn-sm btn-neon" onclick="aplicarFiltrosAvanzados()">Aplicar</button></div>
+        </div>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function filtrarTabla() {
-            const input = document.getElementById("searchInput").value.toLowerCase();
-            const rows = document.querySelectorAll("#tablaEnvios tbody tr");
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(input) ? "" : "none";
+        // ... (Tus funciones de JavaScript se mantienen iguales)
+        function buscarGuiaManual() {
+            const f = document.getElementById("searchInput").value.toUpperCase();
+            document.querySelectorAll("#tablaEnvios tbody tr").forEach(r => {
+                const g = r.querySelector(".guia-text")?.innerText.toUpperCase() || "";
+                r.style.display = g.includes(f) ? "" : "none";
             });
         }
-
         document.getElementById('selectAll').onclick = function() {
-            const checkboxes = document.querySelectorAll('input[name="envio_ids"]');
-            checkboxes.forEach(cb => cb.checked = this.checked);
+            document.querySelectorAll('input[name="envio_ids"]').forEach(cb => cb.checked = this.checked);
         }
-
         function asignarMasivo() {
             const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
-            const mId = document.getElementById('mensajeroSelect').value;
-            if (ids.length === 0 || !mId) return alert("Selecciona pedidos y un mensajero.");
-            
+            const m = document.getElementById('mensajeroSelect').value;
+            if(!ids.length || !m) return alert("Selecciona pedidos y un mensajero.");
             fetch("/envios/asignar-mensajero-masivo", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ envio_ids: ids, id_mensajero: mId })
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ envio_ids: ids, id_mensajero: m })
             }).then(() => location.reload());
         }
-
         function quitarMasivo() {
             const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
             if (ids.length === 0) return alert("Selecciona al menos un pedido.");
-            
             fetch("/envios/quitar-de-ruta-masivo", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+                method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ envio_ids: ids })
             }).then(() => location.reload());
         }
-
-        function descargar(formato) {
+        function toggleClienteDd() { document.getElementById('clienteDdPanel').classList.toggle('open'); }
+        function filtrarClientes(q) {
+            document.querySelectorAll('.cliente-dd-opt').forEach(opt => opt.classList.toggle('hidden', !opt.textContent.toLowerCase().includes(q.toLowerCase())));
+        }
+        function seleccionarCliente(id, n) {
+            document.getElementById('clienteLabel').textContent = n;
+            document.getElementById('clienteDdPanel').classList.remove('open');
+            document.querySelectorAll("#tablaEnvios tbody tr").forEach(r => r.style.display = (n==='Todos'||r.innerText.includes(n)) ? "" : "none");
+        }
+        function abrirModalFiltros() { document.getElementById('modalFiltros').classList.add('open'); }
+        function cerrarModalFiltros() { document.getElementById('modalFiltros').classList.remove('open'); }
+        function aplicarFiltrosAvanzados() {
+            const e = document.getElementById('filtroEstado').value.toUpperCase();
+            document.querySelectorAll("#tablaEnvios tbody tr").forEach(r => r.style.display = (!e || r.innerText.toUpperCase().includes(e)) ? "" : "none");
+            cerrarModalFiltros();
+        }
+        function limpiarFiltrosAvanzados() {
+            ['filtroFechaDesde','filtroFechaHasta','filtroCiudadOrigen','filtroCiudadDestino'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('filtroEstado').selectedIndex = 0;
+            document.querySelectorAll("#tablaEnvios tbody tr").forEach(r => r.style.display = "");
+            cerrarModalFiltros();
+        }
+        function descargar(f) {
             const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
-            let url = `/envios/reporte?formato=${formato}`;
-            if (ids.length > 0) url += `&ids=${ids.join(',')}`;
-            window.location.href = url;
+            window.location.href = `/envios/reporte?formato=${f}${ids.length ? '&ids='+ids.join(',') : ''}`;
+        }
+        function imprimirGuiasSeleccionadas() {
+            const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
+            if (ids.length === 0) return alert("Por favor, seleccione al menos una guía para imprimir.");
+            if (ids.length === 1) {
+                window.open(`/envios/imprimir/${ids[0]}`, '_blank');
+            } else {
+                window.open(`/envios/imprimir-masivo?ids=${ids.join(',')}`, '_blank');
+            }
         }
     </script>
 </body>

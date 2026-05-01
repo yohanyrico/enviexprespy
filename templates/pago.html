@@ -26,21 +26,39 @@
             cursor: pointer; border: 2px solid transparent; transition: 0.3s;
         }
         .method-card:hover { border-color: #ff8c00; background: rgba(255, 140, 0, 0.1); }
-        
-        /* Clase para marcar el método seleccionado */
         .method-selected {
             border-color: #ff8c00 !important;
             background: rgba(255, 140, 0, 0.2) !important;
+        }
+        .cuota-badge {
+            background: rgba(13, 202, 240, 0.1);
+            border: 1px solid rgba(13, 202, 240, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
         }
     </style>
 </head>
 <body>
     <div class="payment-card shadow-lg">
         <h3 class="text-center fw-bold mb-4">Resumen de Compra</h3>
+
+        <!-- Plan seleccionado -->
         <div class="d-flex justify-content-between mb-2">
             <span>Plan Seleccionado:</span>
             <span class="fw-bold text-uppercase">{{ plan }}</span>
         </div>
+
+        <!-- Valor por envío -->
+        <div class="d-flex justify-content-between align-items-center mb-3 cuota-badge">
+            <span class="opacity-75 small">
+                <i class="bi bi-box-seam me-1"></i>Valor por envío:
+            </span>
+            <span class="fw-bold text-info">${{ cuota }}</span>
+        </div>
+
+        <hr style="border-color: rgba(255,255,255,0.15);">
+
+        <!-- Total a pagar -->
         <div class="d-flex justify-content-between mb-4 fs-4">
             <span>Total a pagar:</span>
             <span class="fw-bold text-warning">${{ precio }}</span>
@@ -81,29 +99,20 @@
         let elementoSeleccionado = null;
 
         function seleccionarMetodo(elemento, metodo) {
-            // Quitar clase al anterior
             if (elementoSeleccionado) {
                 elementoSeleccionado.classList.remove('method-selected');
             }
-            
-            // Agregar clase al nuevo
             elemento.classList.add('method-selected');
             elementoSeleccionado = elemento;
-            
-            // Guardar el valor en el input oculto
             document.getElementById('inputMetodo').value = metodo;
         }
 
         function procesarPago() {
             const metodo = document.getElementById('inputMetodo').value;
-            
             if (!metodo) {
                 alert("Por favor, selecciona un método de pago antes de continuar.");
                 return;
             }
-
-            // Ejecutamos el envío del formulario oculto por método POST
-            console.log("Enviando formulario de pago...");
             document.getElementById('formConfirmarPago').submit();
         }
     </script>

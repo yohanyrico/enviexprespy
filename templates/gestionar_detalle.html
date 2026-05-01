@@ -1,0 +1,501 @@
+{# templates/gestionar_detalle.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Envío - {{ envio.numero_guia }} - EnviExpress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+    :root {
+        --milano-red: #B20C06;
+        --milano-hover: #8E0A05;
+        --chinese-black: #101010;
+        --white: #ffffff;
+        --bg-page: #ffffff;
+        --border-dark: #101010;
+    }
+    
+    body { 
+        background-color: var(--bg-page); 
+        font-family: 'Montserrat', sans-serif; 
+        color: var(--chinese-black);
+        font-size: 0.9rem;
+    }
+    
+    /* --- CABECERAS Y TÍTULOS (Fondo Negro, Letra Blanca) --- */
+    .erp-header {
+        background-color: var(--chinese-black);
+        color: var(--white);
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 4px solid var(--milano-red);
+    }
+
+    .section-header { 
+        background-color: var(--chinese-black); 
+        color: var(--white); 
+        padding: 10px 15px; 
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* --- BOTONES (Fondo Rojo, Letra Blanca) --- */
+    .btn-milano {
+        background-color: var(--milano-red);
+        color: var(--white) !important;
+        border: none;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border-radius: 4px;
+        transition: 0.3s;
+        text-decoration: none;
+    }
+    .btn-milano:hover {
+        background-color: var(--milano-hover);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    /* --- TARJETAS E INPUTS (Fondo Blanco) --- */
+    .info-card { 
+        background: var(--white); 
+        border: 2px solid var(--chinese-black); 
+        padding: 20px; 
+        margin-bottom: 20px;
+    }
+
+    .form-control-erp { 
+        border: none; 
+        border-bottom: 2px solid var(--chinese-black); 
+        border-radius: 0; 
+        padding: 8px 0; 
+        font-weight: 700; 
+        color: var(--chinese-black);
+        background-color: transparent;
+    }
+    .form-control-erp:focus {
+        outline: none;
+        border-bottom: 3px solid var(--milano-red);
+    }
+
+    /* --- TABLAS (Header Negro, Letra Blanca) --- */
+    .table-erp thead {
+        background-color: var(--chinese-black);
+        color: var(--white);
+    }
+    .table-erp th {
+        padding: 12px;
+        text-transform: uppercase;
+        border: 1px solid var(--chinese-black);
+    }
+    .table-erp td {
+        padding: 12px;
+        border: 1px solid var(--chinese-black);
+        background-color: var(--white);
+    }
+
+    /* --- PANELES LATERALES --- */
+    .add-tracking-panel {
+        background: var(--white);
+        border: 2px solid var(--chinese-black);
+    }
+
+    .label-custom {
+        font-size: 0.75rem;
+        color: var(--chinese-black);
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        display: block;
+    }
+</style>
+
+<div class="erp-header">
+    <div style="font-weight: 800;">GESTIÓN DE ENVÍO #{{ envio.numero_guia }}</div>
+    <div class="d-flex gap-2 align-items-center">
+        <button class="btn-milano">Guardar Cambios</button>
+        <a href="/envios" class="btn-milano" style="background-color: #444;">
+            <i class="bi bi-house-fill"></i>
+        </a>
+    </div>
+</div>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="info-card">
+                <div class="section-header mb-3">Datos del Cliente</div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="label-custom">Nombre Completo</label>
+                        <input type="text" class="form-control-erp" value="{{ envio.cliente.nombre }}" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="add-tracking-panel">
+                <div class="section-header">Actualizar Estado</div>
+                <div class="p-3">
+                    <form action="/envios/actualizar-gestion/{{ envio.envio_id }}" method="POST">
+                        <label class="label-custom">Nuevo Estado</label>
+                        <select name="nuevo_estado" class="form-select mb-3" required>
+    <option value="" disabled selected>Seleccionar...</option>
+    <option value="Registrado">Registrado</option>
+    <option value="En_Bodega">Colectado</option>
+    <option value="Devolucion">Devolución</option>
+    <option value="En_Ruta">En Ruta</option>
+    <option value="Entregado">Entregado</option>
+    <option value="Retorno">Retorno</option>
+    <option value="Cancelado">Cancelado</option>
+    <option value="Rechazado">Rechazado</option>
+</select>
+                        <input type="hidden" name="comentario" value="Actualización rápida de estado">
+                        <input type="hidden" name="fecha_novedad" value="">
+                        <button type="submit" class="btn-milano w-100">Actualizar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</head>
+<body>
+
+    <form action="/envios/guardar-gestion/{{ envio.envio_id }}" method="POST">
+    <div class="erp-header">
+        <div class="d-flex align-items-center gap-4">
+            <div class="header-title">ID ENVÍO ( {{ envio.numero_guia }} )</div>
+            <div class="badge bg-light text-dark fw-bold text-uppercase" style="font-size: 0.7rem;">
+                Peso Cobrable ( {{ envio.peso }} kg )
+            </div>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="small text-white-50">Creado: {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</span>
+            <button type="submit" class="btn btn-save btn-erp"><i class="bi bi-cloud-arrow-up-fill me-1"></i> GUARDAR CAMBIOS</button>
+            <a href="/envios" class="btn btn-close-erp btn-sm"><i class="bi bi-x-lg"></i></a>
+        </div>
+    </div>
+
+    <div class="container-fluid p-4">
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                
+                <div class="info-card mb-4 shadow-sm">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="label-custom">Cliente *</label>
+                            <input type="text" class="form-control form-control-erp" value="{{ envio.cliente.nombre }} {{ envio.cliente.apellido }}" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="label-custom">Servicio *</label>
+                            <select name="tipo_servicio" class="form-select form-control-erp" style="font-size: 0.85rem;">
+                                <option value="EXPRESS" {% if envio.tipo_servicio == 'EXPRESS' %}selected{% endif %}>Basico (Urbano)</option>
+                                <option value="EXPRESS" {% if envio.tipo_servicio == 'EXPRESS' %}selected{% endif %}>Estandar (Urbano)</option>
+                                <option value="EXPRESS" {% if envio.tipo_servicio == 'EXPRESS' %}selected{% endif %}>Vip (Urbano)</option>
+                                <option value="EXPRESS" {% if envio.tipo_servicio == 'EXPRESS' %}selected{% endif %}>Premium (Urbano)</option>
+                                <option value="NACIONAL" {% if envio.tipo_servicio == 'NACIONAL' %}selected{% endif %}>Nacional</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="label-custom">Estado Actual</label>
+                            <div class="mt-1">
+                                {% if envio.estado == 'Registrado' %}<span class="st-box bg-booking">Confirmado</span>
+                                {% elif envio.estado == 'Entregado' %}<span class="st-box bg-entregado">Entregado</span>
+                                {% else %}<span class="st-box bg-light text-dark">{{ envio.estado }}</span>{% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="label-custom">Referencia</label>
+                            <input type="text" name="referencia_cliente" class="form-control form-control-erp" value="{{ envio.referencia_cliente or '' }}" placeholder="Opcional">
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs nav-tabs-erp mb-4" id="erpTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab"><i class="bi bi-info-circle me-1"></i> GENERAL</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tarifas-tab" data-bs-toggle="tab" data-bs-target="#tarifas" type="button" role="tab"><i class="bi bi-cash-stack me-1"></i> TARIFAS</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tracking-tab" data-bs-toggle="tab" data-bs-target="#tracking" type="button" role="tab"><i class="bi bi-geo-alt-fill me-1"></i> TRACKING</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="erpTabContent">
+                    
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="box-container shadow-sm">
+                                    <div class="section-header"><i class="bi bi-box-seam"></i> DATOS DE RECOGIDA (ORIGEN)</div>
+                                    <div class="box-body">
+                                        <div class="mb-3">
+                                            <label class="label-custom">Dirección *</label>
+                                            <input type="text" name="direccion_rec" class="form-control form-control-erp" value="{{ envio.lugar_recogida.direccion }}">
+                                        </div>
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                                <label class="label-custom">Ciudad</label>
+                                                <input type="text" class="form-control form-control-erp" value="{{ ciudad_rec }}" readonly>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="label-custom">Departamento</label>
+                                                <input type="text" class="form-control form-control-erp" value="{{ depto_rec }}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <label class="label-custom">Contacto</label>
+                                                <input type="text" name="contacto_rec" class="form-control form-control-erp" value="{{ envio.cliente.nombre }}">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="label-custom">Teléfono</label>
+                                                <input type="text" name="telefono_rec" class="form-control form-control-erp" value="{{ tel_rec }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="box-container shadow-sm">
+                                    <div class="section-header"><i class="bi bi-truck"></i> DATOS DE ENTREGA (DESTINO)</div>
+                                    <div class="box-body">
+                                        <div class="mb-3">
+                                            <label class="label-custom">Dirección *</label>
+                                            <input type="text" name="direccion_ent" class="form-control form-control-erp" value="{{ envio.lugar_entrega.direccion }}">
+                                        </div>
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                                <label class="label-custom">Ciudad</label>
+                                                <input type="text" class="form-control form-control-erp" value="{{ ciudad_ent }}" readonly>
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="label-custom">Departamento</label>
+                                                <input type="text" class="form-control form-control-erp" value="{{ depto_ent }}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <label class="label-custom">Recibe</label>
+                                                <input type="text" name="contacto_ent" class="form-control form-control-erp" value="{{ envio.contacto_entrega or '' }}">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="label-custom">Teléfono</label>
+                                                <input type="text" name="telefono_ent" class="form-control form-control-erp" value="{{ tel_ent }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <div class="tab-pane fade" id="tarifas" role="tabpanel">
+                        <div class="info-card shadow-sm">
+                            <h6 class="fw-bold mb-3 text-uppercase text-muted" style="font-size: 0.8rem;">Desglose de Costos (Cliente)</h6>
+                            <table class="table-erp">
+                                <thead>
+                                    <tr>
+                                        <th>Concepto</th>
+                                        <th>Detalle</th>
+                                        <th class="text-end">Monto (COP)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Costo Base</td>
+                                        <td>Tarifa {{ envio.tarifa.nombre }}</td>
+                                        <td class="text-end text-money">${{ "{:,.0f}".format(envio.costo_envio) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Seguro</td>
+                                        <td>Por defecto (0.5%)</td>
+                                        <td class="text-end">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td>IVA / Impuestos</td>
+                                        <td>Exento (0%)</td>
+                                        <td class="text-end">0</td>
+                                    </tr>
+                                    <tr class="row-total">
+                                        <td colspan="2" class="text-end uppercase">Total a Pagar Cliente</td>
+                                        <td class="text-end text-money" style="font-size: 1.1rem;">
+                                            ${{ "{:,.0f}".format(envio.costo_envio) }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div> <div class="tab-pane fade" id="tracking" role="tabpanel">
+                        <div class="info-card shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold text-uppercase text-muted m-0" style="font-size: 0.8rem;">Historial de Novedades</h6>
+                                <span class="small fw-bold text-purple">No. Guía Interno: {{ envio.envio_id }}</span>
+                            </div>
+                            
+                            <table class="table-erp table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha/Hora</th>
+                                        <th>Estado / Novedad</th>
+                                        <th>Ubicación</th>
+                                        <th>Comentario</th>
+                                        <th>Usuario</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ envio.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                                        <td><span class="st-box bg-booking">Pedido Creado</span></td>
+                                        <td>Plataforma Principal</td>
+                                        <td>Guía registrada exitosamente por el cliente.</td>
+                                        <td>Sistema</td>
+                                    </tr>
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div> </div> </div> <div class="col-lg-4">
+                
+                <div class="info-card mb-4 shadow-sm">
+                    <div class="section-header rounded-top mb-3" style="background-color: var(--chinese-black);">
+                        <i class="bi bi-box-fill"></i> DETALLES DEL PAQUETE
+                    </div>
+                    <div class="mb-3">
+                        <label class="label-custom">Contenido Declarado *</label>
+                        <input type="text" name="descripcion" class="form-control form-control-erp" value="{{ descripcion }}" placeholder="Ej: Ropa, Documentos">
+                    </div>
+                    <div>
+                        <label class="label-custom">Observaciones / Instrucciones</label>
+                        <textarea name="observaciones" class="form-control form-control-erp" rows="2" placeholder="Indicaciones para el mensajero...">{{ observaciones }}</textarea>
+                    </div>
+                </div>
+
+                <div class="add-tracking-panel shadow-sm">
+                    <div class="add-tracking-header rounded-top">
+                        <i class="bi bi-plus-circle-fill me-1"></i> ACTUALIZAR ESTADO (MENSAJERO)
+                    </div>
+                    <div class="p-3">
+                        
+                        <div class="mb-3">
+                            <label class="label-custom">Fecha y Hora de la Novedad *</label>
+                            <input type="datetime-local" name="fecha_novedad" id="fecha_novedad" class="form-control form-control-sm" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="label-custom">Nuevo Estado *</label>
+                            <select name="nuevo_estado" id="nuevo_estado" class="form-select form-select-sm fw-bold" onchange="verificarEstadoEntregado(this.value)" required>
+                                <option value="" selected disabled>Seleccionar estado...</option>
+                                <optgroup label="Operaciones">
+                                    <option value="En_Bodega">Recibido en Bodega</option>
+                                    <option value="En_Ruta">En Ruta de Entrega</option>
+                                </optgroup>
+                                <optgroup label="Finalización">
+                                    <option value="Entregado" class="text-success">✅ ENTREGADO EXITOSAMENTE</option>
+                                    <option value="Cancelado" class="text-danger">❌ Cancelado / Devuelto</option>
+                                </optgroup>
+                                <optgroup label="Novedades">
+                                    <option value="Direccion_Erronea">Dirección Errónea</option>
+                                    <option value="Nadie_en_Casa">Nadie en Domicilio</option>
+                                    <option value="Rechazado">Rechazado por Destinatario</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div id="cod_info_panel" class="p-3 mb-3 shadow-inner">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-cash-coin fs-5 text-success"></i>
+                                <strong class="text-success text-uppercase" style="font-size: 0.8rem;">Verificación de Cobro</strong>
+                            </div>
+                            
+                            {% if envio.es_cod %}
+                                <p class="small mb-2 text-dark">
+                                    Este envío está marcado como **CONTRAENTREGA (COD)**.
+                                </p>
+                                <div class="alert alert-warning p-2 mb-0 small border-warning">
+                                    <strong>Monto a cobrar al recibir:</strong> 
+                                    <span class="fs-6 fw-bold text-money ms-1">
+                                        ${{ "{:,.0f}".format(envio.valor_a_cobrar) }} COP
+                                    </span>
+                                </div>
+                                <div class="form-check mt-2 small">
+                                    <input class="form-check-input border-success" type="checkbox" name="confirmar_cobro" id="confirmar_cobro" required>
+                                    <label class="form-check-label fw-bold text-success" for="confirmar_cobro">
+                                        Confirmo que recaudé el dinero correctamente.
+                                    </label>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-secondary p-2 mb-0 small text-center border-secondary">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Este envío **NO** es Contraentrega. <br> No se debe realizar ningún cobro.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="label-custom">Comentario / Prueba de Entrega</label>
+                            <textarea name="comentario_novedad" class="form-control form-control-sm" rows="2" placeholder="Ej: Recibió Juan Pérez (CC: 123...), o motivo de la novedad."></textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" name="accion" value="add_tracking" class="btn btn-erp" style="background-color: var(--purple-erp); color: white;">
+                                <i class="bi bi-plus-lg me-1"></i> AÑADIR NOVEDAD Y ACTUALIZAR
+                            </button>
+                        </div>
+
+                    </div>
+                </div> </div> </div> </div> </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Lógica JavaScript para tu requerimiento especial de Contraentrega
+        function verificarEstadoEntregado(estado) {
+            const panelCod = document.getElementById('cod_info_panel');
+            const checkCobro = document.getElementById('confirmar_cobro');
+
+            // Si el mensajero selecciona "Entregado"
+            if (estado === 'Entregado') {
+                // Mostramos el panel de verificación con animación suave
+                panelCod.style.display = 'block';
+                panelCod.style.animation = 'fadeIn 0.5s';
+                
+                // Si el envío ES contraentrega, hacemos obligatoria la confirmación del check
+                if (checkCobro) {
+                    checkCobro.required = true;
+                }
+            } else {
+                // Ocultamos el panel si selecciona otro estado
+                panelCod.style.display = 'none';
+                
+                // Quitamos la obligatoriedad del check
+                if (checkCobro) {
+                    checkCobro.required = false;
+                    checkCobro.checked = false; // Limpiamos el check
+                }
+            }
+        }
+
+        // Establecer fecha y hora actual por defecto en el input datetime-local
+        document.addEventListener('DOMContentLoaded', function() {
+            const ahora = new Date();
+            // Ajuste de zona horaria para Colombia (UTC-5)
+            ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
+            document.getElementById('fecha_novedad').value = ahora.toISOString().slice(0, 16);
+        });
+    </script>
+</body>
+</html>

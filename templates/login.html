@@ -1,156 +1,267 @@
-    {# templates/login.html #}
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Iniciar sesión</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Sistema Profesional</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <style>
-        :root {
-            --azul-rey: #0046ad;
-            --azul-oscuro: #002d70;
-            --naranja: #ff7b00;
-            --naranja-hover: #e66f00;
-            --blanco: #ffffff;
-            --bg-light: #f4f7f6;
-        }
+    :root {
+        /* Paleta Oficial EnviExpress */
+        --milano-red: #B20C06;
+        --chinese-black: #101010;
+        --slate-gray: #738589;
+        --white-pure: #ffffff;
+        --bg-light: #F8F9FA;
+    }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            /* Fondo con un degradado sutil de la paleta */
-            background: linear-gradient(135deg, #002B5B, #004085, #001a33);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--azul-oscuro);
-            margin: 0;
-        }
+    body {
+        font-family: 'Montserrat', sans-serif;
+        /* Fondo Blanco Limpio */
+        background-color: var(--white-pure);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+    }
 
-        .login-card {
-            background: var(--blanco); /* Card blanca para limpieza visual */
-            border: none;
-            border-radius: 18px;    
-            padding: 40px;
-            width: 380px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        }
+    .login-container {
+        width: 100%;
+        max-width: 420px;
+    }
 
-        .login-title {
-            text-align: center;
-            font-weight: 800;
-            font-size: 2.2rem;
-            margin-bottom: 25px;
-            color: var(--azul-rey);
-            /* Quitamos el glow neón por un estilo más corporativo */
-            letter-spacing: -1px;
-        }
+    .login-card {
+        background: var(--white-pure);
+        /* Borde sutil y sombra suave para resaltar sobre el fondo blanco */
+        border: 1px solid #EAEAEA;
+        border-radius: 24px;
+        padding: 45px 35px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    }
 
-        .login-title span {
-            color: var(--naranja);
-        }
+    .brand-logo {
+        text-align: center;
+        margin-bottom: 30px;
+    }
 
-        input { 
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px; 
-            border-radius: 10px; 
-            border: 2px solid #e1e8ef;
-            background: #f8fafc;
-            color: var(--azul-oscuro);
-            transition: 0.3s;
-            box-sizing: border-box;
-        }
+    .login-title {
+        text-align: center;
+        font-weight: 800;
+        font-size: 1.8rem;
+        /* Título en Negro */
+        color: var(--chinese-black);
+        margin-bottom: 8px;
+        letter-spacing: -0.5px;
+    }
 
-        input:focus {
-            outline: none;
-            border-color: var(--azul-rey);
-            background: white;
-        }
+    .login-subtitle {
+        text-align: center;
+        /* Subtítulo en Gris Pizarra */
+        color: var(--slate-gray);
+        font-size: 0.9rem;
+        margin-bottom: 35px;
+        font-weight: 500;
+    }
 
-        button {
-            background: var(--naranja);
-            border: none;
-            width: 100%;
-            padding: 14px;
-            margin-top: 10px;
-            border-radius: 10px;
-            font-weight: 700;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 123, 0, 0.3);
-        }
+    .form-label {
+        font-weight: 700;
+        /* Etiquetas en Negro */
+        color: var(--chinese-black);
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-        button:hover { 
-            background: var(--naranja-hover); 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(255, 123, 0, 0.4);
-        }
+    .input-group-custom {
+        position: relative;
+        margin-bottom: 20px;
+    }
 
-        .msg { 
-            text-align: center; 
-            margin-top: 20px; 
-            font-weight: 500; 
-            color: #667c94;
-            font-size: 0.9rem;
-        }
+    .input-group-custom i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--slate-gray);
+        z-index: 10;
+    }
 
-        .msg a {
-            color: var(--azul-rey);
-            text-decoration: none;
-            font-weight: 700;
-        }
+    .form-control-custom {
+        width: 100%;
+        padding: 14px 15px 14px 45px;
+        border-radius: 12px;
+        border: 2px solid #edf2f7;
+        background: #f8fafc;
+        color: var(--chinese-black);
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
 
-        .msg a:hover {
-            text-decoration: underline;
-        }
-    </style>
-    </head>
-    <body>
-        <div class="login-card">
-            <h2 class="login-title">Iniciar Sesión</h2>
+    .form-control-custom:focus {
+        outline: none;
+        /* Foco con el Rojo de la marca */
+        border-color: var(--milano-red);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(178, 12, 6, 0.1);
+    }
 
-            <!-- Equivalente a th:action="@{/login}" -->
-            <form action="/login" method="post">
-                <label for="username">Usuario:</label>
-                <input type="text" class="form-control" name="username" id="username" required />
+    .forgot-password {
+        display: block;
+        text-align: right;
+        margin-bottom: 25px;
+        font-size: 0.8rem;
+        color: var(--milano-red);
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.2s;
+    }
 
-                <label for="password" class="mt-2">Contraseña:</label>
-                <input type="password" class="form-control" name="password" id="password" required />
+    .forgot-password:hover {
+        text-decoration: underline;
+        color: #8e0a05;
+    }
 
-                <button type="submit">Ingresar</button>
-            </form>
+    /* BOTÓN PRINCIPAL: Rojo Milano con Letra Blanca */
+    .btn-ingresar {
+        background: var(--milano-red);
+        border: none;
+        width: 100%;
+        padding: 15px;
+        border-radius: 12px;
+        font-weight: 700;
+        /* Letra Blanca */
+        color: var(--white-pure);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 8px 20px rgba(178, 12, 6, 0.2);
+        margin-bottom: 20px;
+    }
 
-            <!-- Equivalente a th:if="${param.error}" -->
-            {% if error %}
-            <p class="msg" style="color:red;">Usuario o contraseña incorrectos</p>
-            {% endif %}
+    .btn-ingresar:hover {
+        background: #8e0a05;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(178, 12, 6, 0.3);
+    }
 
-            <!-- Equivalente a th:if="${param.logout}" -->
-            {% if logout %}
-            <div id="id_sesioncerrada">
-                <p class="msg" style="color:#00ff88;">Sesión cerrada correctamente</p>
-            </div>
-            {% endif %}
+    /* BOTÓN REGISTRO: Contorno Gris Pizarra */
+    .btn-register {
+        background: transparent;
+        border: 2px solid var(--slate-gray);
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        color: var(--slate-gray);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
 
-            <!-- Equivalente a th:if="${param.denied}" -->
-            {% if denied %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <strong>Acceso denegado.</strong> No tienes permisos para ver esta página.
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endif %}
+    .btn-register:hover {
+        background: var(--slate-gray);
+        color: white;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 20px 0;
+        color: #cbd5e0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #edf2f7;
+    }
+
+    .divider:not(:empty)::before { margin-right: .5em; }
+    .divider:not(:empty)::after { margin-left: .5em; }
+
+    .alert-custom {
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: none;
+        background-color: #FFF5F5;
+        color: var(--milano-red);
+    }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="login-card">
+        <h2 class="login-title">Bienvenido</h2>
+        <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
+
+        {% if error %}
+        <div class="alert alert-danger alert-custom mb-3">
+            <i class="bi bi-x-circle-fill me-2"></i> Usuario o contraseña incorrectos
         </div>
+        {% endif %}
 
-        <script>
-            setTimeout(function () {
-                const mensaje = document.getElementById("id_sesioncerrada");
-                if (mensaje) mensaje.style.display = "none";
-            }, 2000);
-        </script>
-    </body>
-    </html>
+        {% if logout %}
+        <div class="alert alert-success alert-custom mb-3" id="id_sesioncerrada">
+            <i class="bi bi-check-circle-fill me-2"></i> Sesión cerrada correctamente
+        </div>
+        {% endif %}
+
+        <form action="/login" method="post">
+            <div class="form-group">
+                <label class="form-label">USUARIO</label>
+                <div class="input-group-custom">
+                    <i class="bi bi-person-fill"></i>
+                    <input type="text" class="form-control-custom" name="username" placeholder="Nombre de usuario" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">CONTRASEÑA</label>
+                <div class="input-group-custom">
+                    <i class="bi bi-lock-fill"></i>
+                    <input type="password" class="form-control-custom" name="password" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <a href="/recuperar" class="forgot-password">¿Olvidaste tu contraseña?</a>
+
+            <button type="submit" class="btn-ingresar">Entrar al Sistema</button>
+        </form>
+
+        <div class="divider">¿No tienes cuenta?</div>
+
+        <a href="/registro" class="btn-register">Crear una cuenta</a>
+    </div>
+</div>
+
+<script>
+    // Desvanecimiento suave del mensaje de logout
+    setTimeout(function () {
+        const mensaje = document.getElementById("id_sesioncerrada");
+        if (mensaje) {
+            mensaje.style.transition = "opacity 0.5s ease";
+            mensaje.style.opacity = "0";
+            setTimeout(() => mensaje.style.display = "none", 500);
+        }
+    }, 3000);
+</script>
+
+</body>
+</html>

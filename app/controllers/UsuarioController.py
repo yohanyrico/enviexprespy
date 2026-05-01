@@ -10,7 +10,6 @@ from app.config.database import get_db
 from app.models.Usuario import Usuario
 from app.models.Transaccion import Transaccion
 from app.models.Tarifa import Tarifa 
-# Seguridad y JWT
 from app.security.SecurityConfig import (
     get_current_user, 
     require_admin, 
@@ -31,7 +30,18 @@ class LoginRequest(BaseModel):
 # --- RUTAS DE LOGIN (WEB Y API) ---
 
 @router.get("/login")
-def login(request: Request, error: str = None, logout: str = None, denied: str = None):
+def login(request: Request, db: Session = Depends(get_db), error: str = None, logout: str = None, denied: str = None):
+    user_id = request.session.get("user_id")
+    if user_id:
+        # ✅ Verificar que el usuario realmente existe en BD y está activo
+        user = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
+        if user and user.activo:
+            if user.rol == "ADMIN":
+                return RedirectResponse(url="/envios/", status_code=302)
+            return RedirectResponse(url="/home_cliente", status_code=302)
+        # ✅ Si no existe o está inactivo, limpiar sesión basura
+        request.session.clear()
+
     return templates.TemplateResponse("login.html", {
         "request": request,
         "error": error,
@@ -42,13 +52,23 @@ def login(request: Request, error: str = None, logout: str = None, denied: str =
 @router.post("/login")
 async def do_login(request: Request, db: Session = Depends(get_db)):
     form = await request.form()
-    username = form.get("username")
-    password = form.get("password")
+    username = form.get("username", "").strip()
+    password = form.get("password", "").strip()
+
+    # ✅ Validar campos vacíos ANTES de tocar la BD
+    if not username or not password:
+        return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error": True
+        })
 
     user = authenticate_user(db, username, password)
 
     if not user:
-        return templates.TemplateResponse("login.html", {"request": request, "error": True})
+        return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error": True
+        })
 
     request.session.clear()
     request.session["user_id"] = user.id_usuario
@@ -56,16 +76,20 @@ async def do_login(request: Request, db: Session = Depends(get_db)):
     request.session["rol"] = user.rol
 
     if user.rol == "ADMIN":
-        return RedirectResponse(url="/envios/", status_code=302)
-    
-    return RedirectResponse(url="/home_cliente", status_code=302)
+        return RedirectResponse(url="/home/", status_code=303)
+
+    return RedirectResponse(url="/home_cliente", status_code=303)
 
 # --- GESTIÓN DE SESIÓN Y REGISTRO ---
 
+# ✅ GET y POST: destruye sesión, elimina cookie, redirige a /login
+@router.get("/logout")
 @router.post("/logout")
 async def logout(request: Request):
     request.session.clear()
-    return RedirectResponse(url="/login?logout=true", status_code=302)
+    response = RedirectResponse(url="/login?logout=true", status_code=303)
+    response.delete_cookie("session")
+    return response
 
 @router.get("/registro")
 def registro(request: Request):
@@ -81,6 +105,9 @@ async def guardar_registro(request: Request, db: Session = Depends(get_db)):
         apellido=form.get("apellido"),
         correo=form.get("correo"),
         telefono=form.get("telefono"),
+        direccion=form.get("direccion", "").strip() or None,
+        ciudad=form.get("ciudad_raw", "").strip() or None,
+        localidad=form.get("localidad", "").strip() or None,
         rol="CLIENTE",
         activo=True,
         fecha_creacion=datetime.now()
@@ -93,12 +120,16 @@ async def guardar_registro(request: Request, db: Session = Depends(get_db)):
 @router.get("/usuarios")
 def listar(request: Request, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     require_admin(current_user)
-    # Traemos la tarifa vinculada con joinedload para la tabla principal
     usuarios = db.query(Usuario).options(joinedload(Usuario.tarifa)).all()
-    return templates.TemplateResponse("usuarios.html", {
+    
+    response = templates.TemplateResponse("usuarios.html", {
         "request": request,
         "usuarios": usuarios
     })
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 @router.get("/usuarios/nuevo")
 def nuevo(request: Request, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
@@ -144,14 +175,17 @@ async def guardar(request: Request, db: Session = Depends(get_db), current_user=
     if form.get("password") and form.get("password").strip():
         usuario.password = hash_password(form.get("password"))
     
-    usuario.nombre = form.get("nombre", "")
+    usuario.nombre   = form.get("nombre", "")
     usuario.apellido = form.get("apellido", "")
-    usuario.correo = form.get("correo", "")
+    usuario.correo   = form.get("correo", "")
     usuario.telefono = form.get("telefono")
-    usuario.rol = form.get("rol", "USER")
-    usuario.activo = form.get("activo", "true") == "true"
-    
-    # ASIGNACIÓN DE TARIFA (PLAN)
+    usuario.rol      = form.get("rol", "CLIENTE")
+    usuario.activo   = form.get("activo", "true") == "true"
+
+    usuario.direccion = form.get("direccion", "").strip() or None
+    usuario.ciudad    = form.get("ciudad_raw", "").strip() or None
+    usuario.localidad = form.get("localidad", "").strip() or None
+
     tarifa_id = form.get("tarifa_id")
     if tarifa_id and tarifa_id.strip():
         usuario.tarifa_id = int(tarifa_id)
@@ -159,8 +193,8 @@ async def guardar(request: Request, db: Session = Depends(get_db), current_user=
         usuario.tarifa_id = None
 
     db.add(usuario)
-    db.commit() # Aseguramos el guardado de la tarifa
-    return RedirectResponse(url="/envios/usuarios", status_code=302)
+    db.commit() 
+    return RedirectResponse(url="/usuarios", status_code=302)
 
 @router.get("/usuarios/eliminar/{id}")
 def eliminar(id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
@@ -169,7 +203,7 @@ def eliminar(id: int, db: Session = Depends(get_db), current_user=Depends(get_cu
     if usuario:
         db.delete(usuario)
         db.commit()
-    return RedirectResponse(url="/envios/usuarios", status_code=303)
+    return RedirectResponse(url="/usuarios", status_code=303)
 
 # --- GESTIÓN DE SALDO ---
 
@@ -189,27 +223,27 @@ def vista_recargar_saldo(id: int, request: Request, db: Session = Depends(get_db
 async def procesar_recarga(request: Request, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     require_admin(current_user)
     form = await request.form()
-    usuario_id = int(form.get("usuario_id"))
+    usuario_id    = int(form.get("usuario_id"))
     monto_recarga = Decimal(form.get("monto"))
-    concepto = form.get("concepto", "Recarga manual por Administrador")
+    concepto      = form.get("concepto", "Recarga manual por Administrador")
 
     usuario = db.query(Usuario).filter(Usuario.id_usuario == usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     usuario.saldo_plan += monto_recarga
+    tipo = 'DESCUENTO' if monto_recarga < 0 else 'CARGA'
 
     nueva_trans = Transaccion(
         usuario_id=usuario.id_usuario,
-        tipo_movimiento='CARGA',
+        tipo_movimiento=tipo,
         monto=monto_recarga,
         concepto=concepto,
         fecha_creacion=datetime.now()
     )
     db.add(nueva_trans)
     db.commit()
-
-    return RedirectResponse(url="/envios/usuarios", status_code=303)
+    return RedirectResponse(url="/usuarios", status_code=303)
 
 # --- PERFIL ---
 
@@ -218,10 +252,15 @@ def perfil(request: Request, db: Session = Depends(get_db), current_user=Depends
     usuario = usuario_repo.find_by_user_name(db, current_user.user_name)
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    return templates.TemplateResponse("perfil.html", {
+    
+    response = templates.TemplateResponse("perfil.html", {
         "request": request,
         "usuario": usuario
     })
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 @router.post("/perfil/guardar")
 async def guardar_perfil(request: Request, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
@@ -231,10 +270,10 @@ async def guardar_perfil(request: Request, db: Session = Depends(get_db), curren
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
     if form.get("user_name"): actual.user_name = form.get("user_name")
-    if form.get("password"): actual.password = hash_password(form.get("password"))
-    if form.get("nombre"): actual.nombre = form.get("nombre")
-    if form.get("apellido"): actual.apellido = form.get("apellido")
-    if form.get("correo"): actual.correo = form.get("correo")
+    if form.get("password"):  actual.password  = hash_password(form.get("password"))
+    if form.get("nombre"):    actual.nombre    = form.get("nombre")
+    if form.get("apellido"):  actual.apellido  = form.get("apellido")
+    if form.get("correo"):    actual.correo    = form.get("correo")
 
     usuario_repo.save(db, actual)
     return RedirectResponse(url="/home_cliente?actualizado=true", status_code=302)
@@ -252,7 +291,7 @@ def vista_reporte(
 ):
     require_admin(current_user)
     activo_bool = None
-    if activo == "true": activo_bool = True
+    if activo == "true":  activo_bool = True
     elif activo == "false": activo_bool = False
 
     usuarios = _filtrar_usuarios(db, nombre, rol, activo_bool)
@@ -289,7 +328,7 @@ def generar_reporte_pdf(
     require_admin(current_user)
     from app.utils.pdf_generator import generar_pdf
     activo_bool = None
-    if activo == "true": activo_bool = True
+    if activo == "true":  activo_bool = True
     elif activo == "false": activo_bool = False
 
     usuarios = _filtrar_usuarios(db, nombre, rol, activo_bool)

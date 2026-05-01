@@ -4,7 +4,7 @@ from app.config.database import Base
 
 class Lugar(Base):
     __tablename__ = "lugares"
-
+    
     lugar_id = Column(BigInteger, primary_key=True, autoincrement=True)
     direccion = Column(String(255))
     ciudad = Column(String(100))

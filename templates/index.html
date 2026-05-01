@@ -10,148 +10,175 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.js"></script>
-    <style>
-    /* VARIABLES DE COLOR PARA FÁCIL EDICIÓN */
+<style>
+    /* ── VARIABLES DE COLOR (ACTUALIZADAS CON IMAGEN) ─────────────────── */
     :root {
-        --azul-rey: #0046ad;
-        --azul-oscuro: #002d70;
-        --naranja: #ff7b00;
-        --naranja-hover: #e66f00;
-        --blanco: #ffffff;
-        --gris-claro: #f4f7f6;
+        --milano-red:   #B20C06;  /* Rojo para botones y acentos */
+        --milano-hover: #8E0A05;
+        --white:        #FDFFFF;  /* Fondo principal */
+        --chinese-black: #0b012e; /* Títulos y textos principales */
+        --slate-gray:    #738589; /* Subtítulos y detalles */
+        --text-light:    #ffffff; /* Letra blanca en fondos oscuros */
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body { 
-        background: linear-gradient(135deg, #002B5B, #004085, #001a33); 
-        color: var(--blanco); 
-        font-family: 'Montserrat', sans-serif; 
-        overflow-x: hidden; 
+    /* ── BODY ─────────────────────────────────────────────────────────── */
+    body {
+        background-color: var(--white);
+        color: var(--chinese-black);
+        font-family: 'Montserrat', sans-serif;
+        overflow-x: hidden;
     }
 
-    /* NAVBAR - Azul con acento naranja */
-    .navbar { 
-        backdrop-filter: blur(15px); 
-        background: rgba(0, 45, 112, 0.8); 
-        border-bottom: 2px solid var(--naranja); 
-        padding: 10px 0; 
+    /* ── NAVBAR ───────────────────────────────────────────────────────── */
+    .navbar {
+        backdrop-filter: blur(15px);
+        background: rgba(16, 16, 16, 0.95); /* Fondo Negro Chino para contraste */
+        border-bottom: 2px solid var(--milano-red);
+        padding: 10px 0;
     }
-    
-    /* LOGO INTEGRADO EN NAVBAR */
-    .navbar-brand { 
+
+    /* ── LOGO ─────────────────────────────────────────────────────────── */
+    .navbar-brand {
         display: flex;
         align-items: center;
         gap: 12px;
-        font-size: 1.9rem; 
-        font-weight: 800; 
-        color: var(--naranja) !important; 
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: var(--text-light) !important;
     }
     .navbar-brand img {
         height: 100px;
         width: auto;
         border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.2);
     }
-    .navbar-brand span { color: var(--blanco); }
+    /* Acento Rojo en el nombre */
+    .navbar-brand span { color: var(--milano-red); }
 
-    .btn-login { 
-        background: transparent; 
-        border: 2px solid var(--blanco); 
-        color: var(--blanco); 
-        padding: 8px 25px; 
-        border-radius: 25px; 
-        font-weight: 600; 
-        transition: 0.3s; 
+    /* ── BOTONES NAVBAR ───────────────────────────────────────────────── */
+    .btn-login {
+        background: transparent;
+        border: 2px solid var(--text-light);
+        color: var(--text-light);
+        padding: 8px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: 0.3s;
     }
-    .btn-login:hover { background: var(--blanco); color: var(--azul-oscuro); transform: scale(1.05); }
+    .btn-login:hover { background: var(--text-light); color: var(--chinese-black); transform: scale(1.05); }
 
-    .btn-registro { 
-        background: var(--naranja); 
-        border: none; 
-        color: var(--blanco); 
-        padding: 8px 25px; 
-        border-radius: 25px; 
-        font-weight: 700; 
-        transition: 0.3s; 
+    .btn-registro {
+        background: var(--milano-red);
+        border: none;
+        color: var(--text-light);
+        padding: 8px 25px;
+        border-radius: 25px;
+        font-weight: 700;
+        transition: 0.3s;
     }
-    .btn-registro:hover { background: var(--naranja-hover); transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 123, 0, 0.4); }
+    .btn-registro:hover { background: var(--milano-hover); transform: scale(1.05); box-shadow: 0 0 15px rgba(178,12,6,0.35); }
 
-    /* HERO - Títulos potentes */
-    .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; padding: 120px 20px 50px; }
-    .hero-title { 
-        font-size: 4rem; 
-        font-weight: 900; 
-        text-shadow: 0 0 20px rgba(0,0,0,0.2); 
-        color: var(--blanco); 
-        margin-bottom: 10px; 
+    /* ── HERO ─────────────────────────────────────────────────────────── */
+    .hero {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: relative;
+        padding: 120px 20px 50px;
+        background: var(--white);
     }
-    .hero-title span { color: var(--naranja); }
-    .hero-tagline { font-size: 1.2rem; font-weight: 600; color: var(--naranja); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-    .hero-subtitle { font-size: 1.5rem; color: rgba(255,255,255,0.9); margin-bottom: 40px; font-weight: 300; }
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 900;
+        color: var(--chinese-black); /* Títulos negros */
+        margin-bottom: 10px;
+    }
+    .hero-title span { color: var(--milano-red); }
 
-    /* BOTONES HERO */
+    .hero-tagline {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--slate-gray); /* Slate Gray para jerarquía */
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+    }
+    .hero-subtitle {
+        font-size: 1.5rem;
+        color: var(--slate-gray);
+        margin-bottom: 40px;
+        font-weight: 300;
+    }
+
+    /* ── BOTONES HERO ─────────────────────────────────────────────────── */
     .btn-hero { padding: 15px 40px; font-size: 1.1rem; border-radius: 30px; font-weight: 700; transition: 0.3s; text-decoration: none; display: inline-block; }
-    .btn-primary-hero { background: var(--naranja); color: var(--blanco); border: none; }
-    .btn-primary-hero:hover { background: var(--naranja-hover); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(255,123,0,0.3); }
-    
-    .btn-secondary-hero { background: var(--blanco); color: var(--azul-rey); border: none; }
-    .btn-secondary-hero:hover { background: var(--gris-claro); transform: translateY(-5px); }
+    .btn-primary-hero { background: var(--milano-red); color: var(--text-light); border: none; } /* Botón Rojo Letra Blanca */
+    .btn-primary-hero:hover { background: var(--milano-hover); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(178,12,6,0.3); }
+    .btn-secondary-hero { background: var(--chinese-black); color: var(--text-light); border: none; }
+    .btn-secondary-hero:hover { background: #333; transform: translateY(-5px); }
 
-    /* QUICK TRACK - Formulario de rastreo */
-    .quick-track { 
-        max-width: 600px; 
-        margin: 0 auto; 
-        background: rgba(255,255,255,0.15); 
-        padding: 30px; 
-        border-radius: 20px; 
-        border: 1px solid rgba(255,255,255,0.2); 
-        backdrop-filter: blur(10px); 
+    /* ── QUICK TRACK ──────────────────────────────────────────────────── */
+    .quick-track {
+        max-width: 600px;
+        margin: 0 auto;
+        background: var(--white);
+        padding: 30px;
+        border-radius: 20px;
+        border: 2px solid var(--chinese-black);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
-    .quick-track h4 { color: var(--blanco); margin-bottom: 20px; font-weight: 600; }
-    .track-input-group { display: flex; gap: 10px; }
-    .track-input { 
-        flex: 1; 
-        padding: 15px; 
-        border: 2px solid transparent; 
-        border-radius: 15px; 
-        background: var(--blanco); 
-        color: var(--azul-oscuro); 
-        font-size: 1rem; 
+    .track-input:focus { outline: none; border-color: var(--milano-red); }
+    .btn-track { padding: 15px 30px; background: var(--milano-red); border: none; border-radius: 15px; color: var(--text-light); font-weight: 700; cursor: pointer; transition: 0.3s; }
+    .btn-track:hover { background: var(--milano-hover); }
+
+    /* ── SERVICIOS ────────────────────────────────────────────────────── */
+    .servicios { padding: 100px 20px; background: #f9f9f9; color: var(--chinese-black); }
+    .section-title { text-align: center; font-size: 2.5rem; font-weight: 800; color: var(--chinese-black); margin-bottom: 60px; }
+    .servicio-card {
+        background: var(--white);
+        border: 1px solid var(--slate-gray);
+        border-radius: 20px;
+        padding: 40px;
+        transition: 0.3s;
     }
-    .track-input:focus { outline: none; border-color: var(--naranja); }
-    .btn-track { padding: 15px 30px; background: var(--naranja); border: none; border-radius: 15px; color: var(--blanco); font-weight: 700; cursor: pointer; transition: 0.3s; }
-    .btn-track:hover { background: var(--naranja-hover); transform: scale(1.05); }
+    .servicio-card:hover { transform: translateY(-10px); border-color: var(--milano-red); }
+    .servicio-icon { font-size: 4rem; color: var(--slate-gray); margin-bottom: 20px; transition: 0.3s; } 
+    .servicio-card:hover .servicio-icon { color: var(--milano-red); }
 
-    /* SERVICIOS - Tarjetas blancas con azul */
-    .servicios { padding: 100px 20px; background: var(--gris-claro); color: var(--azul-oscuro); }
-    .section-title { text-align: center; font-size: 2.5rem; font-weight: 800; color: var(--azul-rey); margin-bottom: 60px; }
-    .servicio-card { background: var(--blanco); border: 1px solid rgba(0,70,173,0.1); border-radius: 20px; padding: 40px; text-align: center; transition: 0.3s; height: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    .servicio-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,70,173,0.15); border-color: var(--naranja); }
-    .servicio-icon { font-size: 4rem; color: var(--azul-rey); margin-bottom: 20px; }
-    .servicio-card h3 { color: var(--azul-oscuro); margin-bottom: 15px; font-weight: 700; }
-    .servicio-card p { color: #555; line-height: 1.6; }
+    /* ── CARACTERÍSTICAS ──────────────────────────────────────────────── */
+    .caracteristicas { padding: 100px 20px; background: var(--white); color: var(--chinese-black); }
+    .feature-item {
+        background: #fdfdfd;
+        border-left: 4px solid var(--milano-red); 
+    }
+    .feature-icon { font-size: 2.5rem; color: var(--chinese-black); min-width: 60px; }
+    .feature-content h5 { color: var(--chinese-black); font-weight: 600; }
 
-    /* CARACTERÍSTICAS */
-    .caracteristicas { padding: 100px 20px; background: var(--blanco); color: var(--azul-oscuro); }
-    .feature-item { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; padding: 20px; background: var(--gris-claro); border-radius: 15px; border-left: 4px solid var(--azul-rey); }
-    .feature-icon { font-size: 2.5rem; color: var(--naranja); min-width: 60px; }
-    .feature-content h5 { color: var(--azul-rey); margin-bottom: 5px; font-weight: 600; }
+    /* ── CTA SECTION ──────────────────────────────────────────────────── */
+    .cta-section {
+        padding: 80px 20px;
+        text-align: center;
+        background: var(--chinese-black); 
+        color: var(--text-light); /* Letra blanca en fondo negro */
+    }
 
-    /* CTA SECTION */
-    .cta-section { padding: 80px 20px; text-align: center; background: rgba(0,0,0,0.2); }
+    /* ── FOOTER ───────────────────────────────────────────────────────── */
+    .footer {
+        padding: 40px 20px;
+        background: var(--chinese-black); 
+        border-top: 3px solid var(--milano-red); 
+        text-align: center;
+        color: var(--text-light);
+    }
+    .footer-links a:hover { color: var(--milano-red); }
+    .social-icons a:hover { color: var(--milano-red); transform: scale(1.2); }
 
-    /* FOOTER */
-    .footer { padding: 40px 20px; background: var(--azul-oscuro); border-top: 4px solid var(--naranja); text-align: center; color: var(--blanco); }
-    .footer-links a { color: var(--blanco); text-decoration: none; transition: 0.3s; margin: 0 10px; }
-    .footer-links a:hover { color: var(--naranja); }
-    .social-icons a { color: var(--blanco); font-size: 1.5rem; transition: 0.3s; margin: 0 10px; }
-    .social-icons a:hover { color: var(--naranja); transform: scale(1.2); }
-
+    /* ── RESPONSIVE ───────────────────────────────────────────────────── */
     @media (max-width: 768px) {
         .hero-title { font-size: 2.5rem; }
-        .hero-buttons { display: flex; flex-direction: column; gap: 15px; }
-        .track-input-group { flex-direction: column; }
     }
 </style>
 </head>
@@ -203,12 +230,12 @@
 
         <div class="quick-track">
             <h4><i class="bi bi-search"></i> Rastrear mi Envío</h4>
-            <form action="/seguimiento/buscar" method="post">
+            <form action="/seguimiento" method="get">
                 <div class="track-input-group">
-                    <input type="text" name="numeroGuia" class="track-input"
-                        placeholder="Ingresa tu número de guía"
-                        required maxlength="20" pattern="[A-Za-z0-9]+"
-                        title="Solo letras y números" />
+                    <input type="text" name="numero_guia" class="track-input"
+                        placeholder="Ej: ENV000001 o ENV-00011"
+                        required maxlength="20" pattern="[A-Za-z0-9\-]+"
+                        title="Letras, números y guiones. Ej: ENV000001" />
                     <button type="submit" class="btn-track">
                         <i class="bi bi-search"></i> Buscar
                     </button>

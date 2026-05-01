@@ -42,14 +42,15 @@
             <div class="col-6 border-end">
                 <p class="fw-bold text-uppercase border-bottom">Remitente</p>
                 <p class="mb-1"><strong>Cliente:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</p>
-                <p class="mb-1"><strong>Origen:</strong> {{ envio.lugar_recogida.ciudad }}</p>
                 <p class="mb-1"><strong>Dirección:</strong> {{ envio.lugar_recogida.direccion }}</p>
+                <p class="mb-1"><strong>Origen:</strong> {{ envio.lugar_recogida.ciudad }}</p>
                 <p class="mb-1"><strong>Contacto:</strong> {{ envio.lugar_recogida.referencia }}</p>
             </div>
             <div class="col-6">
                 <p class="fw-bold text-uppercase border-bottom">Destinatario</p>
-                <p class="mb-1"><strong>Destino:</strong> {{ envio.lugar_entrega.ciudad }}</p>
+                <p class="mb-1"><strong>Cliente:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</p>
                 <p class="mb-1"><strong>Dirección:</strong> {{ envio.lugar_entrega.direccion }}</p>
+                <p class="mb-1"><strong>Destino:</strong> {{ envio.lugar_entrega.ciudad }}</p>
                 <p class="mb-1"><strong>Contacto:</strong> {{ envio.lugar_entrega.referencia }}</p>
             </div>
         </div>

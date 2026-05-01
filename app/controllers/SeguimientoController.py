@@ -18,12 +18,19 @@ def seguimiento(request: Request, numero_guia: Optional[str] = Query(None), db: 
         "encontrado": None
     })
 
-@router.post("/seguimiento/buscar")
-def buscar(request: Request, numero_guia: str = Form(...), db: Session = Depends(get_db)):
-    return _buscar(request, numero_guia, db)
 
 def _buscar(request, numero_guia, db):
-    envio = envio_repo.find_by_numero_guia(db, numero_guia.strip().upper())
+    # Normalizar: quitar espacios, mayúsculas, reemplazar guiones raros
+    guia_limpia = (
+        numero_guia
+        .strip()
+        .upper()
+        .replace("–", "-")   # guión largo
+        .replace("—", "-")   # guión em
+        .replace(" ", "")    # espacios internos
+    )
+
+    envio = envio_repo.find_by_numero_guia(db, guia_limpia)
     if envio:
         return templates.TemplateResponse("seguimiento.html", {
             "request": request,

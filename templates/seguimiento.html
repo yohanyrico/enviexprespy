@@ -74,12 +74,12 @@
     <div class="search-container">
         <h2 class="text-center fw-bold mb-4">RASTREA TU PEDIDO</h2>
 
-        <form action="/seguimiento/buscar" method="post" class="search-box">
-            <input type="text" name="numero_guia" class="search-input" 
-                   placeholder="Ingresa el número de guía" required
-                   value="{{ numero_guia if numero_guia else '' }}">
-            <button type="submit" class="btn-search">BUSCAR</button>
-        </form>
+        <form action="/seguimiento" method="get" class="search-box">
+    <input type="text" name="numero_guia" class="search-input" 
+           placeholder="Ingresa el número de guía" required
+           value="{{ numero_guia if numero_guia else '' }}">
+    <button type="submit" class="btn-search">BUSCAR</button>
+</form>
 
         {% if encontrado %}
         <div class="tracking-status">

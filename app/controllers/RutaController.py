@@ -57,7 +57,6 @@ async def quitar_de_ruta_masivo(
         if not envio_ids:
             return {"status": "error", "message": "No hay envíos seleccionados"}
 
-        # Limpiamos el mensajero y reseteamos el estado a 'Registrado' para todos los IDs
         db.query(Envio).filter(Envio.envio_id.in_(envio_ids)).update(
             {"usuario_mensajero_id": None, "estado": "Registrado"},
             synchronize_session=False
@@ -81,13 +80,10 @@ async def quitar_de_ruta(
         if not envio:
             return {"status": "error", "message": "Envío no encontrado"}
 
-        # Limpiamos el mensajero y reseteamos estado
         envio.usuario_mensajero_id = None
         envio.estado = "Registrado" 
         
         db.commit()
-        
-        # Redirigir de vuelta a la tabla de envíos
         return RedirectResponse(url="/envios", status_code=303)
 
     except Exception as e:
@@ -95,22 +91,42 @@ async def quitar_de_ruta(
         return {"status": "error", "message": str(e)}
 
 # --- RUTA 4: CARGAR EL MAPA OPERATIVO ---
-@router.post("/envios/planificar-ruta", response_class=HTMLResponse)
+# ✅ FIX BUG 2: Esta es la ÚNICA definición de planificar-ruta.
+#    La duplicada en EnvioController.py fue eliminada.
+@router.api_route("/envios/planificar-ruta", methods=["GET", "POST"], response_class=HTMLResponse)
 async def planificar_ruta(request: Request, db: Session = Depends(get_db)):
-    # Traemos todos los envíos con sus direcciones y coordenadas cargadas
-    envios = db.query(Envio).options(
+
+    # Solo envíos pendientes van al mapa para asignar
+    envios = db.query(Envio).filter(
+        Envio.estado == "Registrado"
+    ).options(
         joinedload(Envio.lugar_recogida),
         joinedload(Envio.lugar_entrega)
     ).all()
-    
-    # Traemos solo los usuarios con rol de mensajero
-    mensajeros = db.query(Usuario).filter(Usuario.rol == "MENSAJERO").all()
-    
+
+    # Mensajeros disponibles para el select de asignación
+    mensajeros = db.query(Usuario).filter(
+        Usuario.rol == "MENSAJERO"
+    ).all()
+
+    # ✅ FIX BUG 1 (mapa): Obtener mensajeros con envíos En_Ruta → panel izquierdo
+    ids_con_ruta = db.query(Envio.usuario_mensajero_id).filter(
+        Envio.estado == "En_Ruta",
+        Envio.usuario_mensajero_id != None
+    ).distinct().all()
+
+    ids_con_ruta = [row[0] for row in ids_con_ruta]
+
+    rutas_activas = db.query(Usuario).filter(
+        Usuario.id_usuario.in_(ids_con_ruta)
+    ).all() if ids_con_ruta else []
+
     rol = request.session.get("rol")
 
     return templates.TemplateResponse("mapa-operaciones.html", {
-        "request": request, 
-        "envios": envios, 
+        "request": request,
+        "envios": envios,
         "mensajeros": mensajeros,
+        "rutas_activas": rutas_activas,   # ✅ Ahora sí se pasa al template
         "rol": rol
     })

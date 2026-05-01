@@ -1,0 +1,212 @@
+{# templates/imprimir_guias_masivas.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Impresión Masiva de Guías - Enviexpress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { background: white; color: black; font-family: 'Courier New', Courier, monospace; }
+        
+        /* REGLA CLAVE: Salto de página después de cada guía */
+        .page-break {
+            page-break-after: always;
+            border-bottom: 2px dashed #ccc; /* Línea guía visual en pantalla */
+            margin-bottom: 50px;
+        }
+
+        .guia-print {
+            border: 2px dashed #000;
+            padding: 30px;
+            max-width: 850px;
+            margin: 20px auto;
+            position: relative;
+            background: white;
+        }
+
+        .header-guia { border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+        
+        .barcode {
+            font-family: 'Libre Barcode 128', cursive;
+            font-size: 75px;
+            line-height: 1;
+            margin: 0;
+        }
+
+        .localidad-box {
+            background: #000;
+            color: #fff;
+            padding: 10px 20px;
+            font-weight: 900;
+            display: inline-block;
+            margin: 10px 0;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            font-size: 24px;
+            border-radius: 4px;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .cod-stamp {
+            border: 4px double #000;
+            padding: 10px;
+            text-align: center;
+            margin-top: 10px;
+            background: #f0f0f0;
+        }
+
+        .qr-code {
+            width: 130px;
+            height: 130px;
+            border: 1px solid #000;
+            padding: 5px;
+            background: white;
+        }
+
+        .instrucciones-box {
+            border: 1px solid #000;
+            padding: 10px;
+            min-height: 100px;
+            font-size: 14px;
+            background: #fafafa;
+        }
+
+        @media print {
+            .no-print { display: none; }
+            .page-break { 
+                border: none; 
+                margin: 0; 
+                padding: 0;
+            }
+            .guia-print { 
+                border: 2px solid #000; 
+                margin: 0; 
+                width: 100%; 
+                max-width: 100%; 
+                /* Evitar que una sola guía se parta entre dos páginas */
+                break-inside: avoid; 
+            }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    {# BARRA DE CONTROL FLOTANTE #}
+    <div class="no-print text-center py-3 sticky-top bg-dark border-bottom">
+        <button onclick="window.print()" class="btn btn-warning btn-lg fw-bold">🖨️ IMPRIMIR {{ envios|length }} GUÍAS</button>
+        <a href="/envios/" class="btn btn-outline-light btn-lg">VOLVER AL PANEL</a>
+    </div>
+
+    {# BUCLE PARA GENERAR TODAS LAS GUÍAS SELECCIONADAS #}
+    {% for envio in envios %}
+    <div class="page-break">
+        <div class="guia-print">
+            <div class="header-guia d-flex justify-content-between align-items-start">
+                <div>
+                    <h1 class="h2 fw-bold mb-0" style="font-family: 'Montserrat', sans-serif;">ENVIEXPRESS</h1>
+                    <p class="mb-0 text-uppercase fw-bold">Logística Bogotá D.C.</p>
+                    
+                    <div class="barcode mt-2">{{ envio.numero_guia }}</div>
+                    <div class="fw-bold" style="letter-spacing: 5px; font-size: 18px;">{{ envio.numero_guia }}</div>
+                </div>
+                <div class="text-end">
+                    <h2 class="h4 mb-0 fw-bold">ORDEN DE SERVICIO</h2>
+                    <p class="mb-2"><strong>FECHA:</strong> {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</p>
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ envio.numero_guia }}" 
+                         class="qr-code" alt="QR Tracking">
+                </div>
+            </div>
+
+            <div class="row mb-3 mt-4">
+                <div class="col-6 border-end border-dark">
+                    <p class="fw-bold text-uppercase border-bottom bg-light p-1">REMITENTE (ORIGEN)</p>
+                    <p class="mb-1"><strong>CLIENTE:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</p>
+                    <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_recogida.ciudad }}</p>
+                    <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_recogida.direccion }}</p>
+                </div>
+
+                <div class="col-6">
+                    <p class="fw-bold text-uppercase border-bottom bg-light p-1">DESTINATARIO (ENTREGA)</p>
+                    <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_entrega.ciudad }}</p>
+                    <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_entrega.direccion }}</p>
+                    
+                    <div class="localidad-box">
+                        {% set ref = envio.lugar_entrega.referencia.upper() if envio.lugar_entrega.referencia else "" %}
+                        {% set dir = envio.lugar_entrega.direccion.upper() if envio.lugar_entrega.direccion else "" %}
+                        {% set ciudad_dest = envio.lugar_entrega.ciudad.upper() if envio.lugar_entrega.ciudad else "" %}
+                        
+                        {% set localidades = ["USAQUÉN", "CHAPINERO", "SANTA FE", "SAN CRISTÓBAL", "USME", "KENNEDY", "FONTIBÓN", "ENGATIVÁ", "SUBA", "BARRIOS UNIDOS", "TEUSAQUILLO", "LOS MÁRTIRES", "ANTONIO NARIÑO", "PUENTE ARANDA", "LA CANDELARIA", "RAFAEL URIBE", "CIUDAD BOLÍVAR", "SUMAPAZ", "BOSA"] %}
+                        {% set encontrada = [] %}
+
+                        {% if envio.tipo_servicio == 'NACIONAL' %}
+                            {{ ciudad_dest.split('(')[0].strip() }}
+                        {% else %}
+                            {% if 'LOCALIDAD:' in ref %}
+                                {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim|upper }}
+                            {% else %}
+                                {% for loc in localidades %}
+                                    {% if loc in ref or loc in dir %}
+                                        {% if encontrada.append(loc) %}{% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if encontrada %}
+                                    {{ encontrada[0] }}
+                                {% else %}
+                                    {{ ciudad_dest.split('(')[0].strip() }}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    <p class="mt-1 mb-1"><strong>CONTACTO:</strong> {{ envio.lugar_entrega.referencia }}</p>
+                </div>
+            </div>
+
+            <div class="row border-top border-dark pt-3">
+                <div class="col-7">
+                    <p class="fw-bold mb-1 text-uppercase">Contenido / Observaciones:</p>
+                    <div class="instrucciones-box">
+                        {{ envio.instrucciones }}
+                    </div>
+                </div>
+                <div class="col-5">
+                    <table class="table table-bordered border-dark mb-2">
+                        <tr>
+                            <th class="bg-light">PESO:</th>
+                            <td class="text-center">{{ envio.peso }} kg</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">TIPO:</th>
+                            <td class="text-center fw-bold">{{ envio.tipo_servicio }}</td>
+                        </tr>
+                    </table>
+
+                    {% if envio.es_cod %}
+                    <div class="cod-stamp">
+                        <p class="mb-0 fw-bold" style="font-size: 12px; letter-spacing: 1px;">COBRO CONTRA ENTREGA</p>
+                        <h3 class="mb-0 fw-bold" style="font-family: 'Montserrat', sans-serif;">
+                            $ {{ "{:,.0f}".format(envio.valor_a_cobrar).replace(',', '.') }}
+                        </h3>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-5 pt-4 border-top border-dark">
+                <div class="row">
+                    <div class="col-8">
+                        <p class="mb-0 fw-bold">Firma de conformidad (Recibido):</p>
+                        <div style="border-bottom: 1px solid #000; width: 85%; height: 45px; margin-bottom: 5px;"></div>
+                        <p class="small">Nombre y C.C: _________________________________________</p>
+                    </div>
+                    <div class="col-4 text-end">
+                        <p class="small opacity-50">Control Operativo<br>Enviexpress S.A.S</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html>

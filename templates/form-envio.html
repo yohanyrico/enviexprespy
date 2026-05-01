@@ -8,112 +8,204 @@
     <title>{% if envio %}Editar Envío{% else %}Nuevo Envío{% endif %} | ENVIEXPRESS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
-        :root {
-            --primary-dark: #001a41;
-            --accent-orange: #ff8c00;
-        }
+    :root {
+        --milano-red: #B20C06;
+        --pure-black: #000000;
+        --slate-gray: #738589;
+        --white-pure: #FFFFFF;
+    }
 
-        body {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #003a8c 100%);
-            color: white;
-            min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
-        }
+    body {
+        background-color: var(--white-pure);
+        color: var(--pure-black);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-        .form-container {
-            max-width: 1150px;
-            margin: 30px auto;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .form-container {
+        max-width: 1150px;
+        margin: 30px auto;
+        padding: 30px;
+        background: #dad5d5;
+        border-radius: 24px;
+        border: 1px solid #050505;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
 
-        .address-card {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            height: 100%;
-        }
+    .address-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 18px;
+        border: 1px solid #000000;
+        height: 100%;
+    }
 
-        .section-title {
-            color: var(--accent-orange);
-            font-size: 0.8rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            border-left: 3px solid var(--accent-orange);
-            padding-left: 10px;
-        }
+    .section-title {
+        color: var(--pure-black);
+        font-size: 0.9rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        border-left: 4px solid var(--milano-red);
+        padding-left: 10px;
+    }
 
-        .form-control,
-        .form-select {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            border-radius: 10px;
-            font-weight: 500;
-        }
+    .form-control,
+    .form-select {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1px solid #ced4da;
+        border-radius: 10px;
+        padding: 10px;
+    }
 
-        .form-control[readonly] {
-            background-color: rgba(255, 255, 255, 0.1) !important;
-            color: #ff8c00 !important;
-            border: 1px solid var(--accent-orange);
-        }
+    .form-control:focus {
+        border-color: var(--milano-red);
+        box-shadow: 0 0 0 0.2rem rgba(178, 12, 6, 0.1);
+    }
 
-        .localidad-wrapper {
-            display: none;
-            margin-top: 10px;
-        }
+    .form-control[readonly] {
+        background-color: #fff5f5 !important;
+        color: var(--milano-red) !important;
+        border: 1px solid #feb2b2;
+    }
 
-        .localidad-wrapper.active {
-            display: block;
-        }
+    .btn-orange {
+        background-color: var(--milano-red) !important;
+        color: var(--white-pure) !important;
+        font-weight: bold;
+        border: none;
+        padding: 12px 45px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
 
-        .btn-orange {
-            background: var(--accent-orange);
-            color: white;
-            font-weight: bold;
-            border: none;
-            padding: 12px 45px;
-            border-radius: 12px;
-            transition: 0.3s;
-        }
+    .btn-orange:hover {
+        background-color: #8e0a05 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(178, 12, 6, 0.3);
+    }
 
-        .btn-orange:hover {
-            background: #e67e00;
-            transform: scale(1.02);
-            color: white;
-        }
+    .btn-back {
+        background: #e9ecef;
+        color: var(--pure-black);
+        border: 1px solid #dee2e6;
+        padding: 12px 25px;
+        border-radius: 12px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+    }
 
-        .btn-back {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 12px 25px;
-            border-radius: 12px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .text-orange { color: var(--accent-orange); }
+    .text-orange {
+        color: var(--milano-red) !important;
+    }
 
-        .cod-section {
-            background: rgba(255, 140, 0, 0.15);
-            border: 2px dashed #ff8c00;
-            padding: 20px;
-            border-radius: 18px;
-            margin: 25px 0;
-        }
+    .cod-section {
+        background: #fff5f5;
+        border: 2px dashed var(--milano-red);
+        padding: 20px;
+        border-radius: 18px;
+        margin: 25px 0;
+        color: var(--pure-black);
+    }
+
+    .tarifa-badge {
+        display: inline-block;
+        background: var(--milano-red);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-left: 8px;
+    }
+
+    .localidad-wrapper {
+        display: none;
+        margin-top: 10px;
+    }
+
+    .localidad-wrapper.active {
+        display: block;
+    }
+
+    label {
+        color: #444444;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .map-mini {
+        height: 200px;
+        border-radius: 12px;
+        border: 1px solid #ced4da;
+        margin-top: 10px;
+        overflow: hidden;
+        position: relative;
+        display: none;
+    }
+
+    .map-mini.visible {
+        display: block;
+    }
+
+    .map-status {
+        font-size: 0.75rem;
+        color: var(--slate-gray);
+        margin-top: 4px;
+        min-height: 18px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .map-status.ok   { color: #198754; }
+    .map-status.err  { color: var(--milano-red); }
+    .map-status.load { color: #0d6efd; }
+
+    .autocomplete-wrapper {
+        position: relative;
+    }
+
+    /* ── BOTÓN SIN SALDO ── */
+    .btn-sin-saldo {
+        background-color: #6c757d !important;
+        color: #dee2e6 !important;
+        font-weight: bold;
+        border: none;
+        padding: 12px 45px;
+        border-radius: 12px;
+        cursor: not-allowed;
+        opacity: 0.65;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* ── ALERTA SALDO EN FORMULARIO ── */
+    .alert-saldo-form {
+        background: #fff3cd;
+        border: 1.5px solid #ffc107;
+        border-radius: 12px;
+        color: #856404;
+        padding: 12px 18px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+    }
     </style>
 </head>
 
 <body>
-
     <div class="container py-4">
         <div class="form-container">
             <h2 class="fw-bold mb-4 text-center">
@@ -123,14 +215,24 @@
 
             <form action="/envios/guardar" method="post">
                 <input type="hidden" name="envio_id" value="{{ envio.envio_id if envio else '' }}">
+                <input type="hidden" name="lat_recogida"  id="lat_recogida" value="{{ envio.lugar_recogida.latitud if envio and envio.lugar_recogida else '' }}">
+                <input type="hidden" name="lon_recogida"  id="lon_recogida" value="{{ envio.lugar_recogida.longitud if envio and envio.lugar_recogida else '' }}">
+                <input type="hidden" name="lat_entrega"   id="lat_entrega" value="{{ envio.lugar_entrega.latitud if envio and envio.lugar_entrega else '' }}">
+                <input type="hidden" name="lon_entrega"   id="lon_entrega" value="{{ envio.lugar_entrega.longitud if envio and envio.lugar_entrega else '' }}">
 
+                {# ── CLIENTE REMITENTE ─────────────────────────────────────────── #}
                 <div class="mb-4">
-                    <label class="small fw-bold opacity-75">CLIENTE REMITENTE</label>
+                    <label class="small fw-bold opacity-75">
+                        CLIENTE REMITENTE
+                        {% if rol == 'ADMIN' %}
+                            <span id="badge_tarifa_cliente" class="tarifa-badge" style="display:none;"></span>
+                        {% endif %}
+                    </label>
                     {% if rol != 'ADMIN' %}
                         <input type="text" class="form-control" value="{{ current_user.nombre }} {{ current_user.apellido }}" readonly>
                         <input type="hidden" name="usuario_cliente_id" value="{{ current_user.id_usuario }}">
                     {% else %}
-                        <select name="usuario_cliente_id" class="form-select" required>
+                        <select name="usuario_cliente_id" id="select_cliente" class="form-select" required>
                             <option value="">Seleccione el cliente...</option>
                             {% for c in clientes %}
                                 <option value="{{ c.id_usuario }}" {% if envio and envio.usuario_cliente_id == c.id_usuario %}selected{% endif %}>
@@ -141,14 +243,24 @@
                     {% endif %}
                 </div>
 
+                {# ── DIRECCIÓN DE RECOGIDA Y ENTREGA ──────────────────────────── #}
                 <div class="row g-4">
+
+                    {# ── RECOGIDA ── #}
                     <div class="col-md-6">
                         <div class="address-card">
                             <div class="section-title">Datos de Recogida</div>
                             <div class="row g-2 mb-2">
                                 <div class="col-md-6">
                                     <label class="small opacity-75">Departamento</label>
-                                    <select class="form-select select-depto" id="depto_recogida" name="depto_recogida" data-ciudad="ciudad_recogida_select" required>
+                                    <select class="form-select select-depto"
+                                            id="depto_recogida"
+                                            name="depto_recogida"
+                                            data-ciudad="ciudad_recogida_select"
+                                            data-mapid="map_recogida"
+                                            data-saved-depto="{{ edit_depto_rec }}"
+                                            data-saved-ciudad="{{ edit_ciudad_rec }}"
+                                            required>
                                         <option value="">Seleccione...</option>
                                     </select>
                                 </div>
@@ -162,24 +274,58 @@
                                 <label class="small text-orange fw-bold">Localidad (Bogotá)</label>
                                 <select class="form-select" name="localidad_recogida">
                                     <option value="">Seleccione...</option>
-                                    {% for loc in ["Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme", "Kennedy", "Suba", "Engativá", "Bosa", "Fontibón", "Barrios Unidos", "Teusaquillo", "Los Mártires", "Antonio Nariño", "Puente Aranda", "La Candelaria", "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"] %}
-                                    <option value="{{ loc }}">{{ loc }}</option>
+                                    {% for loc in ["Usaquén","Chapinero","Santa Fe","San Cristóbal","Usme","Kennedy","Suba","Engativá","Bosa","Fontibón","Barrios Unidos","Teusaquillo","Los Mártires","Antonio Nariño","Puente Aranda","La Candelaria","Rafael Uribe Uribe","Ciudad Bolívar","Sumapaz"] %}
+                                        <option value="{{ loc }}" {% if edit_loc_rec == loc %}selected{% endif %}>{{ loc }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
 
-                            <input type="text" class="form-control mb-2" name="direccion_recogida" placeholder="Dirección Exacta" value="{{ envio.lugar_recogida.direccion if envio else '' }}" required>
-                            <input type="tel" class="form-control" name="telefono_recogida" placeholder="Teléfono" required>
+                            <div class="autocomplete-wrapper mb-2">
+                                <input type="text"
+                                    class="form-control dir-input"
+                                    id="dir_recogida"
+                                    name="direccion_recogida"
+                                    placeholder="Dirección Exacta (ej: Calle 45 #12-34)"
+                                    value="{{ envio.lugar_recogida.direccion if envio and envio.lugar_recogida else edit_dir_rec|default('') }}"
+                                    autocomplete="new-password"
+                                    data-mapid="map_recogida"
+                                    data-status="status_recogida"
+                                    data-lat="lat_recogida"
+                                    data-lon="lon_recogida"
+                                    data-depto="depto_recogida"
+                                    data-ciudad="ciudad_recogida_select"
+                                    required>
+                            </div>
+
+                            <input type="tel"
+                                class="form-control"
+                                name="telefono_recogida"
+                                placeholder="Teléfono"
+                                value="{{ edit_tel_rec }}"
+                                required>
+
+                            <div class="map-mini mt-2" id="map_recogida"></div>
+                            <div class="map-status" id="status_recogida">
+                                <i class="bi bi-geo-alt"></i> Pin en el mapa
+                            </div>
                         </div>
                     </div>
 
+                    {# ── ENTREGA ── #}
                     <div class="col-md-6">
                         <div class="address-card">
                             <div class="section-title">Datos de Entrega</div>
                             <div class="row g-2 mb-2">
                                 <div class="col-md-6">
                                     <label class="small opacity-75">Departamento</label>
-                                    <select class="form-select select-depto" id="depto_entrega" name="depto_entrega" data-ciudad="ciudad_entrega_select" required>
+                                    <select class="form-select select-depto"
+                                            id="depto_entrega"
+                                            name="depto_entrega"
+                                            data-ciudad="ciudad_entrega_select"
+                                            data-mapid="map_entrega"
+                                            data-saved-depto="{{ edit_depto_ent }}"
+                                            data-saved-ciudad="{{ edit_ciudad_ent }}"
+                                            required>
                                         <option value="">Seleccione...</option>
                                     </select>
                                 </div>
@@ -193,78 +339,150 @@
                                 <label class="small text-orange fw-bold">Localidad (Solo Bogotá)</label>
                                 <select class="form-select" name="localidad_entrega">
                                     <option value="">Seleccione...</option>
-                                    {% for loc in ["Usaquén", "Chapinero", "Santa Fe", "San Cristóbal", "Usme", "Kennedy", "Suba", "Engativá", "Bosa", "Fontibón", "Barrios Unidos", "Teusaquillo", "Los Mártires", "Antonio Nariño", "Puente Aranda", "La Candelaria", "Rafael Uribe Uribe", "Ciudad Bolívar", "Sumapaz"] %}
-                                    <option value="{{ loc }}">{{ loc }}</option>
+                                    {% for loc in ["Usaquén","Chapinero","Santa Fe","San Cristóbal","Usme","Kennedy","Suba","Engativá","Bosa","Fontibón","Barrios Unidos","Teusaquillo","Los Mártires","Antonio Nariño","Puente Aranda","La Candelaria","Rafael Uribe Uribe","Ciudad Bolívar","Sumapaz"] %}
+                                        <option value="{{ loc }}" {% if edit_loc_ent == loc %}selected{% endif %}>{{ loc }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
+{# ── NOMBRE DEL DESTINATARIO (nuevo campo) ── #}
+                            <input type="text"
+                                   class="form-control mb-2"
+                                   name="nombre_destinatario"
+                                   placeholder="Nombre del destinatario"
+                                   value="{{ edit_nombre_dest|default('') }}"
+                                   required>
+                                   
+                            <div class="autocomplete-wrapper mb-2">
+                                <input type="text"
+                                       class="form-control dir-input"
+                                       id="dir_entrega"
+                                       name="direccion_entrega"
+                                       placeholder="Dirección Destino (ej: Carrera 7 #80-15)"
+                                       value="{{ envio.lugar_entrega.direccion if envio and envio.lugar_entrega else '' }}"
+                                       autocomplete="new-password"
+                                       data-mapid="map_entrega"
+                                       data-status="status_entrega"
+                                       data-lat="lat_entrega"
+                                       data-lon="lon_entrega"
+                                       data-depto="depto_entrega"
+                                       data-ciudad="ciudad_entrega_select"
+                                       required>
+                            </div>
 
-                            <input type="text" class="form-control mb-2" name="direccion_entrega" placeholder="Dirección Destino" required>
-                            <input type="tel" class="form-control" name="telefono_entrega" placeholder="Teléfono" required>
+                            
+
+                            <input type="tel"
+                                   class="form-control"
+                                   name="telefono_entrega"
+                                   placeholder="Teléfono"
+                                   value="{{ edit_tel_ent }}"
+                                   required>
+
+                            <div class="map-mini mt-2" id="map_entrega"></div>
+                            <div class="map-status" id="status_entrega">
+                                <i class="bi bi-geo-alt"></i> Pin en el mapa
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                {# ── DESCRIPCIÓN, PESO E INSTRUCCIONES ────────────────────────── #}
                 <div class="row mt-4 g-3">
                     <div class="col-md-5">
                         <label class="small fw-bold opacity-75">DESCRIPCIÓN DEL CONTENIDO</label>
-                        <input type="text" class="form-control" name="descripcion" placeholder="¿Qué lleva el paquete?" required>
+                        <input type="text"
+                               class="form-control"
+                               name="descripcion"
+                               placeholder="¿Qué lleva el paquete?"
+                               value="{{ edit_descripcion }}"
+                               required>
                     </div>
                     <div class="col-md-2">
                         <label class="small fw-bold opacity-75">PESO (KG)</label>
-                        <input type="number" class="form-control" name="peso" step="0.1" value="1.0">
+                        <input type="number"
+                               class="form-control"
+                               name="peso"
+                               step="0.1"
+                               value="{{ envio.peso if envio else '1.0' }}">
                     </div>
                     <div class="col-md-5">
                         <label class="small fw-bold opacity-75 text-orange">INSTRUCCIONES / OBSERVACIONES</label>
-                        <textarea class="form-control" name="instrucciones_especiales" rows="1" placeholder="Ej: Portería, apto 201, llamar al llegar..."></textarea>
+                        <textarea class="form-control"
+                                  name="instrucciones_especiales"
+                                  rows="1"
+                                  placeholder="Ej: Portería, apto 201, llamar al llegar...">{{ edit_obs }}</textarea>
                     </div>
-                    {% if rol != 'ADMIN' %}
-                        <input type="hidden" name="tarifa_id" value="{{ tarifas[0].id if tarifas else '' }}">
-                    {% endif %}
                 </div>
 
+                {# ── SECCIÓN COD ───────────────────────────────────────────────── #}
                 <div class="cod-section">
                     <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <h6 class="mb-0 text-orange fw-bold" style="color: #ff8c00 !important;">
+                            <h6 class="mb-0 text-orange fw-bold">
                                 <i class="bi bi-cash-stack"></i> ¿COBRO CONTRA ENTREGA (COD)?
                             </h6>
-                            <small class="text-white opacity-75">Activa para cobrar el valor del producto al entregar.</small>
+                            <small class="opacity-75">Activa para cobrar el valor del producto al entregar.</small>
                         </div>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="es_cod" id="switchCod" 
-                                   style="transform: scale(1.8); cursor: pointer;" 
+                            <input class="form-check-input" type="checkbox" name="es_cod" id="switchCod"
+                                   style="transform: scale(1.8); cursor: pointer;"
                                    {% if envio and envio.es_cod %}checked{% endif %}>
                         </div>
                     </div>
 
-                    <div id="campoValorCod" class="mt-3" style="display: {% if envio and envio.es_cod %}block{% else %}none{% endif %};">
-                        <label class="small fw-bold text-white mb-2">VALOR A COBRAR EN DESTINO ($)</label>
+                    <div id="campoValorCod" class="mt-3"
+                         style="display: {% if envio and envio.es_cod %}block{% else %}none{% endif %};">
+                        <label class="small fw-bold mb-2">VALOR A COBRAR EN DESTINO ($)</label>
                         <div class="input-group">
                             <span class="input-group-text bg-warning text-dark border-0 fw-bold">$</span>
-                            <input type="number" class="form-control" name="valor_a_cobrar" id="inputValorCod" 
-                                   placeholder="Monto a cobrar" value="{{ envio.valor_a_cobrar if envio else '' }}" 
+                            <input type="number" class="form-control" name="valor_a_cobrar" id="inputValorCod"
+                                   placeholder="Monto a cobrar"
+                                   value="{{ envio.valor_a_cobrar if envio else '' }}"
                                    style="background: white !important; color: black !important;">
                         </div>
                     </div>
                 </div>
 
-                <div id="resumen_cotizacion" class="alert alert-info mt-3" style="display: none; background: rgba(0, 255, 255, 0.1); border: 1px solid cyan;">
-                    <h5 class="text-white mb-1"><i class="bi bi-calculator"></i> Cotización Estimada: <span id="precio_cotizado" class="text-warning fw-bold"></span></h5>
-                    <p class="small text-white opacity-75 mb-0" id="detalle_plan_info"></p>
+                {# ── RESUMEN COTIZACIÓN ────────────────────────────────────────── #}
+                <div id="resumen_cotizacion" class="alert mt-3"
+                     style="display: none; background: rgba(178,12,6,0.07); border: 1px solid var(--milano-red); border-radius: 15px;">
+                    <h5 class="mb-1">
+                        <i class="bi bi-calculator"></i> Cotización Estimada:
+                        <span id="precio_cotizado" class="fw-bold text-danger"></span>
+                    </h5>
+                    <p class="small opacity-75 mb-0" id="detalle_plan_info"></p>
                 </div>
 
+                {# ── BOTONES ───────────────────────────────────────────────────── #}
                 <div class="d-flex justify-content-between align-items-center mt-5">
                     <a href="/home" class="btn-back">
                         <i class="bi bi-arrow-left"></i> VOLVER AL LISTADO
                     </a>
                     <div>
-                        <button type="button" onclick="cotizar()" class="btn btn-outline-info me-2">
+                        <button type="button" id="btnCotizar" class="btn btn-outline-danger me-2">
                             <i class="bi bi-search"></i> COTIZAR ANTES
                         </button>
-                        <button type="submit" class="btn btn-orange shadow">
-                            {{ 'GUARDAR CAMBIOS' if envio else 'GENERAR GUÍA' }}
-                        </button>
+
+                        {# ── BOTÓN GUARDAR / GENERAR con validación de saldo ── #}
+                        {% if envio %}
+                            <button type="submit" class="btn btn-orange shadow">
+                                GUARDAR CAMBIOS
+                            </button>
+                        {% elif saldo_disponible is not none and saldo_disponible <= 0 %}
+                            <button type="button" class="btn-sin-saldo" disabled>
+                                <i class="bi bi-lock-fill"></i> SIN SALDO
+                            </button>
+                            <div class="alert-saldo-form mt-2">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                Recarga tu saldo para poder generar guías.
+                                <a href="/home_cliente" class="ms-2 fw-bold" style="color: #856404;">Recargar aquí</a>
+                            </div>
+                        {% else %}
+                            <button type="submit" class="btn btn-orange shadow">
+                                GENERAR GUÍA
+                            </button>
+                        {% endif %}
+
                     </div>
                 </div>
             </form>
@@ -272,6 +490,11 @@
     </div>
 
     <script>
+        function normalizar(str) {
+            if (!str) return "";
+            return str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        }
+
         const ciudadesPorDepto = {
             "AMAZONAS": ["Leticia", "Puerto Nariño", "El Encanto", "La Chorrera", "Mirití-Paraná"],
             "ANTIOQUIA": ["Medellín", "Bello", "Itagüí", "Envigado", "Apartadó", "Caucasia", "Rionegro", "Turbo", "Sabaneta", "Copacabana", "La Estrella", "Caldas", "Girardota", "Barbosa", "Cisneros"],
@@ -308,97 +531,264 @@
             "VICHADA": ["Puerto Carreño", "La Primavera", "Santa Rosalía", "Cumaribo"]
         };
 
-        function cotizar() {
-            const depto = document.getElementById('depto_entrega').value;
-            const ciudad = document.getElementById('ciudad_entrega_select').value;
-            const display = document.getElementById('resumen_cotizacion');
-            const precioDisplay = document.getElementById('precio_cotizado');
-            const detalleInfo = document.getElementById('detalle_plan_info');
-            
-            const cuotaUsuario = "{{ current_user.cuota_fija }}";
-            const rolActual = "{{ current_user.rol }}";
+        const deptoNormMap = {};
+        Object.keys(ciudadesPorDepto).forEach(function(depto) {
+            deptoNormMap[normalizar(depto)] = depto;
+        });
 
-            if (!depto || !ciudad) {
-                alert("Por favor seleccione el destino.");
-                return;
+        const ciudadNormMap = {};
+        Object.keys(ciudadesPorDepto).forEach(function(depto) {
+            ciudadesPorDepto[depto].forEach(function(ciudad) {
+                ciudadNormMap[normalizar(ciudad)] = ciudad;
+            });
+        });
+
+        const clientesTarifas = {{ clientes_tarifas | tojson if clientes_tarifas else '{}' }};
+
+        const mapInstances = {};
+        const mapMarkers   = {};
+
+        function initMap(mapId) {
+            if (mapInstances[mapId]) return;
+            const mapDiv = document.getElementById(mapId);
+            if (!mapDiv) return;
+            const gmap = new google.maps.Map(mapDiv, {
+                center: { lat: 4.711, lng: -74.0721 },
+                zoom: 5,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false
+            });
+            mapInstances[mapId] = gmap;
+        }
+
+        async function reverseGeocode(lat, lon, inputId) {
+            try {
+                const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
+                const data = await res.json();
+                if (data.address) {
+                    const a      = data.address;
+                    const calle  = a.road || '';
+                    const numero = a.house_number || '';
+                    const barrio = a.neighbourhood || a.suburb || '';
+                    let addr     = calle;
+                    if (numero) addr += ' #' + numero;
+                    if (barrio) addr += ', ' + barrio;
+                    document.getElementById(inputId).value = addr || data.display_name.split(',')[0];
+                }
+            } catch (e) { console.error('Error reverse geocode', e); }
+        }
+
+        function setPin(mapId, lat, lon, label, latInputId, lonInputId) {
+            if (!mapInstances[mapId]) {
+                const mapDiv = document.getElementById(mapId);
+                if (mapDiv) mapDiv.classList.add('visible');
+                initMap(mapId);
             }
-
-            const esBogota = depto.includes("BOGOTÁ") || ciudad.includes("BOGOTÁ");
-            
-            if (esBogota) {
-                const formattedPrice = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(cuotaUsuario);
-                precioDisplay.innerText = `${formattedPrice} (Urbano)`;
-                detalleInfo.innerText = `Tarifa aplicada según tu Plan ${rolActual}.`;
+            const gmap = mapInstances[mapId];
+            if (!gmap) return;
+            const latNum = parseFloat(lat);
+            const lonNum = parseFloat(lon);
+            if (latInputId) document.getElementById(latInputId).value = latNum.toFixed(6);
+            if (lonInputId) document.getElementById(lonInputId).value = lonNum.toFixed(6);
+            const pos = { lat: latNum, lng: lonNum };
+            gmap.setCenter(pos);
+            gmap.setZoom(16);
+            google.maps.event.trigger(gmap, 'resize');
+            gmap.setCenter(pos);
+            const statusId = mapId === 'map_recogida' ? 'status_recogida' : 'status_entrega';
+            const statusEl = document.getElementById(statusId);
+            if (statusEl) {
+                statusEl.className = 'map-status ok';
+                statusEl.innerHTML = '<i class="bi bi-check-circle-fill"></i> Ubicación confirmada';
+            }
+            if (mapMarkers[mapId]) {
+                mapMarkers[mapId].setPosition(pos);
             } else {
-                precioDisplay.innerText = "$17.990 (Nacional - Plan Raíces)";
-                detalleInfo.innerText = "Tarifa estándar para envíos nacionales fuera de Bogotá.";
+                const marker = new google.maps.Marker({
+                    position: pos, map: gmap, draggable: true, title: label || 'Ubicación'
+                });
+                marker.addListener('dragend', function(e) {
+                    const newLat = e.latLng.lat().toFixed(6);
+                    const newLon = e.latLng.lng().toFixed(6);
+                    if (latInputId) document.getElementById(latInputId).value = newLat;
+                    if (lonInputId) document.getElementById(lonInputId).value = newLon;
+                    if (statusEl) {
+                        statusEl.className = 'map-status ok';
+                        statusEl.innerHTML = '<i class="bi bi-check-circle-fill"></i> Ubicación ajustada manualmente';
+                    }
+                    const inputId = mapId === 'map_recogida' ? 'dir_recogida' : 'dir_entrega';
+                    reverseGeocode(newLat, newLon, inputId);
+                });
+                mapMarkers[mapId] = marker;
             }
-            display.style.display = 'block';
+        }
+
+        function iniciarGoogleAutocomplete() {
+            const opciones = {
+                componentRestrictions: { country: "co" },
+                fields: ["geometry", "formatted_address"],
+                strictBounds: false,
+            };
+            const inputRecogida = document.getElementById('dir_recogida');
+            if (inputRecogida) {
+                const autoRecogida = new google.maps.places.Autocomplete(inputRecogida, opciones);
+                autoRecogida.addListener('place_changed', () => {
+                    const place = autoRecogida.getPlace();
+                    if (place.geometry) {
+                        setPin('map_recogida', place.geometry.location.lat(), place.geometry.location.lng(), place.formatted_address, 'lat_recogida', 'lon_recogida');
+                    }
+                });
+            }
+            const inputEntrega = document.getElementById('dir_entrega');
+            if (inputEntrega) {
+                const autoEntrega = new google.maps.places.Autocomplete(inputEntrega, opciones);
+                autoEntrega.addListener('place_changed', () => {
+                    const place = autoEntrega.getPlace();
+                    if (place.geometry) {
+                        setPin('map_entrega', place.geometry.location.lat(), place.geometry.location.lng(), place.formatted_address, 'lat_entrega', 'lon_entrega');
+                    }
+                });
+            }
+        }
+
+        function getPlanNombre() {
+            {% if rol == 'ADMIN' %}
+                const selectCliente = document.getElementById('select_cliente');
+                return (selectCliente && selectCliente.value) ? clientesTarifas[selectCliente.value] : null;
+            {% else %}
+                return "{{ current_user.tarifa.nombre if current_user.tarifa else '' }}" || null;
+            {% endif %}
+        }
+
+        async function cotizar() {
+            const depto         = document.getElementById('depto_entrega').value;
+            const ciudad        = document.getElementById('ciudad_entrega_select').value;
+            const switchCod     = document.getElementById('switchCod');
+            const inputValorCod = document.getElementById('inputValorCod');
+            if (!depto || !ciudad) { alert("Por favor seleccione el destino para cotizar."); return; }
+            const planNombre = getPlanNombre();
+            if (!planNombre) { alert("Cliente sin plan asignado."); return; }
+            try {
+                const response = await fetch(`/tarifas/api/detalle/${encodeURIComponent(planNombre)}`);
+                const data     = await response.json();
+                if (response.ok) {
+                    const esBogota  = depto.includes("BOGOTÁ") || ciudad.includes("BOGOTÁ");
+                    let valorBase   = esBogota ? data.precio_unitario : 17990;
+                    let comisionCod = 0;
+                    if (switchCod && switchCod.checked) {
+                        const valorProd = parseFloat(inputValorCod.value) || 0;
+                        comisionCod = valorProd * 0.03;
+                    }
+                    const total = valorBase + comisionCod;
+                    document.getElementById('precio_cotizado').innerText = `$${new Intl.NumberFormat('es-CO').format(total)}`;
+                    document.getElementById('resumen_cotizacion').style.display = 'block';
+                }
+            } catch (e) { console.error(e); }
         }
 
         function updateCities(selectElement, savedCity = null) {
-            const depto = selectElement.value;
-            const targetId = selectElement.getAttribute('data-ciudad');
+            const deptoVal     = selectElement.value;
+            const targetId     = selectElement.getAttribute('data-ciudad');
             const ciudadSelect = document.getElementById(targetId);
-            const wrapperLocalidad = selectElement.closest('.address-card').querySelector('.localidad-wrapper');
+            const wrapperLoc   = selectElement.closest('.address-card').querySelector('.localidad-wrapper');
 
             ciudadSelect.innerHTML = '<option value="">Seleccione ciudad...</option>';
 
-            if (ciudadesPorDepto[depto]) {
-                ciudadesPorDepto[depto].forEach(c => {
+            if (ciudadesPorDepto[deptoVal]) {
+                const savedCityNorm = normalizar(savedCity);
+                ciudadesPorDepto[deptoVal].forEach(function(c) {
                     const opt = document.createElement('option');
-                    opt.value = c; opt.text = c;
-                    if (savedCity && savedCity.trim() === c.trim()) opt.selected = true;
+                    opt.value = c;
+                    opt.text  = c;
+                    if (savedCity && normalizar(c) === savedCityNorm) {
+                        opt.selected = true;
+                    }
                     ciudadSelect.appendChild(opt);
                 });
             }
 
-            if (depto === "BOGOTÁ, D.C.") wrapperLocalidad.classList.add('active');
-            else wrapperLocalidad.classList.remove('active');
+            if (normalizar(deptoVal).includes("BOGOTA")) {
+                wrapperLoc.classList.add('active');
+            } else {
+                wrapperLoc.classList.remove('active');
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Lógica para mostrar/ocultar el valor de COD
-            const switchCod = document.getElementById('switchCod');
-            const campoValorCod = document.getElementById('campoValorCod');
-            const inputValorCod = document.getElementById('inputValorCod');
 
+            const switchCod = document.getElementById('switchCod');
             if (switchCod) {
-                switchCod.addEventListener('change', function() {
-                    if(this.checked) {
-                        campoValorCod.style.display = 'block';
-                        inputValorCod.setAttribute('required', 'required');
-                        inputValorCod.focus();
-                    } else {
-                        campoValorCod.style.display = 'none';
-                        inputValorCod.removeAttribute('required');
-                        inputValorCod.value = "";
-                    }
+                switchCod.addEventListener('change', function () {
+                    document.getElementById('campoValorCod').style.display = this.checked ? 'block' : 'none';
                 });
             }
 
             const deptos = Object.keys(ciudadesPorDepto).sort();
-            const selectsDepto = document.querySelectorAll('.select-depto');
-            
-            const savedDeptoRec = "{{ envio.lugar_recogida.ciudad.split('(')[1].replace(')', '').strip() if envio and '(' in envio.lugar_recogida.ciudad else '' }}";
-            const savedDeptoEnt = "{{ envio.lugar_entrega.ciudad.split('(')[1].replace(')', '').strip() if envio and '(' in envio.lugar_entrega.ciudad else '' }}";
-            const savedCityRec = "{{ envio.lugar_recogida.ciudad.split('(')[0].strip() if envio else '' }}";
-            const savedCityEnt = "{{ envio.lugar_entrega.ciudad.split('(')[0].strip() if envio else '' }}";
 
-            selectsDepto.forEach(select => {
-                deptos.forEach(d => {
+            document.querySelectorAll('.select-depto').forEach(function(select) {
+                deptos.forEach(function(d) {
                     const opt = document.createElement('option');
-                    opt.value = d; opt.text = d;
-                    if (select.id === 'depto_recogida' && d === savedDeptoRec) opt.selected = true;
-                    if (select.id === 'depto_entrega' && d === savedDeptoEnt) opt.selected = true;
+                    opt.value = d;
+                    opt.text  = d;
                     select.appendChild(opt);
                 });
 
-                select.addEventListener('change', () => updateCities(select));
-                if (select.value) updateCities(select, select.id === 'depto_recogida' ? savedCityRec : savedCityEnt);
-            });
-        });
-    </script>
-</body>
+                const savedDeptoRaw  = select.getAttribute('data-saved-depto')  || "";
+                const savedCiudadRaw = select.getAttribute('data-saved-ciudad') || "";
 
+                if (savedDeptoRaw) {
+                    const savedDeptoNorm = normalizar(savedDeptoRaw);
+                    const deptoReal      = deptoNormMap[savedDeptoNorm] || null;
+
+                    if (deptoReal) {
+                        select.value = deptoReal;
+                        updateCities(select, savedCiudadRaw);
+                    } else {
+                        const deptoMatch = Object.keys(deptoNormMap).find(function(k) {
+                            return k.includes(savedDeptoNorm) || savedDeptoNorm.includes(k);
+                        });
+                        if (deptoMatch) {
+                            select.value = deptoNormMap[deptoMatch];
+                            updateCities(select, savedCiudadRaw);
+                        }
+                    }
+                }
+
+                select.addEventListener('change', function() {
+                    updateCities(this);
+                });
+            });
+
+            const btnCotizar = document.getElementById('btnCotizar');
+            if (btnCotizar) btnCotizar.addEventListener('click', function(e) { e.preventDefault(); cotizar(); });
+
+            const latRec = document.getElementById('lat_recogida').value;
+            const lonRec = document.getElementById('lon_recogida').value;
+            const latEnt = document.getElementById('lat_entrega').value;
+            const lonEnt = document.getElementById('lon_entrega').value;
+
+            if (latRec && lonRec) window._pendingPinRecogida = { lat: latRec, lon: lonRec };
+            if (latEnt && lonEnt) window._pendingPinEntrega  = { lat: latEnt, lon: lonEnt };
+        });
+
+        function onGoogleMapsReady() {
+            iniciarGoogleAutocomplete();
+            if (window._pendingPinRecogida) {
+                const p = window._pendingPinRecogida;
+                setPin('map_recogida', p.lat, p.lon, 'Recogida', 'lat_recogida', 'lon_recogida');
+            }
+            if (window._pendingPinEntrega) {
+                const p = window._pendingPinEntrega;
+                setPin('map_entrega', p.lat, p.lon, 'Entrega', 'lat_entrega', 'lon_entrega');
+            }
+        }
+    </script>
+
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7jZIsSRbPml8l1CAypHNuTNDaQS8MyT0&libraries=places&language=es&callback=onGoogleMapsReady"
+        async defer>
+    </script>
+
+</body>
 </html>

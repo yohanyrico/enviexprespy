@@ -33,7 +33,7 @@
         <p class="text-center">Usuario: <strong>{{ usuario.user_name }}</strong></p>
         <h3 class="text-center mb-4 text-warning">$ {{ "{:,.0f}".format(usuario.saldo_plan).replace(',', '.') }}</h3>
         
-        <form action="/envios/usuarios/procesar-recarga" method="POST">
+        <form action="/usuarios/procesar-recarga" method="POST">
             <input type="hidden" name="usuario_id" value="{{ usuario.id_usuario }}">
             
             <div class="mb-3">

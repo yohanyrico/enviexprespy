@@ -37,17 +37,17 @@ class Envio(Base):
     valor_a_cobrar = Column(Numeric(12, 2), default=0.00)
 
     tipo_servicio = Column(
-        Enum("BASICA", "EXPRESS", "NACIONAL", name="tiposervicio", native_enum=False),
-        nullable=False,
-        default="BASICA"
-    )
-    
+    Enum("BASICA", "EXPRESS", "NACIONAL", name="tiposervicio", native_enum=False),
+    nullable=False,
+    default="BASICA"
+)
     estado = Column(
-        Enum("Registrado", "En_Bodega", "En_Ruta", "En_Destino", "Entregado", "Fallido",
-            name="estadoenvio", native_enum=False),
-        nullable=False,
-        default="Registrado"
-    )
+    Enum("Registrado", "En_Bodega", "En_Ruta", "En_Destino", "Entregado", 
+         "Cancelado", "Devolucion", "Retorno", "Rechazado", "Fallido",
+         name="estadoenvio", native_enum=False),
+    nullable=False,
+    default="Registrado"
+)
 
     # --- RELACIONES EXTERNAS ---
     tarifa_id = Column(BigInteger, ForeignKey("tarifas.id"), nullable=True)
@@ -67,27 +67,47 @@ class Envio(Base):
 
     # --- LÓGICA DE NEGOCIO / MÉTODOS DE CLASE ---
 
-    @classmethod
-    def generar_numero_guia(cls, db: Session) -> str:
-        """
-        Genera el siguiente número de guía consecutivo basado en la última guía registrada.
-        Formato: ENV000001, ENV000002, ...
-        """
-        ultima_guia = (
-            db.query(cls.numero_guia)
-            .filter(cls.numero_guia.isnot(None))
-            .order_by(cls.envio_id.desc())
-            .first()
-        )
-        
-        if ultima_guia and ultima_guia[0]:
-            try:
-                ultimo_numero = int(ultima_guia[0].replace("ENV", ""))
-                return f"ENV{str(ultimo_numero + 1).zfill(6)}"
-            except ValueError:
-                pass
-        
-        return "ENV000001"
+@classmethod
+def generar_numero_guia(cls, db: Session) -> str:
+    """
+    Genera el siguiente número de guía consecutivo basado en la última guía registrada.
+    Formato: E0000001, E0000002, ... (Total 8 caracteres)
+    """
+    # 1. Buscamos la última guía registrada ordenando por el ID más alto
+    ultima_guia = (
+        db.query(cls.numero_guia)
+        .filter(cls.numero_guia.isnot(None))
+        .order_by(cls.envio_id.desc())
+        .first()
+    )
+    
+    if ultima_guia and ultima_guia[0]:
+        try:
+            # 2. Quitamos el prefijo actual (sea 'ENV-' o 'E') para obtener solo los números
+            # Usamos lstrip para limpiar cualquier letra al inicio
+            texto_guia = ultima_guia[0]
+            
+            # Eliminamos el prefijo 'ENV-' o solo 'E' si ya existen registros con el nuevo formato
+            if texto_guia.startswith("ENV-"):
+                numero_str = texto_guia.replace("ENV-", "")
+            elif texto_guia.startswith("E"):
+                numero_str = texto_guia.replace("E", "")
+            else:
+                numero_str = "".join(filter(str.isdigit, texto_guia))
+
+            # 3. Convertimos a entero y sumamos 1
+            ultimo_numero = int(numero_str)
+            nuevo_numero = ultimo_numero + 1
+            
+            # 4. Retornamos con el nuevo formato: E + 7 ceros a la izquierda
+            return f"E{str(nuevo_numero).zfill(7)}"
+            
+        except (ValueError, IndexError):
+            # Si algo falla en la conversión, saltamos al valor por defecto
+            pass
+    
+    # Valor inicial si la base de datos está vacía
+    return "E0000001"
 
     @classmethod
     def obtener_datos_reporte(cls, db: Session, ids: list = None):

@@ -1,5 +1,5 @@
 # app/models/Tarifa.py
-from sqlalchemy import Column, BigInteger, String, Numeric
+from sqlalchemy import Column, BigInteger, Integer, String, Numeric, Text
 from sqlalchemy.orm import relationship
 from app.config.database import Base
 
@@ -8,11 +8,14 @@ class Tarifa(Base):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     nombre = Column(String(50), nullable=False) 
-    precio_kg = Column(Numeric(10, 2), nullable=False)
+    
+    # Comenta o elimina esta línea si ya no quieres usar KG
+    # precio_kg = Column(Numeric(10, 2), nullable=False) 
 
-    # Relación inversa con Envio (Ya la tenías)
+    precio_plan = Column(Numeric(10, 2)) # Este será tu "Valor por envío"
+    envios_incluidos = Column(Integer)
+    descripcion = Column(Text)
+    
+    # Relaciones
     envios = relationship("Envio", back_populates="tarifa")
-
-    # --- NUEVA RELACIÓN INVERSA CON USUARIO ---
-    # Permite saber qué usuarios tienen asignada esta tarifa
     usuarios = relationship("Usuario", back_populates="tarifa")

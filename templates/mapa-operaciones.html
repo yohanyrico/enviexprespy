@@ -5,11 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planificación Operativa | EnviExpress</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     
+    <script>
+        (function () {
+            history.pushState(null, null, window.location.href);
+            window.addEventListener("popstate", function () {
+                history.pushState(null, null, window.location.href);
+            });
+            window.addEventListener("pageshow", function (event) {
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
+
     <style>
         :root {
             --azul-oscuro: #001a33;
@@ -19,71 +31,191 @@
         }
 
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Montserrat', sans-serif; }
+
         .main-wrapper { display: flex; width: 100%; height: 100vh; }
 
-        #map { flex: 1; height: 100%; background: var(--azul-oscuro); position: relative; }
-
-        /* PANEL LATERAL */
+        /* PANEL LATERAL IZQUIERDO */
         #side-panel {
-            width: 320px; background: var(--blanco); border-left: 3px solid var(--naranja);
-            display: flex; flex-direction: column; box-shadow: -4px 0 15px rgba(0,0,0,0.2); z-index: 1001;
+            width: 300px;
+            min-width: 300px;
+            background: var(--blanco);
+            border-right: 3px solid var(--naranja);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            z-index: 1001;
         }
-        .panel-header { padding: 20px; background: var(--azul-navy); color: white; text-align: center; }
-        .panel-header h5 { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        
-        #lista-rutas { flex: 1; overflow-y: auto; padding: 15px; background: #f4f7f6; }
-        
-        .ruta-card {
-            background: var(--blanco); border-left: 5px solid var(--naranja); padding: 15px;
-            margin-bottom: 12px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            cursor: pointer; transition: 0.3s;
-        }
-        .ruta-card:hover { transform: translateX(5px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
-        .ruta-card b { color: var(--azul-navy); display: block; margin-bottom: 5px; }
-        .ruta-card span { font-size: 0.85rem; color: #555; font-weight: 500; }
 
-        /* TOOLBAR SUPERIOR */
-        .header-tool { 
-            position: absolute; top: 15px; left: 20px; z-index: 1000; 
-            background: var(--blanco); padding: 12px 25px; border-radius: 50px; 
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3); display: flex; gap: 15px; align-items: center; border: 1px solid #eee;
+        .panel-header {
+            padding: 18px 20px;
+            background: var(--azul-navy);
+            color: white;
+            text-align: center;
+            border-bottom: 2px solid var(--naranja);
+        }
+        .panel-header h5 { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.95rem; }
+        .panel-header small { opacity: 0.7; font-size: 0.75rem; }
+
+        #lista-rutas { flex: 1; overflow-y: auto; padding: 12px; background: #f4f7f6; }
+        #lista-rutas::-webkit-scrollbar { width: 5px; }
+        #lista-rutas::-webkit-scrollbar-track { background: #e8edf2; }
+        #lista-rutas::-webkit-scrollbar-thumb { background: var(--naranja); border-radius: 10px; }
+
+        .ruta-card {
+            background: var(--blanco);
+            border-left: 5px solid var(--naranja);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: 0.25s;
+            animation: slideIn 0.4s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .ruta-card:hover { transform: translateX(5px); box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
+        .ruta-card .mensajero-nombre { color: var(--azul-navy); font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+        .ruta-card .ruta-meta { font-size: 0.78rem; color: #555; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .ruta-card .badge-envios { background: var(--naranja); color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; }
+        .ruta-card .badge-estado { background: #28a745; color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 600; }
+
+        .empty-state { text-align: center; padding: 40px 20px; }
+        .empty-state i { font-size: 2.5rem; color: #ccc; }
+        .empty-state p { color: #999; margin-top: 10px; font-size: 0.85rem; }
+
+        /* MAPA */
+        #map { flex: 1; height: 100%; position: relative; }
+        #gmap { width: 100%; height: 100%; }
+
+        /* TOOLBAR */
+        .header-tool {
+            position: absolute; top: 15px; left: 20px; z-index: 1000;
+            background: var(--blanco); padding: 10px 20px; border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25); display: flex; gap: 12px; align-items: center; border: 1px solid #eee;
         }
         .filter-btn {
-            background: #f8f9fa; border: 2px solid; padding: 8px 16px; 
-            border-radius: 20px; cursor: pointer; font-weight: 800; transition: 0.3s; font-size: 0.8rem;
+            background: #f8f9fa; border: 2px solid; padding: 7px 14px;
+            border-radius: 20px; cursor: pointer; font-weight: 800; transition: 0.3s; font-size: 0.78rem;
         }
         .btn-c { border-color: #FFD700; color: #b8860b; }
         .btn-d { border-color: #007bff; color: #0056b3; }
         .btn-off { opacity: 0.3; background: #ddd !important; border-color: #999 !important; color: #666 !important; }
 
         .calendar-box {
-            display: flex; align-items: center; gap: 10px;
-            background: #f1f3f5; padding: 5px 15px; border-radius: 25px;
+            display: flex; align-items: center; gap: 8px;
+            background: #f1f3f5; padding: 5px 14px; border-radius: 25px;
         }
-        .date-input { border: none; background: transparent; font-weight: 700; font-size: 0.85rem; color: var(--azul-navy); outline: none; }
-
-        /* ICONOS MAPA */
-        .pin { display: flex; align-items: center; justify-content: center; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); width: 32px; height: 32px; border: 2px solid white; box-shadow: 2px 2px 5px rgba(0,0,0,0.3); }
-        .pin span { transform: rotate(45deg); color: white; font-weight: 900; font-size: 14px; }
-        .bg-c { background: #FFD700; } /* Gold para Origen */
-        .bg-d { background: #007bff; } /* Blue para Destino */
+        .date-input { border: none; background: transparent; font-weight: 700; font-size: 0.82rem; color: var(--azul-navy); outline: none; }
 
         /* PANEL ASIGNACIÓN */
-        .assignment-panel { 
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-70%); 
-            z-index: 1000; background: rgba(0, 43, 91, 0.95); padding: 18px 30px; 
+        .assignment-panel {
+            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; background: rgba(0, 43, 91, 0.95); padding: 16px 28px;
             border-radius: 20px; border: 2px solid var(--naranja); color: white;
-            display: flex; gap: 20px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; gap: 16px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             backdrop-filter: blur(5px);
         }
-        .assignment-panel select { padding: 10px; border-radius: 8px; font-weight: 600; border: none; min-width: 180px; }
-        .btn-asignar { background: var(--naranja); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .assignment-panel .contador-label { font-size: 0.85rem; opacity: 0.8; }
+        .assignment-panel .contador-num { color: var(--naranja); font-size: 1.6rem; font-weight: 900; line-height: 1; }
+        .assignment-panel select { padding: 10px 14px; border-radius: 8px; font-weight: 600; border: none; min-width: 190px; font-family: 'Montserrat', sans-serif; }
+        .btn-asignar { background: var(--naranja); color: white; border: none; padding: 12px 22px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; font-family: 'Montserrat', sans-serif; white-space: nowrap; }
         .btn-asignar:hover { background: #e67e00; transform: scale(1.05); }
+        .btn-asignar:disabled { background: #999; cursor: not-allowed; transform: none; }
+
+        /* PANEL SELECCIÓN con lasso */
+        #selectionInfo {
+            position: absolute; top: 80px; right: 15px; z-index: 1000;
+            background: rgba(0,43,91,0.9); color: white; padding: 10px 16px;
+            border-radius: 12px; font-size: 0.8rem; font-weight: 700;
+            border: 1px solid var(--naranja); display: none;
+        }
+
+        /* TOAST */
+        #toast {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            background: #28a745; color: white; padding: 14px 22px;
+            border-radius: 12px; font-weight: 700; font-size: 0.9rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            opacity: 0; transition: opacity 0.4s;
+            display: flex; align-items: center; gap: 10px;
+        }
+        #toast.show { opacity: 1; }
+        #toast.error { background: #dc3545; }
+
+        /* Etiquetas de marcadores personalizados */
+        .marker-label-c {
+            background: #FFD700;
+            color: #1a1a00;
+            font-weight: 900;
+            font-size: 13px;
+            width: 30px; height: 30px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 2px solid white;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .marker-label-d {
+            background: #007bff;
+            color: white;
+            font-weight: 900;
+            font-size: 13px;
+            width: 30px; height: 30px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 2px solid white;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .marker-inner { transform: rotate(45deg); }
     </style>
 </head>
 <body>
 
-    <div class="main-wrapper">
+<div id="toast"><i class="bi bi-check-circle-fill"></i> <span id="toastMsg"></span></div>
+
+<div class="main-wrapper">
+
+    <!-- ══════════════ PANEL IZQUIERDO ══════════════ -->
+    <div id="side-panel">
+        <div class="panel-header">
+            <h5><i class="bi bi-bicycle"></i> Rutas en Curso</h5>
+            <small id="contadorRutas">
+                {% if rutas_activas %}{{ rutas_activas|length }} mensajero(s) activo(s){% else %}Sin rutas activas{% endif %}
+            </small>
+        </div>
+
+        <div id="lista-rutas">
+            {% for m in rutas_activas %}
+            <div class="ruta-card" onclick="window.location.href='/envios/ver-ruta/{{ m.id_usuario }}'">
+                <div class="mensajero-nombre">
+                    <i class="bi bi-person-badge-fill" style="color:var(--naranja);"></i>
+                    {{ m.nombre }} {{ m.apellido }}
+                </div>
+                <div class="ruta-meta">
+                    <span class="badge-estado">Activo</span>
+                    <span style="font-size:0.72rem; color:#888;">Ver detalle →</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state" id="emptyState">
+                <i class="bi bi-map-fill"></i>
+                <p>No hay rutas activas hoy.<br>Asigna envíos para comenzar.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ══════════════ MAPA ══════════════ -->
+    <div id="map">
+
+        <!-- Google Maps container -->
+        <div id="gmap"></div>
+
+        <!-- Toolbar filtros -->
         <div class="header-tool">
             <a href="/envios" style="text-decoration:none; color:var(--azul-navy); display:flex; align-items:center; gap:8px;">
                 <i class="bi bi-arrow-left-circle-fill" style="font-size: 1.8rem;"></i>
@@ -92,214 +224,397 @@
             <div style="width: 1px; height: 30px; background: #ddd;"></div>
             <button class="filter-btn btn-c" id="btnC" onclick="toggleLayer('c')">ORIGEN (C)</button>
             <button class="filter-btn btn-d" id="btnD" onclick="toggleLayer('d')">DESTINO (D)</button>
-            
             <div class="calendar-box">
                 <i class="bi bi-calendar-check" style="color: var(--naranja);"></i>
                 <input type="date" id="dateStart" class="date-input" title="Fecha inicio">
                 <i class="bi bi-arrow-right-short"></i>
                 <input type="date" id="dateEnd" class="date-input" title="Fecha fin">
-                <button onclick="aplicarFiltros()" style="background:var(--azul-navy); color:white; border:none; padding:6px 15px; border-radius:15px; cursor:pointer; font-weight:bold; margin-left:10px;">FILTRAR</button>
+                <button onclick="aplicarFiltros()" style="background:var(--azul-navy); color:white; border:none; padding:6px 15px; border-radius:15px; cursor:pointer; font-weight:bold; margin-left:8px;">FILTRAR</button>
             </div>
         </div>
 
-        <div id="map"></div>
+        <!-- Info selección -->
+        <div id="selectionInfo">
+            <i class="bi bi-bounding-box"></i> <span id="selCount">0</span> envíos en área
+        </div>
 
-        <div id="side-panel">
-            <div class="panel-header">
-                <h5>Rutas en Curso</h5>
+        <!-- Panel asignación inferior -->
+        <div class="assignment-panel">
+            <div>
+                <div class="contador-label">Pedidos Seleccionados</div>
+                <div class="contador-num" id="totalPuntos">0</div>
             </div>
-            <div id="lista-rutas">
-                {% for m in rutas_activas %}
-                <div class="ruta-card" onclick="window.location.href='/envios/ver-ruta/{{ m.id_usuario }}'">
-                    <b><i class="bi bi-bicycle"></i> {{ m.nombre }} {{ m.apellido }}</b>
-                    <span>Estado: <span class="badge bg-success">Activo</span></span>
-                    <div class="text-end mt-2">
-                        <small class="text-primary fw-bold">Gestionar <i class="bi bi-arrow-right"></i></small>
-                    </div>
-                </div>
-                {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-map-fill" style="font-size: 3rem; color: #ccc;"></i>
-                    <p style="color:#999; margin-top:10px;">No hay rutas hoy.</p>
-                </div>
+            <select id="mensajeroSelect">
+                <option value="">-- Seleccionar Mensajero --</option>
+                {% for m in mensajeros %}
+                    <option value="{{ m.id_usuario }}" data-nombre="{{ m.nombre }} {{ m.apellido }}">
+                        {{ m.nombre }} {{ m.apellido }}
+                    </option>
                 {% endfor %}
-            </div>
+            </select>
+            <button class="btn-asignar" id="btnAsignar" onclick="confirmarRuta()">
+                <i class="bi bi-lightning-fill"></i> ASIGNAR AHORA
+            </button>
         </div>
-    </div>
 
-    <div class="assignment-panel">
-        <div>Pedidos Seleccionados: <b id="totalPuntos" style="color:var(--naranja); font-size:1.5rem;">0</b></div>
-        <select id="mensajeroSelect">
-            <option value="">-- Seleccionar Mensajero --</option>
-            {% for m in mensajeros %}
-                <option value="{{ m.id_usuario }}">
-                    {{ m.nombre }} {{ m.apellido }}
-                </option>
-            {% endfor %}
-        </select>
-        <button class="btn-asignar" onclick="confirmarRuta()">ASIGNAR AHORA</button>
-    </div>
+    </div><!-- fin #map -->
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+</div><!-- fin .main-wrapper -->
 
-    <script>
-        // Inicialización del Mapa centrado en Bogotá
-        var map = L.map('map', { zoomControl: false }).setView([4.65, -74.10], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-            attribution: '&copy; EnviExpress Logística' 
-        }).addTo(map);
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-        const layerC = L.layerGroup().addTo(map);
-        const layerD = L.layerGroup().addTo(map);
-        const drawnItems = new L.FeatureGroup().addTo(map);
-        const todosMarcadores = [];
-
-        function crearIcono(letra, colorClass) {
-            return L.divIcon({ 
-                className: '', 
-                html: `<div class="pin ${colorClass}"><span>${letra}</span></div>`, 
-                iconSize: [32, 32], 
-                iconAnchor: [16, 32] 
-            });
-        }
-
-        // Carga de datos dinámica de Jinja2
+<script>
+    // ════════════════════════════════════════════════════════════════════════
+    //  DATOS DE ENVÍOS inyectados desde Jinja2
+    // ════════════════════════════════════════════════════════════════════════
+    const enviosData = [
         {% for e in envios %}
-            {% set f_iso = e.fecha_creacion.date().isoformat() if e.fecha_creacion else '' %}
-            
-            {% if e.lugar_recogida and e.lugar_recogida.latitud %}
-                todosMarcadores.push(L.marker([{{ e.lugar_recogida.latitud }}, {{ e.lugar_recogida.longitud }}], { 
-                    icon: crearIcono('C', 'bg-c'), 
-                    envioId: {{ e.envio_id }}, 
-                    fecha: "{{ f_iso }}", 
-                    tipo: 'c' 
-                }).bindPopup("<b>Guía: {{ e.numero_guia }}</b><br>Origen: {{ e.lugar_recogida.direccion }}"));
-            {% endif %}
-
-            {% if e.lugar_entrega and e.lugar_entrega.latitud %}
-                todosMarcadores.push(L.marker([{{ e.lugar_entrega.latitud }}, {{ e.lugar_entrega.longitud }}], { 
-                    icon: crearIcono('D', 'bg-d'), 
-                    envioId: {{ e.envio_id }}, 
-                    fecha: "{{ f_iso }}", 
-                    tipo: 'd' 
-                }).bindPopup("<b>Guía: {{ e.numero_guia }}</b><br>Destino: {{ e.lugar_entrega.direccion }}"));
-            {% endif %}
+        {% set f_iso = e.fecha_creacion.date().isoformat() if e.fecha_creacion else '' %}
+        {% if e.lugar_recogida and e.lugar_recogida.latitud %}
+        {
+            tipo: 'c',
+            lat: {{ e.lugar_recogida.latitud }},
+            lng: {{ e.lugar_recogida.longitud }},
+            envioId: {{ e.envio_id }},
+            fecha: "{{ f_iso }}",
+            guia: "{{ e.numero_guia }}",
+            direccion: "{{ e.lugar_recogida.direccion | replace('"', '\\"') }}"
+        },
+        {% endif %}
+        {% if e.lugar_entrega and e.lugar_entrega.latitud %}
+        {
+            tipo: 'd',
+            lat: {{ e.lugar_entrega.latitud }},
+            lng: {{ e.lugar_entrega.longitud }},
+            envioId: {{ e.envio_id }},
+            fecha: "{{ f_iso }}",
+            guia: "{{ e.numero_guia }}",
+            direccion: "{{ e.lugar_entrega.direccion | replace('"', '\\"') }}"
+        },
+        {% endif %}
         {% endfor %}
+    ];
 
-        let showC = true, showD = true;
+    // ════════════════════════════════════════════════════════════════════════
+    //  VARIABLES GLOBALES
+    // ════════════════════════════════════════════════════════════════════════
+    let gmap = null;
+    let todosLosMarcadores = [];   // { marker, envioId, fecha, tipo }
+    let idsSeleccionados = new Set();
+    let showC = true, showD = true;
 
-        function aplicarFiltros() {
-            const start = document.getElementById('dateStart').value;
-            const end = document.getElementById('dateEnd').value;
-            
-            layerC.clearLayers(); 
-            layerD.clearLayers();
-            
-            let idsUnicosVisibles = new Set();
+    // Para selección por rectángulo (drawing)
+    let drawingRect = false;
+    let rectStart = null;
+    let rectOverlay = null;
+    let selectionRect = null;  // google.maps.Rectangle
 
-            todosMarcadores.forEach(m => {
-                const cumpleTipo = (m.options.tipo === 'c' && showC) || (m.options.tipo === 'd' && showD);
-                
-                let cumpleFecha = true;
-                if (start && m.options.fecha < start) cumpleFecha = false;
-                if (end && m.options.fecha > end) cumpleFecha = false;
+    // ════════════════════════════════════════════════════════════════════════
+    //  INICIALIZAR GOOGLE MAPS
+    // ════════════════════════════════════════════════════════════════════════
+    function onGoogleMapsReady() {
+        gmap = new google.maps.Map(document.getElementById('gmap'), {
+            center: { lat: 4.65, lng: -74.10 },
+            zoom: 12,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: false,
+            zoomControl: true,
+            zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM }
+        });
 
-                if (cumpleTipo && cumpleFecha) {
-                    if (m.options.tipo === 'c') m.addTo(layerC); 
-                    else m.addTo(layerD);
-                    idsUnicosVisibles.add(m.options.envioId);
-                }
+        // Cargar marcadores
+        crearMarcadores();
+
+        // Habilitar selección con rectángulo al hacer Shift+Click+Drag
+        habilitarSeleccionRectangular();
+
+        aplicarFiltros();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  CREAR MARCADORES PERSONALIZADOS
+    // ════════════════════════════════════════════════════════════════════════
+    function crearIconoSVG(letra, color, textColor) {
+        // Pin SVG estilo gota
+        const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="44" viewBox="0 0 36 44">
+                <path d="M18 0 C8.06 0 0 8.06 0 18 C0 31.5 18 44 18 44 C18 44 36 31.5 36 18 C36 8.06 27.94 0 18 0Z"
+                      fill="${color}" stroke="white" stroke-width="2"/>
+                <text x="18" y="22" text-anchor="middle" dominant-baseline="middle"
+                      font-family="Montserrat,sans-serif" font-size="15" font-weight="900"
+                      fill="${textColor}">${letra}</text>
+            </svg>`;
+        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    function crearMarcadores() {
+        enviosData.forEach(data => {
+            const esC = data.tipo === 'c';
+            const color     = esC ? '#FFD700' : '#1a73e8';
+            const textColor = esC ? '#1a1a00' : '#ffffff';
+            const letra     = esC ? 'C' : 'D';
+            const label     = esC ? 'Origen' : 'Destino';
+
+            const marker = new google.maps.Marker({
+                position: { lat: data.lat, lng: data.lng },
+                map: null,   // se asigna al mapa en aplicarFiltros()
+                icon: {
+                    url: crearIconoSVG(letra, color, textColor),
+                    scaledSize: new google.maps.Size(36, 44),
+                    anchor: new google.maps.Point(18, 44)
+                },
+                title: `Guía: ${data.guia} | ${label}: ${data.direccion}`
             });
 
-            document.getElementById('totalPuntos').innerText = idsUnicosVisibles.size;
-        }
+            // InfoWindow al hacer clic
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div style="font-family:Montserrat,sans-serif; min-width:200px;">
+                        <b style="color:#002b5b;">Guía: ${data.guia}</b><br>
+                        <span style="color:${color === '#FFD700' ? '#b8860b' : '#1a73e8'}; font-weight:700;">
+                            ${label}
+                        </span><br>
+                        <small>${data.direccion}</small>
+                    </div>`
+            });
 
-        function toggleLayer(tipo) {
-            if (tipo === 'c') { 
-                showC = !showC; 
-                document.getElementById('btnC').classList.toggle('btn-off', !showC); 
-            } else { 
-                showD = !showD; 
-                document.getElementById('btnD').classList.toggle('btn-off', !showD); 
+            marker.addListener('click', () => {
+                infoWindow.open(gmap, marker);
+            });
+
+            todosLosMarcadores.push({
+                marker,
+                envioId: data.envioId,
+                fecha: data.fecha,
+                tipo: data.tipo
+            });
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  FILTROS
+    // ════════════════════════════════════════════════════════════════════════
+    function aplicarFiltros() {
+        const start = document.getElementById('dateStart').value;
+        const end   = document.getElementById('dateEnd').value;
+
+        idsSeleccionados.clear();
+
+        todosLosMarcadores.forEach(item => {
+            const cumpleTipo  = (item.tipo === 'c' && showC) || (item.tipo === 'd' && showD);
+            let   cumpleFecha = true;
+            if (start && item.fecha < start) cumpleFecha = false;
+            if (end   && item.fecha > end)   cumpleFecha = false;
+
+            if (cumpleTipo && cumpleFecha) {
+                item.marker.setMap(gmap);
+                idsSeleccionados.add(item.envioId);
+            } else {
+                item.marker.setMap(null);
             }
-            aplicarFiltros();
+        });
+
+        actualizarContador();
+    }
+
+    function toggleLayer(tipo) {
+        if (tipo === 'c') {
+            showC = !showC;
+            document.getElementById('btnC').classList.toggle('btn-off', !showC);
+        } else {
+            showD = !showD;
+            document.getElementById('btnD').classList.toggle('btn-off', !showD);
+        }
+        aplicarFiltros();
+    }
+
+    function actualizarContador() {
+        document.getElementById('totalPuntos').innerText = idsSeleccionados.size;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  SELECCIÓN POR RECTÁNGULO (reemplaza Leaflet.Draw)
+    //  Ctrl + arrastrar para seleccionar área
+    // ════════════════════════════════════════════════════════════════════════
+    function habilitarSeleccionRectangular() {
+        let isDrawing = false;
+        let startLatLng = null;
+
+        gmap.addListener('mousedown', (e) => {
+            if (!e.domEvent.ctrlKey && !e.domEvent.metaKey) return;
+            e.domEvent.preventDefault();
+            isDrawing = true;
+            startLatLng = e.latLng;
+
+            if (selectionRect) {
+                selectionRect.setMap(null);
+                selectionRect = null;
+            }
+
+            selectionRect = new google.maps.Rectangle({
+                map: gmap,
+                bounds: new google.maps.LatLngBounds(startLatLng, startLatLng),
+                fillColor: '#ff8c00',
+                fillOpacity: 0.15,
+                strokeColor: '#ff8c00',
+                strokeWeight: 2,
+                clickable: false
+            });
+
+            gmap.setOptions({ draggable: false });
+        });
+
+        gmap.addListener('mousemove', (e) => {
+            if (!isDrawing || !selectionRect) return;
+            const bounds = new google.maps.LatLngBounds(startLatLng, e.latLng);
+            selectionRect.setBounds(bounds);
+        });
+
+        gmap.addListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
+            gmap.setOptions({ draggable: true });
+
+            if (selectionRect) {
+                calcularSeleccionRectangulo(selectionRect.getBounds());
+            }
+        });
+    }
+
+    function calcularSeleccionRectangulo(bounds) {
+        idsSeleccionados.clear();
+
+        todosLosMarcadores.forEach(item => {
+            if (item.marker.getMap() && bounds.contains(item.marker.getPosition())) {
+                idsSeleccionados.add(item.envioId);
+            }
+        });
+
+        const count = idsSeleccionados.size;
+        const info = document.getElementById('selectionInfo');
+        document.getElementById('selCount').innerText = count;
+        info.style.display = count > 0 ? 'block' : 'none';
+
+        actualizarContador();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  TOAST
+    // ════════════════════════════════════════════════════════════════════════
+    function mostrarToast(msg, esError = false) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').innerText = msg;
+        toast.className = 'show' + (esError ? ' error' : '');
+        setTimeout(() => { toast.className = ''; }, 4000);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  AGREGAR RUTA AL PANEL DINÁMICAMENTE
+    // ════════════════════════════════════════════════════════════════════════
+    function agregarRutaAlPanel(nombreMensajero, cantidadEnvios, idMensajero) {
+        const empty = document.getElementById('emptyState');
+        if (empty) empty.style.display = 'none';
+
+        const existente = document.getElementById(`ruta-card-${idMensajero}`);
+        if (existente) {
+            const badge = existente.querySelector('.badge-envios');
+            if (badge) {
+                const actual = parseInt(badge.innerText) || 0;
+                badge.innerText = (actual + cantidadEnvios) + ' envíos';
+            }
+            existente.style.animation = 'none';
+            setTimeout(() => existente.style.animation = 'slideIn 0.4s ease', 10);
+            return;
         }
 
-        // Configuración de Herramientas de Dibujo
-        const drawControl = new L.Control.Draw({
-            draw: { 
-                polyline: false, circle: false, marker: false, circlemarker: false,
-                polygon: { shapeOptions: { color: '#ff8c00' } }, 
-                rectangle: { shapeOptions: { color: '#ff8c00' } } 
-            },
-            edit: { featureGroup: drawnItems }
-        });
-        map.addControl(drawControl);
+        const card = document.createElement('div');
+        card.className = 'ruta-card';
+        card.id = `ruta-card-${idMensajero}`;
+        card.onclick = () => window.location.href = `/envios/ver-ruta/${idMensajero}`;
+        card.innerHTML = `
+            <div class="mensajero-nombre">
+                <i class="bi bi-person-badge-fill" style="color:var(--naranja);"></i>
+                ${nombreMensajero}
+            </div>
+            <div class="ruta-meta">
+                <span class="badge-estado">Activo</span>
+                <span class="badge-envios">${cantidadEnvios} envíos</span>
+            </div>
+            <div style="text-align:right; margin-top:6px;">
+                <small style="color:#007bff; font-size:0.72rem;">Ver detalle →</small>
+            </div>
+        `;
+        document.getElementById('lista-rutas').prepend(card);
 
-        map.on(L.Draw.Event.CREATED, (e) => { 
-            drawnItems.clearLayers(); 
-            drawnItems.addLayer(e.layer); 
-            calcularSeleccionDibujo(e.layer);
-        });
+        const cards = document.querySelectorAll('#lista-rutas .ruta-card').length;
+        document.getElementById('contadorRutas').innerText = `${cards} mensajero(s) activo(s)`;
+    }
 
-        function calcularSeleccionDibujo(layer) {
-            let idsSeleccionados = new Set();
-            const bounds = layer.getBounds();
+    // ════════════════════════════════════════════════════════════════════════
+    //  CONFIRMAR Y ASIGNAR RUTA
+    // ════════════════════════════════════════════════════════════════════════
+    function confirmarRuta() {
+        const selectEl = document.getElementById('mensajeroSelect');
+        const mId     = selectEl.value;
+        const mNombre = selectEl.options[selectEl.selectedIndex]?.dataset?.nombre || 'Mensajero';
 
-            [layerC, layerD].forEach(group => {
-                group.eachLayer(m => {
-                    if (bounds.contains(m.getLatLng())) {
-                        idsSeleccionados.add(m.options.envioId);
+        if (!mId) { mostrarToast('Por favor, selecciona un mensajero.', true); return; }
+        if (idsSeleccionados.size === 0) { mostrarToast('No hay pedidos seleccionados para asignar.', true); return; }
+
+        const arrayIds = Array.from(idsSeleccionados);
+        if (!confirm(`¿Asignar ${arrayIds.length} envíos a ${mNombre}?`)) return;
+
+        const btnAsignar = document.getElementById('btnAsignar');
+        btnAsignar.disabled = true;
+        btnAsignar.innerHTML = '<i class="bi bi-hourglass-split"></i> Asignando...';
+
+        fetch("/envios/asignar-mensajero-masivo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ envio_ids: arrayIds, id_mensajero: mId })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                agregarRutaAlPanel(mNombre, arrayIds.length, mId);
+
+                // Quitar marcadores asignados del mapa
+                todosLosMarcadores.forEach(item => {
+                    if (idsSeleccionados.has(item.envioId)) {
+                        item.marker.setMap(null);
                     }
                 });
-            });
-            document.getElementById('totalPuntos').innerText = idsSeleccionados.size;
-        }
+                todosLosMarcadores = todosLosMarcadores.filter(
+                    item => !idsSeleccionados.has(item.envioId)
+                );
 
-        function confirmarRuta() {
-            const mId = document.getElementById('mensajeroSelect').value;
-            if (!mId) return alert("Por favor, selecciona un mensajero.");
+                // Limpiar rectángulo de selección
+                if (selectionRect) { selectionRect.setMap(null); selectionRect = null; }
+                document.getElementById('selectionInfo').style.display = 'none';
+                idsSeleccionados.clear();
+                actualizarContador();
 
-            let idsSet = new Set();
-            
-            // Si hay un dibujo activo, filtramos por área
-            if (drawnItems.getLayers().length > 0) {
-                let area = drawnItems.getLayers()[0];
-                [layerC, layerD].forEach(group => {
-                    group.eachLayer(m => { 
-                        if (area.getBounds().contains(m.getLatLng())) idsSet.add(m.options.envioId); 
-                    });
-                });
+                mostrarToast(`✓ ${arrayIds.length} envíos asignados a ${mNombre}`);
+                selectEl.value = '';
             } else {
-                // Si no hay dibujo, tomamos todo lo que es visible según filtros
-                layerC.eachLayer(m => idsSet.add(m.options.envioId));
-                layerD.eachLayer(m => idsSet.add(m.options.envioId));
+                mostrarToast('Error al asignar la ruta. Intente nuevamente.', true);
             }
+        })
+        .catch(() => mostrarToast('Error de conexión con el servidor.', true))
+        .finally(() => {
+            btnAsignar.disabled = false;
+            btnAsignar.innerHTML = '<i class="bi bi-lightning-fill"></i> ASIGNAR AHORA';
+        });
+    }
+</script>
 
-            if (idsSet.size === 0) return alert("No hay pedidos seleccionados para asignar.");
-            
-            const arrayIds = Array.from(idsSet);
+<!--
+    Google Maps API con callback onGoogleMapsReady
+    Reemplaza completamente Leaflet + Leaflet.Draw
+-->
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7jZIsSRbPml8l1CAypHNuTNDaQS8MyT0&language=es&callback=onGoogleMapsReady"
+    async defer>
+</script>
 
-            if (!confirm(`¿Asignar ${arrayIds.length} envíos al mensajero seleccionado?`)) return;
-
-            fetch("/envios/asignar-mensajero-masivo", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ envio_ids: arrayIds, id_mensajero: mId })
-            })
-            .then(res => {
-                if(res.ok) {
-                    alert("¡Ruta asignada exitosamente!");
-                    location.reload();
-                } else {
-                    alert("Error al asignar la ruta.");
-                }
-            });
-        }
-
-        window.onload = aplicarFiltros;
-    </script>
 </body>
 </html>

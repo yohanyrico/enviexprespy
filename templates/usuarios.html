@@ -10,6 +10,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    
+    <script>
+        (function () {
+            window.onpageshow = function (event) {
+                // Si la página viene de la caché del navegador (back-forward cache)
+                // o si el tipo de navegación es de retroceso (type 2)
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                    window.location.reload();
+                }
+            };
+        })();
+    </script>
+
     <style>
         :root {
             --azul-profundo: #002B5B;
@@ -27,7 +40,7 @@
             min-height: 100vh;
             color: var(--blanco);
             font-family: 'Montserrat', sans-serif;
-            padding-top: 80px;
+            padding-top: 100px;
             margin: 0;
         }
         .navbar {
@@ -87,15 +100,15 @@
         .table thead th { color: var(--naranja); text-transform: uppercase; font-size: 0.85rem; border-bottom: 2px solid var(--naranja); padding: 15px; }
         .table tbody td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        .btn-edit { background: var(--btn-editar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; }
-        .btn-delete { background: var(--btn-eliminar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; }
-        .btn-recharge { background: var(--btn-recarga); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; cursor: pointer; }
+        .btn-edit { background: var(--btn-editar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; display: inline-flex; }
+        .btn-delete { background: var(--btn-eliminar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; display: inline-flex; }
+        .btn-recharge { background: var(--btn-recarga); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; cursor: pointer; display: inline-flex; }
         
         .btn-edit:hover, .btn-delete:hover, .btn-recharge:hover { transform: scale(1.1); filter: brightness(1.2); }
 
         .modal-content { background: #0f172a; color: white; border: 1px solid var(--naranja); border-radius: 15px; }
         .modal-header { border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .form-control { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: white; }
+        .form-control { background: rgba(255,255,255,1); border: 1px solid rgba(255,255,255,0.2); color: black !important; font-weight: 600; }
 
         .modal-reporte { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; }
         .modal-reporte.open { display: flex; }
@@ -104,6 +117,7 @@
         .stat-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
         .bar-track { background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; margin-top: 5px; overflow: hidden; }
         .bar-fill { height: 100%; background: var(--naranja); }
+        .text-orange { color: var(--naranja); }
     </style>
 </head>
 <body>
@@ -150,7 +164,8 @@
                         <th>Usuario</th>
                         <th>Nombre</th>
                         <th class="text-center">Rol</th>
-                        <th class="text-center">Tarifa</th> <th class="text-end">Saldo Actual</th>
+                        <th class="text-center">Tarifa</th> 
+                        <th class="text-end">Saldo Actual</th>
                         <th class="text-center">Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -199,42 +214,47 @@
                             </div>
                         </td>
                     </tr>
-
-                    <div class="modal fade" id="modalRecarga{{ u.id_usuario }}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <form action="/envios/usuarios/procesar-recarga" method="POST" class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title"><i class="bi bi-cash-coin text-warning"></i> Cargar Saldo: {{ u.user_name }}</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <input type="hidden" name="usuario_id" value="{{ u.id_usuario }}">
-                                    <div class="mb-4 text-center">
-                                        <small class="text-secondary">Saldo actual:</small>
-                                        <h3 class="text-warning">$ {{ "{:,.0f}".format(u.saldo_plan).replace(',', '.') }}</h3>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Monto a Recargar ($)</label>
-                                        <input type="number" name="monto" class="form-control" placeholder="Ej: 50000" required min="1">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Concepto</label>
-                                        <input type="text" name="concepto" class="form-control" value="Recarga manual por Administrador">
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="submit" class="btn-green border-0">Confirmar Recarga</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+{% for u in usuarios %}
+<div class="modal fade" id="modalRecarga{{ u.id_usuario }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+                <form action="/usuarios/procesar-recarga" method="POST">
+                <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-cash-coin text-warning"></i> Cargar Saldo: {{ u.user_name }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="usuario_id" value="{{ u.id_usuario }}">
+                <div class="mb-4 text-center">
+                    <small class="text-secondary">Saldo actual:</small>
+                    <h3 class="text-warning">$ {{ "{:,.0f}".format(u.saldo_plan).replace(',', '.') }}</h3>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Monto a Recargar ($)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark text-white border-0">$</span>
+                        <input type="number" name="monto" class="form-control" placeholder="Ej: 50000 o -50000 para descontar" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Concepto</label>
+                    <input type="text" name="concepto" class="form-control" value="Recarga manual por Administrador">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn-green border-0">Confirmar Recarga</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endfor %}
 
 <div class="modal-reporte" id="modalReporte">
     <div class="modal-card text-light">

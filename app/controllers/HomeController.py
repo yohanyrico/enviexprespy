@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Request, Depends, BackgroundTasks
 from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
 from decimal import Decimal
 from app.config.database import get_db
 from app.models.Usuario import Usuario
 from app.models.Envio import Envio
-from app.models.Transaccion import Transaccion # IMPORTANTE: Para el historial de pagos
+from app.models.Transaccion import Transaccion
+from app.models.Tarifa import Tarifa
 from app.config.templates import templates
 
 # Seguridad
@@ -18,9 +19,6 @@ router = APIRouter(tags=["Home"])
 
 @router.get("/home")
 def home(request: Request, db: Session = Depends(get_db)):
-    """
-    Ruta principal dinámica que redirige según el usuario logueado en la sesión.
-    """
     user_id = request.session.get("user_id")
     if not user_id:
         return RedirectResponse(url="/login")
@@ -41,66 +39,67 @@ def home(request: Request, db: Session = Depends(get_db)):
             "rol": "MENSAJERO",
             "usuario": usuario
         })
-    
+
     return RedirectResponse(url="/home_cliente")
+
+# app/controllers/HomeController.py
 
 @router.get("/home_cliente")
 def home_cliente(request: Request, db: Session = Depends(get_db)):
-    """
-    Carga el panel personalizado del cliente (Yohany, Jose, Lau, etc.)
-    """
     user_id = request.session.get("user_id")
-    
     if not user_id:
-        return RedirectResponse(url="/login?error=denied")
-
-    usuario = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
-    
-    if not usuario:
         return RedirectResponse(url="/login")
 
-    # Cargamos los envíos SOLO de este usuario logueado
-    mis_envios = db.query(Envio).filter(Envio.usuario_cliente_id == usuario.id_usuario).all()
+    # Traemos al usuario con su tarifa
+    usuario = db.query(Usuario).options(joinedload(Usuario.tarifa)).filter(Usuario.id_usuario == user_id).first()
+    
+    # BUSCAMOS TODAS LAS TARIFAS PARA LOS BOTONES FLOTANTES
+    tarifas_db = db.query(Tarifa).all()
 
     return templates.TemplateResponse("home_cliente.html", {
         "request": request,
         "usuario": usuario,
-        "envios": mis_envios,
-        "rol": usuario.rol,
-        "saldo": usuario.saldo_plan
+        "tarifas": tarifas_db,  # <--- Esto es lo que hace que sea dinámico
+        "s": usuario.saldo_plan
     })
-
-# --- RUTAS DE PLANES Y PAGOS ---
+# --- RUTAS DE PLANES Y PAGOS (TOTALMENTE DINÁMICAS) ---
 
 @router.get('/planes/detallado/{nombre_plan}')
 def detalle_plan(request: Request, nombre_plan: str):
     return templates.TemplateResponse('detalle_plan.html', {
-        "request": request, 
+        "request": request,
         "plan": nombre_plan
     })
 
 @router.get('/planes/pago/{nombre_plan}')
-def pasarela_pago(request: Request, nombre_plan: str):
-    # Precios unitarios informativos
-    precios = {
-        "bronce": "11.990",
-        "plata": "10.990",
-        "oro": "9.990",
-        "diamante": "8.990",
-        "nacional": "17.990"
-    }
-    precio_seleccionado = precios.get(nombre_plan.lower(), "0")
-    
+def pasarela_pago(request: Request, nombre_plan: str, db: Session = Depends(get_db)):
+    """
+    Trae el precio vivo desde la BD. Elimina fallbacks estáticos.
+    """
+    tarifa = db.query(Tarifa).filter(Tarifa.nombre.ilike(nombre_plan)).first()
+
+    def fmt(n):
+        return f"{int(n):,}".replace(",", ".")
+
+    if not tarifa:
+        # Si la tarifa no existe en la BD, no podemos cobrar.
+        return RedirectResponse(url="/home_cliente?error=tarifa_no_encontrada")
+
+    # Calculamos montos basados en la configuración actual del Admin
+    monto_cuota = tarifa.precio_plan
+    monto_total = int(tarifa.precio_plan) * tarifa.envios_incluidos
+
     return templates.TemplateResponse('pago.html', {
         "request": request,
         "plan": nombre_plan,
-        "precio": precio_seleccionado
+        "precio": fmt(monto_total),
+        "cuota": fmt(monto_cuota)
     })
 
 @router.post('/planes/confirmar')
 async def confirmar_pago(request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
-    Procesa el pago, actualiza saldo y REGISTRA la transacción en el historial.
+    Procesa el pago usando los valores reales de la tabla Tarifa al momento de la transacción.
     """
     try:
         user_id = request.session.get("user_id")
@@ -109,55 +108,50 @@ async def confirmar_pago(request: Request, background_tasks: BackgroundTasks, db
 
         form_data = await request.form()
         plan_nombre = form_data.get("plan").lower()
-        
-        # Configuración de montos según el plan
-        config_planes = {
-            "bronce": {"total": 119990, "cuota": 11990},
-            "plata":  {"total": 359700, "cuota": 10990},
-            "oro":     {"total": 599500, "cuota": 9990},
-            "diamante":{"total": 1199000, "cuota": 8990}
-        }
-        
-        plan_info = config_planes.get(plan_nombre, {"total": 0, "cuota": 0})
 
-        # --- ACTUALIZACIÓN DINÁMICA DEL USUARIO ---
+        # CONSULTA A LA BD PARA OBTENER PRECIOS ACTUALES
+        tarifa = db.query(Tarifa).filter(Tarifa.nombre.ilike(plan_nombre)).first()
+
+        if not tarifa:
+            return RedirectResponse(url="/home_cliente?error=plan_invalido")
+
+        # Usamos los valores configurados por el administrador
+        monto_cuota = int(tarifa.precio_plan)
+        monto_total = monto_cuota * tarifa.envios_incluidos
+        monto_total_dec = Decimal(str(monto_total))
+
         usuario = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
-        
+
         if usuario:
-            monto_total = Decimal(plan_info['total'])
-            
-            # 1. Actualizar datos del usuario
-            usuario.saldo_plan = monto_total
-            usuario.cuota_fija = plan_info['cuota']
-            usuario.rol = plan_nombre.upper() # Cambiamos su rol al del plan adquirido
-            
-            # 2. REGISTRAR TRANSACCIÓN EN LA BILLETERA
+            # El saldo se ACUMULA
+            usuario.saldo_plan = (usuario.saldo_plan or Decimal('0')) + monto_total_dec
+            # Sincronizamos los datos del usuario con el plan adquirido
+            usuario.cuota_fija = monto_cuota
+            usuario.rol = plan_nombre.upper()
+            usuario.tarifa_id = tarifa.id # Vinculación para que el banner sea dinámico
+
             nueva_trans = Transaccion(
                 usuario_id=usuario.id_usuario,
                 tipo_movimiento='CARGA',
-                monto=monto_total,
-                concepto=f"Activación de Plan {plan_nombre.upper()}",
+                monto=monto_total_dec,
+                concepto=f"Activación de Plan {plan_nombre.upper()} - ${monto_cuota} por guía",
                 fecha_creacion=datetime.now()
             )
             db.add(nueva_trans)
-            
-            # Guardar todo en la BD
-            db.commit() 
+            db.commit()
 
-            print(f"SISTEMA: Plan {plan_nombre.upper()} activado para {usuario.user_name}")
-
-            # Envío de factura simulado
+            print(f"SISTEMA: Plan {plan_nombre.upper()} activado dinámicamente.")
             background_tasks.add_task(enviar_factura_email, usuario.correo, plan_nombre)
 
             return templates.TemplateResponse("pago_exitoso.html", {
                 "request": request,
                 "plan": plan_nombre,
                 "usuario": usuario.nombre,
-                "total": monto_total,
+                "total": monto_total_dec,
                 "saldo_cargado": usuario.saldo_plan,
                 "cuota_fija": usuario.cuota_fija
             })
-        
+
         return RedirectResponse(url="/login")
 
     except Exception as e:
@@ -168,9 +162,6 @@ async def confirmar_pago(request: Request, background_tasks: BackgroundTasks, db
 # --- FUNCIONES DE APOYO ---
 
 def enviar_factura_email(email: str, plan: str):
-    """
-    Simulación de envío de correo electrónico.
-    """
     print(f"\n--- ENVIEXPRESS MAIL SERVER ---")
     print(f"DESTINO: {email}")
     print(f"ASUNTO: Confirmación de Pago - Plan {plan.upper()}")

@@ -6,6 +6,24 @@
     <title>Detalle del Envío | ENVIEXPRESS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <script>
+        (function () {
+            // 1. Evitar que el botón "Atrás" salga de esta página inyectando un estado
+            history.pushState(null, null, window.location.href);
+            window.addEventListener("popstate", function () {
+                history.pushState(null, null, window.location.href);
+            });
+
+            // 2. Forzar recarga si se accede desde el historial (BF-Cache)
+            window.addEventListener("pageshow", function (event) {
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
+
     <style>
         :root {
             --primary-dark: #00235a;
@@ -51,7 +69,7 @@
             margin-top: 10px;
         }
 
-        /* --- NUEVA CASILLA DEL PLAN ADQUIRIDO --- */
+        /* --- CASILLA DEL PLAN ADQUIRIDO --- */
         .plan-box {
             display: inline-block;
             margin-top: 15px;
@@ -64,12 +82,10 @@
         .plan-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--accent-orange); display: block; margin-bottom: 2px; letter-spacing: 1px; }
         .plan-name { font-size: 1.3rem; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-        /* Colores específicos por nombre de plan */
         .plan-bronce { border-color: #cd7f32 !important; color: #cd7f32 !important; }
         .plan-plata { border-color: #c0c0c0 !important; color: #c0c0c0 !important; }
         .plan-oro { border-color: #ffd700 !important; color: #ffd700 !important; }
         .plan-diamante { border-color: #b9f2ff !important; color: #b9f2ff !important; text-shadow: 0 0 10px rgba(185,242,255,0.5); }
-        /* ---------------------------------------- */
 
         .detalle-body { padding: 40px; }
 
@@ -170,7 +186,6 @@
         </div>
 
         <div class="detalle-body">
-
             <div class="row g-4 mb-4">
                 <div class="col-md-8">
                     <div class="info-section h-100">
@@ -284,14 +299,13 @@
                 </a>
                 {% endif %}
 
-                <a href="{{ '/envios' if rol == 'ADMIN' else '/envios/mis-guias' }}" class="btn btn-link text-white opacity-50 text-decoration-none">
+                <a href="{{ '/envios/' if rol == 'ADMIN' else '/envios/mis-guias' }}" class="btn btn-link text-white opacity-50 text-decoration-none">
                     <i class="bi bi-arrow-left"></i> Volver al listado
                 </a>
             </div>
-
         </div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html> 

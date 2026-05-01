@@ -130,7 +130,7 @@
               {% else %}Tarifa especial personalizada para tus necesidades.{% endif %}
             </p>
 
-            <div class="plan-price">${{ '{:,.0f}'.format(t.precio_kg) }}</div>
+            <div class="plan-price">${{ '{:,.0f}'.format(t.precio_plan) if t.precio_plan else '0' }}</div>
 
             <ul class="plan-features">
                 <li><i class="bi bi-check-circle-fill"></i> 

@@ -8,155 +8,224 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-dark: #00235a;
-            --primary-blue: #003a8c;
-            --accent-orange: #ff8c00;
-            --text-light: #ffffff;
-            --card-bg: rgba(255, 255, 255, 0.08);
-        }
 
-        body { 
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
-            min-height: 100vh; 
-            color: var(--text-light); 
-            font-family: 'Montserrat', sans-serif; 
-            padding-top: 90px; 
-        }
+    <!-- ✅ Anti-caché a nivel HTML -->
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
-        .navbar { 
-            backdrop-filter: blur(15px); 
-            background: rgba(0, 35, 90, 0.7); 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
-        }
+    <script>
+        // ✅ Blindaje anti-caché: bloquea botón atrás y bfcache
+        (function () {
+            history.pushState(null, null, window.location.href);
+            window.addEventListener("popstate", function () {
+                history.pushState(null, null, window.location.href);
+            });
+            window.addEventListener("pageshow", function (event) {
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
 
-        .title-glow { 
-            font-size: 2.5rem; 
-            font-weight: 800; 
-            text-shadow: 0 0 15px rgba(255, 140, 0, 0.3); 
-            color: var(--text-light); 
-            text-transform: uppercase;
-        }
+<style>
+    :root {
+        --milano-red:    #B20C06;
+        --milano-hover:  #8E0A05;
+        --white:         #FDFFFF;
+        --chinese-black: #101010;
+        --slate-gray:    #738589;
+        --text-light:    #ffffff;
+    }
 
-        .text-orange { color: var(--accent-orange) !important; }
+    body { 
+        background-color: var(--white);
+        color: var(--chinese-black); 
+        font-family: 'Montserrat', sans-serif; 
+        padding-top: 90px; 
+    }
 
-        /* Estilos del Banner de Plan */
-        .upgrade-banner {
-            background: rgba(255, 140, 0, 0.1);
-            border: 2px dashed var(--accent-orange);
-            border-radius: 15px;
-            padding: 20px;
-            margin: 20px auto;
-            max-width: 800px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: pulse-border 2s infinite;
-        }
+    .plan-mini-card h5, 
+    .section-title, 
+    .quick-card h5 { 
+        color: var(--chinese-black) !important; 
+        font-weight: 800;
+        text-transform: uppercase;
+    }
 
-        @keyframes pulse-border {
-            0% { border-color: var(--accent-orange); transform: scale(1); }
-            50% { border-color: white; transform: scale(1.01); }
-            100% { border-color: var(--accent-orange); transform: scale(1); }
-        }
+    .plan-mini-card p, 
+    .quick-card p { 
+        color: var(--slate-gray) !important; 
+        opacity: 1 !important;
+    }
 
-        .planes-selector {
-            display: none;
-            margin-top: 30px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 20px;
-        }
+    .btn-orange, 
+    .btn-orange i { 
+        background-color: var(--milano-red) !important; 
+        color: var(--text-light) !important;
+        border: none;
+        font-weight: 700;
+        transition: 0.3s;
+    }
 
-        .plan-mini-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            transition: 0.3s;
-            text-align: center;
-        }
+    .btn-orange:hover {
+        background-color: var(--milano-hover) !important;
+        transform: translateY(-2px);
+    }
 
-        .plan-mini-card:hover {
-            border-color: var(--accent-orange);
-            background: rgba(255, 140, 0, 0.1);
-            transform: translateY(-5px);
-        }
+    .quick-card { 
+        background: #ecedf0; 
+        border: 1px solid rgba(0,0,0,0.1); 
+        border-radius: 18px; 
+        padding: 30px; 
+        transition: all 0.3s ease;  
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
 
-        /* Tarjetas de Acciones */
-        .quick-card { 
-            background: var(--card-bg); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 18px; 
-            padding: 30px; 
-            transition: all 0.3s ease; 
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
+    .quick-card i {
+        color: var(--milano-red);
+        font-size: 2.5rem;
+    }
 
-        .quick-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 10px 25px rgba(255, 140, 0, 0.2); 
-            border-color: var(--accent-orange);
-        }
+    .wallet-card {
+        color: var(--text-light);
+        border-radius: 16px;
+        border-left: 8px solid;
+        padding: 24px 28px;
+    }
 
-        /* Estilos Billetera Virtual Inteligente */
-        .wallet-card {
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            transition: all 0.5s ease;
-        }
+    .wallet-card.saldo-bajo {
+        background: #7B0D0D;
+        border-left-color: #e74c3c;
+    }
 
-        .btn-orange { 
-            background: var(--accent-orange); 
-            border: none; 
-            padding: 10px 20px; 
-            color: white; 
-            font-weight: 700; 
-            border-radius: 10px; 
-            transition: .3s; 
-            text-transform: uppercase;
-        }
+    .wallet-card.saldo-medio {
+        background: #7A4A00;
+        border-left-color: #f39c12;
+    }
 
-        .btn-orange:hover { 
-            background: #e67e00; 
-            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.4);
-        }
+    .wallet-card.saldo-ok {
+        background: #0B4A1E;
+        border-left-color: #27ae60;
+    }
 
-        .section-title { color: var(--accent-orange); text-transform: uppercase; font-size: 1.2rem; }
+    .wallet-card h2, .wallet-card p, .wallet-card span {
+        color: var(--text-light) !important;
+    }
 
-        .user-info { 
-            display: flex; align-items: center; gap: 10px; padding: 6px 18px; 
-            background: rgba(255, 255, 255, 0.1); border-radius: 25px; border: 1px solid rgba(255, 255, 255, 0.2); 
-        }
+    .navbar { 
+        background: var(--chinese-black); 
+        border-bottom: 3px solid var(--milano-red); 
+    }
+    
+    .navbar-brand, .user-name { color: white !important; }
 
-        .welcome-badge { 
-            background: rgba(255, 140, 0, 0.1); padding: 10px 25px; border-radius: 30px; 
-            border: 1px solid rgba(255, 140, 0, 0.3); display: inline-block; margin-top: 15px; 
-        }
+    .upgrade-banner {
+        background: #0b012e;
+        border: 2px dashed var(--milano-red);
+        border-radius: 12px;
+        padding: 20px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    
+    .upgrade-banner h5 { color: white !important; font-weight: 700; }
 
-        footer { background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); padding: 20px 0; }
-    </style>
+    #seccionPlanes {
+        display: none;
+        margin-top: 20px;
+        animation: fadeDown 0.3s ease;
+    }
+
+    @keyframes fadeDown {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .plan-card {
+        background: var(--white);
+        border: 1.5px solid #ddd;
+        border-radius: 14px;
+        padding: 24px 16px;
+        text-align: center;
+        transition: all 0.25s;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .plan-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: var(--milano-red);
+    }
+
+    .plan-card:hover {
+        border-color: var(--milano-red);
+        box-shadow: 0 8px 24px rgba(178,12,6,0.12);
+        transform: translateY(-4px);
+    }
+
+    .plan-nombre {
+        font-weight: 800;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--chinese-black);
+        margin-bottom: 4px;
+    }
+
+    .plan-envios {
+        font-size: 0.75rem;
+        color: var(--slate-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .plan-precio {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--milano-red);
+        margin-bottom: 2px;
+    }
+
+    .plan-precio-label {
+        font-size: 0.7rem;
+        color: var(--slate-gray);
+        margin-bottom: 16px;
+    }
+</style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-               <a class="navbar-brand fw-bold fs-3" href="/home_cliente" style="color: #ff8000;">
-    ENVI<span class="text-light">EXPRESS</span>
-</a>
+        <a class="navbar-brand fw-bold fs-3" href="/home_cliente" style="color: #ff8000;">
+            ENVI<span class="text-light">EXPRESS</span>
+        </a>
         <div id="nav" class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto gap-3 align-items-center">
                 <li class="nav-item">
                     <div class="user-info">
                         <i class="bi bi-person-circle text-orange"></i>
-                        <span class="user-name">{{ username }}</span>
+                        <span class="user-name text-white">{{ usuario.user_name }}</span>
                     </div>
                 </li>
                 <li class="nav-item">
+                    <!-- ✅ POST a /logout → destruye sesión y cookie -->
                     <form action="/logout" method="post" class="m-0">
-                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3">Salir</button>
+                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                            <i class="bi bi-box-arrow-right"></i> Salir
+                        </button>
                     </form>
                 </li>
             </ul>
@@ -167,115 +236,101 @@
 <div class="container text-center mb-4">
     <h1 class="title-glow">Panel de Cliente</h1>
     
-    {% if request.query_params.get('error') == 'saldo_insuficiente' %}
-    <div class="alert alert-danger alert-dismissible fade show mt-3 mx-auto" role="alert" style="max-width: 800px;">
-        <i class="bi bi-exclamation-octagon-fill me-2"></i>
-        <strong>¡Atención!</strong> Tu saldo actual no cubre la tarifa del plan. Por favor, realiza una recarga.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endif %}
-
     <div class="welcome-badge">
-    <i class="bi bi-shield-check text-orange me-2"></i>
-    Sesión activa: <span class="text-orange fw-bold">{{ usuario.nombre }} {{ usuario.apellido }}</span>
-</div>
+        <i class="bi bi-shield-check text-orange me-2"></i>
+        Sesión activa: <span class="text-orange fw-bold">{{ usuario.nombre }} {{ usuario.apellido }}</span>
+    </div>
 
     <div class="row justify-content-center mt-5">
-        <div class="col-md-8">
-            {% set color_wallet = 'rgba(0, 58, 140, 0.8)' %}
-            {% set border_wallet = '#ff8c00' %}
-            
-            {% if saldo < 12000 %}
-                {% set color_wallet = 'rgba(220, 53, 69, 0.9)' %}
-                {% set border_wallet = '#ffffff' %}
-            {% elif saldo < 30000 %}
-                {% set color_wallet = 'rgba(255, 140, 0, 0.9)' %}
-                {% set border_wallet = '#00235a' %}
+        <div class="col-md-10">
+
+            {# CÁLCULO DE CLASE DE SALDO #}
+            {% set s = usuario.saldo_plan if usuario.saldo_plan is not none else 0 %}
+            {% if s < 12000 %}
+                {% set clase_w = 'saldo-bajo' %}
+            {% elif s < 30001 %}
+                {% set clase_w = 'saldo-medio' %}
+            {% else %}
+                {% set clase_w = 'saldo-ok' %}
             {% endif %}
 
-            <div class="card wallet-card p-4 shadow-lg" 
-                 style="background: {{ color_wallet }}; border-left: 8px solid {{ border_wallet }}; transition: all 0.5s ease;">
+            {# BILLETERA #}
+            <div class="wallet-card shadow-lg {{ clase_w }}">
                 <div class="row align-items-center">
                     <div class="col-md-7 text-start text-white">
-                        <p class="text-uppercase small fw-bold mb-1 opacity-75">
-                            {% if saldo < 12000 %}
-                                <i class="bi bi-exclamation-triangle-fill"></i> SALDO INSUFICIENTE
-                            {% else %}
-                                Saldo de Envío Disponible
-                            {% endif %}
-                        </p>
-                        <h1 class="display-5 fw-bold mb-0">
-                            $ {{ "{:,.0f}".format(saldo).replace(',', '.') if saldo else '0' }}
-                        </h1>
-                       <p class="small mt-2 mb-0">
-    <i class="bi bi-info-circle"></i>
-    Tu tarifa plana: <strong>$ {{ "{:,.0f}".format(usuario.cuota_fija).replace(',', '.') if usuario.cuota_fija else '0' }}</strong> por guía.
-</p>
+                        <p class="text-uppercase small fw-bold mb-1 opacity-75">Saldo de Envío Disponible</p>
+                        <h2 class="fw-bold mb-0" style="font-size: 2rem;">
+                            $ {{ "{:,.0f}".format(s).replace(',', '.') }}
+                        </h2>
+                        <p class="small mt-2 mb-0">
+                            <i class="bi bi-info-circle"></i>
+                            Tu tarifa plana: 
+                            <strong>
+                                $ 
+                                {% if usuario.tarifa and usuario.tarifa.precio_plan %}
+                                    {{ "{:,.0f}".format(usuario.tarifa.precio_plan).replace(',', '.') }}
+                                {% else %}
+                                    {{ "{:,.0f}".format(usuario.cuota_fija or 0).replace(',', '.') }}
+                                {% endif %}
+                            </strong> por guía.
+                        </p>    
                     </div>
                     <div class="col-md-5 text-end border-start border-white border-opacity-25">
-                        <i class="bi bi-wallet2 display-3 opacity-50 mb-3 d-block text-white"></i>
-                        
-                        {% if saldo < 12000 %}
-                            <button class="btn btn-light text-danger fw-bold w-100 shadow-sm" onclick="mostrarPlanes()">
-                                <i class="bi bi-lightning-charge-fill"></i> RECARGAR AHORA
-                            </button>
-                        {% else %}
-                            <a href="/envios/nuevo" class="btn btn-orange w-100 shadow-sm text-white">
-                                <i class="bi bi-plus-circle me-1"></i> NUEVO ENVÍO
-                            </a>
-                        {% endif %}
+                        <i class="bi bi-wallet2 display-4 opacity-50 mb-3 d-block text-white"></i>
+                        <a href="/envios/nuevo" class="btn btn-orange w-100 shadow-sm text-white">
+                            <i class="bi bi-plus-circle me-1"></i> NUEVO ENVÍO
+                        </a>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="upgrade-banner">
-        <div class="text-start">
-            <h5 class="mb-0 fw-bold"><i class="bi bi-gem text-orange"></i> ¡Lleva tus envíos al siguiente nivel!</h5>
-            <p class="small mb-0 opacity-75">Descubre beneficios exclusivos adquiriendo un plan hoy mismo.</p>
-        </div>
-        <button class="btn-orange" onclick="mostrarPlanes()">Adquirir Plan</button>
-    </div>
+            {# BANNER ADQUIRIR PLAN #}
+            <div class="upgrade-banner">
+                <div class="text-start">
+                    <h5 class="mb-0 fw-bold text-white">
+                        <i class="bi bi-gem me-2" style="color: var(--milano-red);"></i>
+                        ¡Lleva tus envíos al siguiente nivel!
+                    </h5>
+                    <p class="small mb-0 text-white opacity-75">Haz clic para elegir un plan y proceder al pago.</p>
+                </div>
+                <button class="btn btn-orange px-4" onclick="mostrarPlanes()">
+                    <i class="bi bi-gem me-1"></i> Adquirir Plan
+                </button>
+            </div>
 
-    <div id="seccionPlanes" class="planes-selector">
-        <h3 class="section-title mb-4">Planes Disponibles</h3>
-        <div class="row g-3">
-            <div class="col-md-3">
-                <div class="plan-mini-card">
-                    <h5 class="fw-bold">BRONCE</h5>
-                    <p class="small opacity-50">Plan Básico</p>
-                    <a href="/planes/detallado/bronce" class="btn btn-outline-light btn-sm w-100">Ver Detalle</a>
+            {# PLANES DESPLEGABLES EN TARJETAS #}
+            <div id="seccionPlanes">
+                <h5 class="section-title text-start mb-3">Planes Disponibles</h5>
+                <div class="row g-3">
+                    {% if tarifas %}
+                        {% for t in tarifas %}
+                        <div class="col-6 col-md-3">
+                            <div class="plan-card">
+                                <div class="plan-nombre">{{ t.nombre }}</div>
+                                <div class="plan-envios">{{ t.envios_incluidos or '—' }} envíos</div>
+                                <div class="plan-precio">
+                                    $ {{ "{:,.0f}".format((t.precio_plan or 0) * (t.envios_incluidos or 1)).replace(',', '.') }}
+                                </div>
+                                <div class="plan-precio-label">valor total del plan</div>
+                                <a href="/planes/detallado/{{ t.nombre.lower() }}" class="btn btn-orange btn-sm w-100 text-white">
+                                    <i class="bi bi-credit-card me-1"></i> Adquirir
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small">No hay planes disponibles en este momento.</p>
+                    {% endif %}
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="plan-mini-card">
-                    <h5 class="fw-bold">PLATA</h5>
-                    <p class="small opacity-50">Plan Estándar</p>
-                    <a href="/planes/detallado/plata" class="btn btn-outline-light btn-sm w-100">Ver Detalle</a>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="plan-mini-card" style="border-color: var(--accent-orange);">
-                    <h5 class="fw-bold text-orange">ORO</h5>
-                    <p class="small opacity-50">Plan Premium</p>
-                    <a href="/planes/detallado/oro" class="btn btn-orange btn-sm w-100">Ver Detalle</a>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="plan-mini-card">
-                    <h5 class="fw-bold">DIAMANTE</h5>
-                    <p class="small opacity-50">Plan Elite</p>
-                    <a href="/planes/detallado/diamante" class="btn btn-outline-light btn-sm w-100">Ver Detalle</a>
-                </div>
-            </div>
+
         </div>
     </div>
 </div>
 
 <section class="container py-4">
     <h2 class="mb-4 fw-bold section-title"><i class="bi bi-lightning-fill"></i> Acceso Rápido</h2>
-    <div class="row g-4">
+    <div class="row g-4 text-white">
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-geo-alt fs-1"></i>
@@ -307,10 +362,10 @@
     </div>
 </section>
 
-<footer class="text-center">
+<footer class="text-center py-4" style="background: var(--chinese-black); border-top: 1px solid #222; margin-top: 40px;">
     <div class="container">
         <p class="mb-0 opacity-50 text-white">© 2026 ENVIEXPRESS – Gestión Logística Profesional</p>
-        <small class="text-orange fw-bold">Bogotá, Colombia</small>
+        <small style="color: var(--milano-red); font-weight: 700;">Bogotá, Colombia</small>
     </div>
 </footer>
 

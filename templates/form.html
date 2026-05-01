@@ -7,115 +7,140 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-dark: #00235a;
-            --primary-blue: #003a8c;
-            --accent-orange: #ff8c00;
-            --text-light: #ffffff;
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --input-bg: rgba(255, 255, 255, 0.1);
-        }
+    :root {
+        /* Nuevos colores integrados */
+        --rojo-milan: #B20C06;
+        --rojo-hover: #8a0a05;
+        --negro-puro: #000000;
+        --blanco-puro: #ffffff;
+        --fondo-gris: #f4f4f4;
+        /* Ajuste de variables anteriores */
+        --card-bg: #ffffff; /* Contenedor blanco para resaltar sobre el gris */
+        --input-bg: #fdfdfd;
+    }
 
-        body { 
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
-            color: var(--text-light);
-            font-family: 'Segoe UI', Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-        }
+    body {
+        background: var(--fondo-gris); /* Fondo general gris */
+        color: var(--negro-puro);
+        font-family: 'Segoe UI', Arial, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
 
-        .form-container { 
-            max-width: 650px; 
-            margin: 50px auto; 
-            padding: 40px; 
-            background: var(--card-bg);
-            backdrop-filter: blur(15px);
-            border-radius: 20px; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
-        }
+    .form-container {
+        max-width: 700px;
+        width: 90%;
+        margin: 50px auto;
+        padding: 40px;
+        background: var(--card-bg);
+        border-radius: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
 
-        h2 { 
-            color: var(--text-light); 
-            text-align: center; 
-            margin-bottom: 35px; 
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    /* Títulos en negro puro */
+    h2 {
+        color: var(--negro-puro);
+        text-align: center;
+        margin-bottom: 35px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
 
-        .form-label { 
-            color: var(--accent-orange); 
-            font-size: 0.85rem; 
-            font-weight: 600; 
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
+    .form-label {
+        color: var(--negro-puro); /* Etiquetas en negro */
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
 
-        .form-control, .form-select {
-            background-color: var(--input-bg);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 10px;
-            padding: 12px;
-            transition: all 0.3s;
-        }
+    /* Inputs con bordes y texto negro */
+    .form-control, .form-select {
+        background-color: var(--input-bg);
+        border: 2px solid #e1e8ef;
+        color: var(--negro-puro);
+        border-radius: 10px;
+        padding: 12px;
+        transition: all 0.3s;
+    }
 
-        .form-control:focus, .form-select:focus {
-            background-color: rgba(255, 255, 255, 0.15);
-            border-color: var(--accent-orange);
-            color: white;
-            box-shadow: 0 0 12px rgba(255, 140, 0, 0.25);
-        }
+    .form-control:focus, .form-select:focus {
+        background-color: var(--blanco-puro);
+        border-color: var(--rojo-milan); /* Acento en rojo al enfocar */
+        color: var(--negro-puro);
+        box-shadow: 0 0 12px rgba(178, 12, 6, 0.15);
+        outline: none;
+    }
 
-        .form-control::placeholder { color: rgba(255, 255, 255, 0.4); }
+    .form-control::placeholder { color: #94a3b8; }
 
-        /* Estilo para las opciones del select */
-        option { background-color: var(--primary-dark); color: white; }
+    option { background-color: var(--blanco-puro); color: var(--negro-puro); }
 
-        .btn-orange {
-            background-color: var(--accent-orange);
-            color: white;
-            border: none;
-            padding: 15px;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 12px;
-            transition: all 0.3s;
-        }
+    /* Botón Rojo Milán con borde blanco */
+    .btn-orange {
+        background-color: var(--rojo-milan);
+        color: var(--blanco-puro);
+        border: 2px solid var(--blanco-puro);
+        padding: 15px;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-radius: 12px;
+        transition: all 0.3s;
+        cursor: pointer;
+        width: 100%;
+    }
 
-        .btn-orange:hover {
-            background-color: #e67e00;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
-            color: white;
-        }
+    .btn-orange:hover {
+        background-color: var(--rojo-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(178, 12, 6, 0.4);
+    }
 
-        .btn-outline-custom {
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            border-radius: 10px;
-            padding: 12px;
-            transition: 0.3s;
-        }
+    .btn-outline-custom {
+        border: 2px solid var(--negro-puro);
+        color: var(--negro-puro);
+        border-radius: 10px;
+        padding: 12px;
+        font-weight: 600;
+        transition: 0.3s;
+        text-align: center;
+        background: transparent;
+    }
 
-        .btn-outline-custom:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--accent-orange);
-            color: var(--accent-orange);
-        }
+    .btn-outline-custom:hover {
+        background: var(--negro-puro);
+        color: var(--blanco-puro);
+    }
 
-        .form-text { color: rgba(255, 255, 255, 0.5) !important; }
-        
-        hr { border-color: rgba(255, 255, 255, 0.1); }
-    </style>
+    .form-text { color: #666666 !important; }
+
+    .section-divider {
+        border-color: #eeeeee;
+        margin: 24px 0 20px;
+    }
+
+    /* Etiquetas de sección en Rojo Milán */
+    .section-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--rojo-milan);
+        margin-bottom: 16px;
+        border-left: 3px solid var(--rojo-milan);
+        padding-left: 10px;
+    }
+</style>
 </head>
 <body>
-<div class="container">
+<div class="container py-4">
     <div class="form-container">
         <h2>
-            <i class="bi bi-person-circle text-orange"></i>
+            <i class="bi bi-person-circle"></i>
             {{ 'Editar Usuario' if usuario and usuario.id_usuario else 'Nuevo Usuario' }}
         </h2>
 
@@ -124,126 +149,326 @@
             <input type="hidden" name="id_usuario"
                    value="{{ usuario.id_usuario if usuario and usuario.id_usuario else '' }}" />
 
+            {# ── CREDENCIALES ──────────────────────────────────────────── #}
+            <p class="section-label"><i class="bi bi-key"></i> Credenciales de acceso</p>
+
             <div class="mb-3">
                 <label for="user_name" class="form-label">
-                    <i class="bi bi-person-badge"></i> Nombre de usuario:*
+                    <i class="bi bi-person-badge"></i> Nombre de usuario*
                 </label>
                 <input type="text" class="form-control" name="user_name" id="user_name"
                        value="{{ usuario.user_name if usuario else '' }}"
-                       placeholder="Ej: yrico2026" required maxlength="255" />
+                       placeholder="usuario123" required maxlength="255" />
             </div>
 
             <div class="mb-3">
                 <label for="password" class="form-label">
-                    <i class="bi bi-key-fill"></i> Contraseña:*
+                    <i class="bi bi-key-fill"></i> Contraseña*
                 </label>
                 <input type="password" class="form-control" name="password" id="password"
                        placeholder="Ingrese contraseña segura"
                        {{ '' if usuario and usuario.id_usuario else 'required' }} />
                 <small class="form-text">
                     {% if usuario and usuario.id_usuario %}
-                    <i class="bi bi-info-circle"></i> Deja en blanco para mantener la actual.
+                        <i class="bi bi-info-circle"></i> Deja en blanco para mantener la actual.
                     {% else %}
-                    <i class="bi bi-shield-lock"></i> Se recomienda incluir números y símbolos.
+                        <i class="bi bi-shield-lock"></i> Mínimo 6 caracteres.
                     {% endif %}
                 </small>
             </div>
 
+            <hr class="section-divider">
+
+            {# ── DATOS PERSONALES ──────────────────────────────────────── #}
+            <p class="section-label"><i class="bi bi-person"></i> Datos personales</p>
+
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="nombre" class="form-label">
-                        <i class="bi bi-person-fill"></i> Nombre:*
+                    <label class="form-label">
+                        <i class="bi bi-person-fill"></i> Nombre*
                     </label>
-                    <input type="text" class="form-control" name="nombre" id="nombre"
+                    <input type="text" class="form-control" name="nombre"
                            value="{{ usuario.nombre if usuario else '' }}"
-                           placeholder="Ej: Yohany" required maxlength="100" />
+                           placeholder="Tu nombre" required maxlength="100" />
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="apellido" class="form-label">
-                        <i class="bi bi-person-fill"></i> Apellido:*
+                    <label class="form-label">
+                        <i class="bi bi-person-fill"></i> Apellido*
                     </label>
-                    <input type="text" class="form-control" name="apellido" id="apellido"
+                    <input type="text" class="form-control" name="apellido"
                            value="{{ usuario.apellido if usuario else '' }}"
-                           placeholder="Ej: Rico" required maxlength="100" />
+                           placeholder="Tu apellido" required maxlength="100" />
                 </div>
             </div>
 
             <div class="mb-3">
-                <label for="correo" class="form-label">
-                    <i class="bi bi-envelope-fill"></i> Correo electrónico:*
+                <label class="form-label">
+                    <i class="bi bi-envelope-fill"></i> Correo electrónico*
                 </label>
-                <input type="email" class="form-control" name="correo" id="correo"
+                <input type="email" class="form-control" name="correo"
                        value="{{ usuario.correo if usuario else '' }}"
                        placeholder="correo@ejemplo.com" required maxlength="120" />
             </div>
 
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-telephone-fill"></i> Teléfono
+                </label>
+                <input type="tel" class="form-control" name="telefono"
+                       value="{{ usuario.telefono if usuario else '' }}"
+                       placeholder="3001234567" maxlength="20" />
+            </div>
+
+            <hr class="section-divider">
+
+            {# ── UBICACIÓN ─────────────────────────────────────────────── #}
+            <p class="section-label"><i class="bi bi-geo-alt"></i> Ubicación (dirección de recogida por defecto)</p>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-geo-alt-fill"></i> Dirección
+                </label>
+                <input type="text" class="form-control" name="direccion"
+                       value="{{ usuario.direccion if usuario and usuario.direccion else '' }}"
+                       placeholder="Calle 123 #45-67, Ciudad" maxlength="255" />
+            </div>
+
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="telefono" class="form-label">
-                        <i class="bi bi-telephone-fill"></i> Teléfono de contacto:
+                    <label class="form-label">
+                        <i class="bi bi-building"></i> Ciudad
                     </label>
-                    <input type="tel" class="form-control" name="telefono" id="telefono"
-                           value="{{ usuario.telefono if usuario else '' }}"
-                           placeholder="Ej: 3001234567" maxlength="20" />
+                    <select class="form-select" name="ciudad" id="select_ciudad_form">
+                        <option value="">Ciudad de residencia</option>
+                    </select>
+                    {# Campo oculto para guardar el valor compuesto Ciudad (DEPTO) #}
+                    <input type="hidden" name="ciudad_raw" id="ciudad_raw_input"
+                           value="{{ usuario.ciudad if usuario and usuario.ciudad else '' }}" />
                 </div>
-                
                 <div class="col-md-6 mb-3">
-                    <label for="tarifa_id" class="form-label">
-                        <i class="bi bi-gem"></i> Plan Adquirido:
+                    <label class="form-label">
+                        <i class="bi bi-map"></i> Localidad
                     </label>
-                    <select class="form-select" name="tarifa_id" id="tarifa_id">
-                        <option value="">Sin plan asignado</option>
-                        {% for t in tarifas %}
-                        <option value="{{ t.id }}" {{ 'selected' if usuario and usuario.tarifa_id == t.id else '' }}>
-                            {{ t.nombre }}
-                        </option>
+                    <select class="form-select" name="localidad" id="select_localidad_form">
+                        <option value="">Localidad de residencia</option>
+                        {% for loc in ["Usaquén","Chapinero","Santa Fe","San Cristóbal","Usme","Kennedy",
+                                       "Suba","Engativá","Bosa","Fontibón","Barrios Unidos","Teusaquillo",
+                                       "Los Mártires","Antonio Nariño","Puente Aranda","La Candelaria",
+                                       "Rafael Uribe Uribe","Ciudad Bolívar","Sumapaz"] %}
+                            <option value="{{ loc }}"
+                                    {% if usuario and usuario.localidad == loc %}selected{% endif %}>
+                                {{ loc }}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
 
+            <hr class="section-divider">
+
+            {# ── CONFIGURACIÓN DE CUENTA (solo ADMIN) ─────────────────── #}
+            <p class="section-label"><i class="bi bi-gear"></i> Configuración de cuenta</p>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-gem"></i> Plan Adquirido
+                </label>
+                <select class="form-select" name="tarifa_id">
+                    <option value="">Sin plan asignado</option>
+                    {% for t in tarifas %}
+                        <option value="{{ t.id }}"
+                                {{ 'selected' if usuario and usuario.tarifa_id == t.id else '' }}>
+                            {{ t.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
             {% if rol == 'ADMIN' %}
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="rol" class="form-label">
-                        <i class="bi bi-shield-lock-fill"></i> Rol de Sistema:*
+                    <label class="form-label">
+                        <i class="bi bi-shield-lock-fill"></i> Rol de Sistema*
                     </label>
-                    <select class="form-select" name="rol" id="rol" required>
+                    <select class="form-select" name="rol" required>
                         <option value="">Seleccionar...</option>
-                        <option value="ADMIN" {{ 'selected' if usuario and usuario.rol == 'ADMIN' else '' }}>Administrador</option>
-                        <option value="CLIENTE" {{ 'selected' if usuario and usuario.rol == 'CLIENTE' else '' }}>Cliente</option>
-                        <option value="MENSAJERO" {{ 'selected' if usuario and usuario.rol == 'MENSAJERO' else '' }}>Mensajero</option>
+                        <option value="ADMIN"
+                                {{ 'selected' if usuario and usuario.rol == 'ADMIN' else '' }}>
+                            Administrador
+                        </option>
+                        <option value="CLIENTE"
+                                {{ 'selected' if usuario and usuario.rol == 'CLIENTE' else '' }}>
+                            Cliente
+                        </option>
+                        <option value="MENSAJERO"
+                                {{ 'selected' if usuario and usuario.rol == 'MENSAJERO' else '' }}>
+                            Mensajero
+                        </option>
                     </select>
                 </div>
-
                 <div class="col-md-6 mb-3">
-                    <label for="activo" class="form-label">
-                        <i class="bi bi-toggle-on"></i> Estado de Cuenta:*
+                    <label class="form-label">
+                        <i class="bi bi-toggle-on"></i> Estado de Cuenta*
                     </label>
-                    <select class="form-select" name="activo" id="activo" required>
-                        <option value="true" {{ 'selected' if usuario and usuario.activo else '' }}>Activo</option>
-                        <option value="false" {{ 'selected' if usuario and not usuario.activo else '' }}>Inactivo</option>
+                    <select class="form-select" name="activo" required>
+                        <option value="true"
+                                {{ 'selected' if not usuario or usuario.activo else '' }}>
+                            Activo
+                        </option>
+                        <option value="false"
+                                {{ 'selected' if usuario and not usuario.activo else '' }}>
+                            Inactivo
+                        </option>
                     </select>
                 </div>
             </div>
             {% else %}
-            <input type="hidden" name="rol" value="{{ usuario.rol if usuario else 'CLIENTE' }}" />
-            <input type="hidden" name="activo" value="{{ usuario.activo if usuario else 'true' }}" />
+            <input type="hidden" name="rol"    value="{{ usuario.rol if usuario else 'CLIENTE' }}" />
+            <input type="hidden" name="activo" value="{{ 'true' if not usuario or usuario.activo else 'false' }}" />
             {% endif %}
 
-            <hr class="my-4">
+            <hr class="section-divider">
 
             <div class="d-grid gap-3">
                 <button type="submit" class="btn btn-orange">
-                    <i class="bi bi-check-all"></i> {{ 'Actualizar' if usuario and usuario.id_usuario else 'Registrar' }} Usuario
+                    <i class="bi bi-check-all"></i>
+                    {{ 'Actualizar' if usuario and usuario.id_usuario else 'Registrar' }} Usuario
                 </button>
                 <a href="/usuarios" class="btn btn-outline-custom">
                     <i class="bi bi-arrow-left-circle"></i> Cancelar y volver
                 </a>
             </div>
+
         </form>
     </div>
 </div>
+
+<script>
+// ── DATOS DE CIUDADES POR DEPARTAMENTO ────────────────────────────────────
+const ciudadesPorDepto = {
+    "AMAZONAS": ["Leticia","Puerto Nariño"],
+    "ANTIOQUIA": ["Medellín","Bello","Itagüí","Envigado","Apartadó","Caucasia","Rionegro","Turbo","Sabaneta"],
+    "ARAUCA": ["Arauca","Arauquita","Saravena","Tame"],
+    "ATLÁNTICO": ["Barranquilla","Soledad","Malambo","Sabanalarga","Puerto Colombia"],
+    "BOGOTÁ, D.C.": ["BOGOTÁ, D.C."],
+    "BOLÍVAR": ["Cartagena","Magangué","Turbaco","El Carmen de Bolívar","Mompox"],
+    "BOYACÁ": ["Tunja","Duitama","Sogamoso","Paipa","Chiquinquirá","Villa de Leyva"],
+    "CALDAS": ["Manizales","Villamaría","Chinchiná","La Dorada"],
+    "CAQUETÁ": ["Florencia","San Vicente del Caguán"],
+    "CASANARE": ["Yopal","Aguazul","Paz de Ariporo","Villanueva"],
+    "CAUCA": ["Popayán","Santander de Quilichao","Puerto Tejada"],
+    "CESAR": ["Valledupar","Aguachica","Codazzi"],
+    "CHOCÓ": ["Quibdó","Istmina","Tadó"],
+    "CÓRDOBA": ["Montería","Cereté","Lorica","Sahagún"],
+    "CUNDINAMARCA": ["Soacha","Chía","Zipaquirá","Funza","Facatativá","Fusagasugá","Girardot","Madrid","Mosquera","Cajicá"],
+    "GUAINÍA": ["Inírida"],
+    "GUAVIARE": ["San José del Guaviare"],
+    "HUILA": ["Neiva","Pitalito","Garzón","La Plata"],
+    "LA GUAJIRA": ["Riohacha","Maicao","Uribia","Manaure"],
+    "MAGDALENA": ["Santa Marta","Ciénaga","Fundación"],
+    "META": ["Villavicencio","Acacías","Granada","San Martín"],
+    "NARIÑO": ["Pasto","Ipiales","Tumaco"],
+    "NORTE DE SANTANDER": ["Cúcuta","Los Patios","Villa del Rosario","Ocaña","Pamplona"],
+    "PUTUMAYO": ["Mocoa","Puerto Asís","Sibundoy"],
+    "QUINDÍO": ["Armenia","Calarcá","Montenegro"],
+    "RISARALDA": ["Pereira","Dosquebradas","Santa Rosa de Cabal"],
+    "SANTANDER": ["Bucaramanga","Floridablanca","Girón","Piedecuesta","Barrancabermeja"],
+    "SUCRE": ["Sincelejo","Corozal","San Marcos"],
+    "TOLIMA": ["Ibagué","Espinal","Melgar","Honda"],
+    "VALLE DEL CAUCA": ["Cali","Palmira","Buenaventura","Tuluá","Cartago","Buga","Yumbo","Jamundí"],
+    "VAUPÉS": ["Mitú"],
+    "VICHADA": ["Puerto Carreño"]
+};
+
+// Selector de departamento (generado dinámicamente)
+const selectCiudad   = document.getElementById('select_ciudad_form');
+const ciudadRawInput = document.getElementById('ciudad_raw_input');
+const localidadWrap  = document.getElementById('localidad_wrap');
+
+// Construir select de departamento dinámicamente
+function buildDeptoSelect() {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'mb-3';
+    wrapper.innerHTML = `
+        <label class="form-label">
+            <i class="bi bi-map-fill"></i> Departamento
+        </label>
+        <select class="form-select" id="select_depto_form">
+            <option value="">Seleccione departamento...</option>
+            ${Object.keys(ciudadesPorDepto).sort().map(d =>
+                `<option value="${d}">${d}</option>`
+            ).join('')}
+        </select>`;
+    selectCiudad.closest('.col-md-6').parentElement.insertBefore(
+        wrapper,
+        selectCiudad.closest('.col-md-6').parentElement.firstChild
+    );
+}
+
+function poblarCiudades(depto, savedCity) {
+    selectCiudad.innerHTML = '<option value="">Seleccione ciudad...</option>';
+    if (!depto || !ciudadesPorDepto[depto]) return;
+    ciudadesPorDepto[depto].forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.text  = c;
+        if (savedCity === c) opt.selected = true;
+        selectCiudad.appendChild(opt);
+    });
+    // Mostrar/ocultar localidad solo para Bogotá
+    const locCol = document.getElementById('select_localidad_form').closest('.col-md-6');
+    locCol.style.display = depto === 'BOGOTÁ, D.C.' ? '' : 'none';
+}
+
+// Al cambiar ciudad, actualizar el campo hidden con formato "Ciudad (DEPTO)"
+selectCiudad.addEventListener('change', function() {
+    const depto = document.getElementById('select_depto_form')?.value || '';
+    const ciudad = this.value;
+    if (ciudad && depto) {
+        ciudadRawInput.value = `${ciudad} (${depto})`;
+    } else {
+        ciudadRawInput.value = '';
+    }
+});
+
+// Al cambiar departamento
+document.addEventListener('change', function(e) {
+    if (e.target.id === 'select_depto_form') {
+        poblarCiudades(e.target.value, null);
+        ciudadRawInput.value = '';
+    }
+});
+
+// ── INICIALIZACIÓN: restaurar ciudad/depto guardados ─────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    buildDeptoSelect();
+
+    const selectDepto = document.getElementById('select_depto_form');
+    const rawVal = ciudadRawInput.value; // ej: "Suba (BOGOTÁ, D.C.)"
+
+    if (rawVal) {
+        let savedDepto = '', savedCity = '';
+        if (rawVal.includes(' (')) {
+            const partes  = rawVal.split(' (');
+            savedCity  = partes[0].trim();
+            savedDepto = partes[1].replace(')', '').trim();
+        } else {
+            savedCity  = rawVal.trim();
+            savedDepto = rawVal.trim();
+        }
+        // Seleccionar departamento
+        if (selectDepto) {
+            selectDepto.value = savedDepto;
+            poblarCiudades(savedDepto, savedCity);
+        }
+    } else {
+        // Sin valor guardado: ocultar localidad por defecto
+        const locCol = document.getElementById('select_localidad_form').closest('.col-md-6');
+        locCol.style.display = 'none';
+    }
+});
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

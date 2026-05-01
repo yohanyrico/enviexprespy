@@ -77,7 +77,13 @@
 <body>
     <div class="no-print text-center py-3">
         <button onclick="window.print()" class="btn btn-primary btn-lg">🖨️ IMPRIMIR GUÍA</button>
-        <a href="/envios/mis-guias" class="btn btn-secondary btn-lg">VOLVER</a>
+        
+        {# LÓGICA DINÁMICA PARA EL BOTÓN VOLVER #}
+        {% if request.session.rol == 'ADMIN' %}
+            <a href="/envios/" class="btn btn-secondary btn-lg">VOLVER</a>
+        {% else %}
+            <a href="/envios/mis-guias" class="btn btn-secondary btn-lg">VOLVER</a>
+        {% endif %}
     </div>
 
     <div class="guia-print">
@@ -107,35 +113,49 @@
 
             <div class="col-6">
                 <p class="fw-bold text-uppercase border-bottom bg-light p-1">DESTINATARIO (ENTREGA)</p>
+                {% set ref_ent = envio.lugar_entrega.referencia if envio.lugar_entrega.referencia else "" %}
+                {% set nombre_dest = ref_ent.split('Nombre:')[1].split('|')[0].strip() if 'Nombre:' in ref_ent else '---' %}
+                {% set tel_dest = ref_ent.split('Tel:')[1].split('|')[0].strip() if 'Tel:' in ref_ent else '---' %}
+                <p class="mb-1"><strong>NOMBRE:</strong> {{ nombre_dest }}</p>
                 <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_entrega.ciudad }}</p>
                 <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_entrega.direccion }}</p>
+                <p class="mb-1"><strong>TELÉFONO:</strong> {{ tel_dest }}</p>
                 
-                {# LÓGICA DE LOCALIDAD INTELIGENTE #}
+                {# LÓGICA DE LOCALIDAD / CIUDAD INTELIGENTE #}
                 <div class="localidad-box">
-                    {% set ref = envio.lugar_entrega.referencia.upper() %}
-                    {% set dir = envio.lugar_entrega.direccion.upper() %}
-                    {% set localidades = ["USAQUÉN", "CHAPINERO", "SANTA FE", "SAN CRISTÓBAL", "USME", "KENNEDY", "FONTIBÓN", "ENGATIVÁ", "SUBA", "BARRIOS UNIDOS", "TEUSAQUILLO", "LOS MÁRTIRES", "ANTONIO NARIÑO", "PUENTE ARANDA", "LA CANDELARIA", "RAFAEL URIBE", "CIUDAD BOLÍVAR", "SUMAPAZ", "BOSA"] %}
-                    
-                    {% set encontrada = [] %}
+    {% set ref = envio.lugar_entrega.referencia.upper() if envio.lugar_entrega.referencia else "" %}
+    {% set dir = envio.lugar_entrega.direccion.upper() if envio.lugar_entrega.direccion else "" %}
+    {% set ciudad_dest = envio.lugar_entrega.ciudad.upper() if envio.lugar_entrega.ciudad else "" %}
+    
+    {% set localidades = ["USAQUÉN", "CHAPINERO", "SANTA FE", "SAN CRISTÓBAL", "USME", "KENNEDY", "FONTIBÓN", "ENGATIVÁ", "SUBA", "BARRIOS UNIDOS", "TEUSAQUILLO", "LOS MÁRTIRES", "ANTONIO NARIÑO", "PUENTE ARANDA", "LA CANDELARIA", "RAFAEL URIBE", "CIUDAD BOLÍVAR", "SUMAPAZ", "BOSA"] %}
+    
+    {% set encontrada = [] %}
 
-                    {# 1. Buscar formato explícito "Localidad: " #}
-                    {% if 'LOCALIDAD:' in ref %}
-                        {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim|upper }}
-                    {% else %}
-                        {# 2. Buscar nombres de localidades dentro de la referencia o la dirección #}
-                        {% for loc in localidades %}
-                            {% if loc in ref or loc in dir %}
-                                {% if encontrada.append(loc) %}{% endif %}
-                            {% endif %}
-                        {% endfor %}
+    {# 1. Si el envío es NACIONAL, mostramos la ciudad de destino directamente #}
+    {% if envio.tipo_servicio == 'NACIONAL' %}
+        {# Limpiamos el texto por si viene con el departamento entre paréntesis, ej: Bucaramanga (SANTANDER) -> BUCARAMANGA #}
+        {{ ciudad_dest.split('(')[0].strip() }}
+    
+    {# 2. Si es EXPRESS (Urbano), buscamos la localidad #}
+    {% else %}
+        {% if 'LOCALIDAD:' in ref %}
+            {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim|upper }}
+        {% else %}
+            {% for loc in localidades %}
+                {% if loc in ref or loc in dir %}
+                    {% if encontrada.append(loc) %}{% endif %}
+                {% endif %}
+            {% endfor %}
 
-                        {% if encontrada %}
-                            {{ encontrada[0] }}
-                        {% else %}
-                            BOGOTÁ D.C.
-                        {% endif %}
-                    {% endif %}
-                </div>
+            {% if encontrada %}
+                {{ encontrada[0] }}
+            {% else %}
+                {# Si no encuentra localidad pero es en Bogotá, dejamos Bogotá, de lo contrario la ciudad #}
+                {{ ciudad_dest.split('(')[0].strip() }}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</div>
 
                 <p class="mt-1 mb-1"><strong>CONTACTO:</strong> {{ envio.lugar_entrega.referencia }}</p>
             </div>

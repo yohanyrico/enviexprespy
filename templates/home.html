@@ -8,78 +8,99 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <script>
+        (function () {
+            history.pushState(null, null, window.location.href);
+            window.addEventListener("popstate", function () {
+                history.pushState(null, null, window.location.href);
+            });
+            window.addEventListener("pageshow", function (event) {
+                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
+
    <style>
     :root {
-        --deep-blue: #002B5B;
-        --bright-orange: #FF8C00;
-        --hover-orange: #E67E00;
-        --soft-bg: #f4f7f6;
-        --white: #ffffff;
-        --text-light: #f8f9fa;
+        --milano-red:        #B20C06;
+        --milano-hover:      #8E0A05;
+        --chinese-black:     #0b012e;
+        --slate-gray:        #738589;
+        --white-bg:          #FDFFFF;
+        --text-dark:         #0b012e;
+        --text-light:        #ffffff;
     }
 
     body { 
-        background: linear-gradient(135deg, #002B5B, #004085, #001a33); 
+        background: var(--white-bg); 
         min-height: 100vh; 
-        color: var(--text-light); 
+        color: var(--text-dark); 
         font-family: 'Montserrat', sans-serif; 
         padding-top: 90px; 
     }
 
-    /* NAVBAR - Estilo limpio y autoritario */
     .navbar { 
         backdrop-filter: blur(15px); 
-        background: rgba(0, 43, 91, 0.85); 
-        border-bottom: 2px solid var(--bright-orange); 
+        background: rgba(16, 16, 16, 0.95); 
+        border-bottom: 2px solid var(--milano-red); 
     }
-    .navbar-brand { font-size: 1.8rem; font-weight: 800; color: var(--bright-orange) !important; }
-    .navbar-brand span { color: var(--white); }
+    .navbar-brand { font-size: 1.8rem; font-weight: 800; color: var(--milano-red) !important; }
+    .navbar-brand span { color: var(--text-light); }
 
-    /* TÍTULOS */
     .title-glow { 
         font-size: 2.8rem; 
         font-weight: 800; 
-        text-shadow: 0 0 15px rgba(255, 140, 0, 0.4); 
-        color: var(--white); 
+        color: var(--chinese-black); 
+        text-shadow: none;
     }
     .section-title { 
-        color: var(--bright-orange); 
+        color: var(--chinese-black); 
         text-transform: uppercase;
         letter-spacing: 1px;
-        border-bottom: 2px solid rgba(255, 140, 0, 0.2);
+        border-bottom: 2px solid var(--milano-red);
         display: inline-block;
         padding-bottom: 5px;
     }
 
-    /* TARJETAS (CARDS) - Más modernas y menos traslúcidas */
     .quick-card { 
-        background: rgba(255, 255, 255, 0.1); 
-        border: 1px solid rgba(255, 255, 255, 0.1); 
+        background: #ffffff; 
+        border: 1px solid rgba(115, 133, 137, 0.3); 
         border-radius: 16px; 
         padding: 30px; 
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
         text-align: center; 
-        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        height: 100%;
     }
     .quick-card:hover { 
         transform: translateY(-10px); 
-        background: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-        border-color: var(--bright-orange);
+        background: #ffffff;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border-color: var(--milano-red);
     }
     .card-icon { 
         font-size: 3.5rem; 
-        color: var(--bright-orange) !important; 
+        color: var(--slate-gray) !important; 
         margin-bottom: 20px; 
-        filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.3));
+        transition: 0.3s;
+    }
+    .quick-card:hover .card-icon {
+        color: var(--milano-red) !important;
+        filter: drop-shadow(0 0 4px rgba(178, 12, 6, 0.2));
     }
 
-    /* BOTONES */
-    .btn-green { /* Mantenemos el nombre de la clase pero cambiamos a Naranja */
-        background: var(--bright-orange); 
+    .btn-green { 
+        background: var(--milano-red); 
         border: none; 
         padding: 12px 20px; 
-        color: var(--deep-blue); 
+        color: var(--text-light); 
         font-weight: 800; 
         border-radius: 8px; 
         transition: .3s; 
@@ -88,43 +109,50 @@
     }
     .btn-green:hover { 
         transform: scale(1.05); 
-        background: var(--white); 
-        color: var(--deep-blue); 
-        box-shadow: 0 0 20px rgba(255, 140, 0, 0.5);
+        background: var(--milano-hover); 
+        color: var(--text-light); 
+        box-shadow: 0 8px 20px rgba(178, 12, 6, 0.3);
     }
 
-    .btn-success { background-color: var(--bright-orange); border: none; color: var(--deep-blue); font-weight: 700; }
-    .btn-success:hover { background-color: var(--hover-orange); color: white; }
+    .btn-success { 
+        background-color: var(--milano-red); 
+        border: none; 
+        color: var(--text-light); 
+        font-weight: 700; 
+    }
+    .btn-success:hover { 
+        background-color: var(--milano-hover); 
+        color: var(--text-light); 
+    }
 
     .btn-outline-success { 
-        border: 2px solid var(--bright-orange); 
-        color: var(--bright-orange); 
+        border: 2px solid var(--milano-red); 
+        color: var(--milano-red); 
         font-weight: 600; 
     }
     .btn-outline-success:hover { 
-        background: var(--bright-orange); 
-        color: var(--deep-blue); 
+        background: var(--milano-red); 
+        color: var(--text-light); 
     }
 
-    /* ALERTAS */
     .alert-success { 
-        background: rgba(255, 140, 0, 0.15); 
-        border: 1px solid var(--bright-orange); 
-        color: var(--white); 
+        background: rgba(178, 12, 6, 0.1); 
+        border: 1px solid var(--milano-red); 
+        color: var(--milano-red); 
     }
 
-    /* FOOTER */
     footer { 
-        background: rgba(0, 0, 0, 0.4); 
-        border-top: 3px solid var(--bright-orange); 
+        background: var(--chinese-black); 
+        border-top: 3px solid var(--milano-red); 
         padding: 30px 0;
         margin-top: 60px; 
+        color: var(--text-light);
     }
 
-    /* SCROLLBAR (Opcional para mejorar el look) */
     ::-webkit-scrollbar { width: 10px; }
-    ::-webkit-scrollbar-track { background: var(--deep-blue); }
-    ::-webkit-scrollbar-thumb { background: var(--bright-orange); border-radius: 5px; }
+    ::-webkit-scrollbar-track { background: var(--white-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--milano-red); border-radius: 5px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--milano-hover); }
 </style>
 </head>
 <body>
@@ -141,14 +169,12 @@
                 <li class="nav-item">
                     <span class="navbar-text text-light">
                         <i class="bi bi-person-badge"></i>
-                        <!-- Equivalente a th:text="${rol}" -->
                         {{ rol }}
                     </span>
                 </li>
                 <li class="nav-item">
-                    <!-- Equivalente a th:action="@{/logout}" -->
                     <form action="/logout" method="post">
-                        <button class="btn btn-danger btn-sm">
+                        <button type="submit" class="btn btn-danger btn-sm">
                             <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                         </button>
                     </form>
@@ -166,7 +192,6 @@
 
 <!-- Mensaje de éxito -->
 <div class="container">
-    <!-- Equivalente a th:if="${param.actualizado}" -->
     {% if actualizado %}
     <div id="mensajeExito" class="alert alert-success text-center" role="alert">
         <i class="bi bi-check-circle-fill"></i> ¡El perfil ha sido actualizado correctamente!
@@ -177,9 +202,9 @@
 <!-- ACCIONES PRINCIPALES -->
 <section class="container py-4">
     <h2 class="mb-4 fw-bold section-title text-center">Gestión del Sistema</h2>
-    <div class="row g-4">
+    <div class="row g-4 justify-content-center">
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="quick-card">
                 <i class="bi bi-people-fill text-success card-icon"></i>
                 <h5 class="mt-2">Usuarios</h5>
@@ -190,7 +215,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="quick-card">
                 <i class="bi bi-truck text-success card-icon"></i>
                 <h5 class="mt-2">Vehículos</h5>
@@ -201,7 +226,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="quick-card">
                 <i class="bi bi-box-seam text-success card-icon"></i>
                 <h5 class="mt-2">Envíos</h5>
@@ -212,13 +237,25 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="quick-card">
                 <i class="bi bi-currency-dollar text-success card-icon"></i>
                 <h5 class="mt-2">Tarifas</h5>
                 <p class="small">Configura precios y tipos de servicio</p>
                 <a href="/tarifas" class="btn btn-green mt-2">
                     <i class="bi bi-arrow-right-circle"></i> Configurar
+                </a>
+            </div>
+        </div>
+
+        <!-- ✅ NUEVA TARJETA: FINANZAS -->
+        <div class="col-md-2">
+            <div class="quick-card">
+                <i class="bi bi-cash-coin text-success card-icon"></i>
+                <h5 class="mt-2">Finanzas</h5>
+                <p class="small">Ingresos y pagos de planes por cliente</p>
+                <a href="/admin/finanzas" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Ver Saldos
                 </a>
             </div>
         </div>
@@ -251,10 +288,10 @@
 
         <div class="col-md-4">
             <div class="quick-card">
-                <i class="bi bi-gear-fill fs-1 text-success"></i>
-                <h4 class="mt-3">Configuración</h4>
-                <p>Ajusta tarifas, rutas y parámetros del sistema</p>
-                <a href="/tarifas" class="btn btn-sm btn-outline-success mt-2">Configurar</a>
+                <i class="bi bi-cash-stack fs-1 text-success"></i>
+                <h4 class="mt-3">Finanzas</h4>
+                <p>Revisa ingresos y pagos de planes activos</p>
+                <a href="/admin/finanzas" class="btn btn-sm btn-outline-success mt-2">Ver ingresos</a>
             </div>
         </div>
 
@@ -273,6 +310,9 @@
         </a>
         <a href="/envios/nuevo" class="btn btn-success">
             <i class="bi bi-box-seam"></i> Nuevo Envío
+        </a>
+        <a href="/admin/finanzas" class="btn btn-success">
+            <i class="bi bi-cash-coin"></i> Ver Finanzas
         </a>
         <a href="/perfil" class="btn btn-outline-light">
             <i class="bi bi-person-circle"></i> Mi Perfil
