@@ -109,6 +109,7 @@
         transition: 0.3s;
         text-align: center;
         background: transparent;
+        text-decoration: none;
     }
 
     .btn-outline-custom:hover {
@@ -266,7 +267,7 @@
 
             <hr class="section-divider">
 
-            {# ── CONFIGURACIÓN DE CUENTA (solo ADMIN) ─────────────────── #}
+            {# ── CONFIGURACIÓN DE CUENTA (Apartado de Rol Actualizado) ─────────────────── #}
             <p class="section-label"><i class="bi bi-gear"></i> Configuración de cuenta</p>
 
             <div class="mb-3">
@@ -284,7 +285,7 @@
                 </select>
             </div>
 
-            {% if rol == 'ADMIN' %}
+            {% if rol == 'ADMIN' or rol == 'CEO' %}
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">
@@ -292,6 +293,10 @@
                     </label>
                     <select class="form-select" name="rol" required>
                         <option value="">Seleccionar...</option>
+                        <option value="CEO"
+                                {{ 'selected' if usuario and usuario.rol == 'CEO' else '' }}>
+                            CEO
+                        </option>
                         <option value="ADMIN"
                                 {{ 'selected' if usuario and usuario.rol == 'ADMIN' else '' }}>
                             Administrador

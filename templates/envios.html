@@ -25,7 +25,7 @@
 
     <style>
         :root {
-            --milano-red:    #B20C06;
+            --milano-red:     #B20C06;
             --milano-hover:  #8E0A05;
             --white:         #FDFFFF;
             --chinese-black: #101010;
@@ -62,15 +62,15 @@
         .btn-view-custom { background: var(--slate-gray); }
 
         .st-box { padding: 5px 10px; border-radius: 6px; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; display: inline-block; min-width: 130px; text-align: center; }
-        .bg-booking { background-color: #eaff00; color: #000; }
-        .bg-colectado { background-color: #057af7fd; color: #fff; }
-        .bg-ruta { background-color: #ff8c00; color: #fff; }
-        .bg-entregado { background-color: #28a745; color: #fff; }
-        .bg-cancelado { background-color: var(--milano-red); color: #fff; }
-        .bg-retorno { background-color: #6c757d; color: #fff; }
-        .bg-en_bodega { background-color: #a407ff; color: #edf1f5; }
+        .bg-booking    { background-color: #eaff00; color: #000; }
+        .bg-colectado  { background-color: #057af7fd; color: #fff; }
+        .bg-ruta       { background-color: #ff8c00; color: #fff; }
+        .bg-entregado  { background-color: #28a745; color: #fff; }
+        .bg-cancelado  { background-color: var(--milano-red); color: #fff; }
+        .bg-retorno    { background-color: #6c757d; color: #fff; }
+        .bg-en_bodega  { background-color: #a407ff; color: #edf1f5; }
         .bg-devolucion { background-color: #7c2d0ee7; color: #fff; }
-        .bg-rechazado { background-color: #dc3545; color: #fff; }
+        .bg-rechazado  { background-color: #dc3545; color: #fff; }
 
         .table { background: #fff; border-radius: 10px; overflow: hidden; color: var(--chinese-black); width: 100%; border-collapse: collapse; }
         .table thead { background: var(--chinese-black); color: var(--white); font-weight: 700; }
@@ -79,7 +79,6 @@
         .search-input { background: #fff; border: 2px solid var(--chinese-black); color: var(--chinese-black); border-radius: 10px; padding: 8px 15px; width: 250px; }
         .guia-text { color: var(--milano-red); background: #fff; padding: 4px 8px; border-radius: 6px; font-weight: 800; border: 1px solid var(--milano-red); }
 
-        /* Estilo para el botón de gestión/lápiz */
         .btn-status-edit { background: none; border: none; color: var(--slate-gray); transition: 0.2s; cursor: pointer; padding: 0; text-decoration: none; }
         .btn-status-edit:hover { color: var(--milano-red); transform: scale(1.1); }
 
@@ -132,16 +131,22 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <div class="d-flex gap-2 align-items-center flex-wrap">
+
+                {# Búsqueda por guía — todos los roles #}
                 <div class="d-flex gap-1">
                     <input type="text" id="searchInput" class="search-input" placeholder="Número de guía..." onkeypress="if(event.key === 'Enter') buscarGuiaManual()">
                     <button class="btn-neon" onclick="buscarGuiaManual()" type="button"><i class="bi bi-search"></i></button>
                 </div>
 
-                {% if rol == 'ADMIN' %}
+                {# Mapa Operativo — CEO, FACTURACION y ADMINISTRATIVO #}
+                {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
                 <form action="/envios/planificar-ruta" method="POST" style="margin:0;">
                     <button type="submit" class="btn-neon"><i class="bi bi-map-fill"></i> Mapa Operativo</button>
                 </form>
+                {% endif %}
 
+                {# Reportes — CEO y FACTURACION #}
+                {% if rol in ('CEO', 'FACTURACION') %}
                 <div class="dropdown">
                     <button class="btn-neon dropdown-toggle" type="button" data-bs-toggle="dropdown"><i class="bi bi-file-earmark-pdf"></i> Reportes</button>
                     <ul class="dropdown-menu dropdown-menu-dark">
@@ -149,12 +154,17 @@
                         <li><a class="dropdown-item" href="#" onclick="descargar('csv')">Exportar CSV</a></li>
                     </ul>
                 </div>
+                {% endif %}
 
+                {# Imprimir Guías — CEO, FACTURACION y ADMINISTRATIVO #}
+                {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
                 <button class="btn-neon" onclick="imprimirGuiasSeleccionadas()">
                     <i class="bi bi-printer-fill"></i> Imprimir Guías
                 </button>
                 {% endif %}
 
+                {# Filtro de clientes — CEO, FACTURACION y ADMINISTRATIVO #}
+                {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
                 <div class="cliente-dd-wrap" id="clienteDdWrap">
                     <button class="cliente-dd-btn" onclick="toggleClienteDd()"><i class="bi bi-person-fill"></i><span id="clienteLabel">Cliente</span></button>
                     <div class="cliente-dd-panel" id="clienteDdPanel">
@@ -169,17 +179,27 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
 
+                {# Filtros avanzados — todos los roles #}
                 <button class="btn-neon" style="background: var(--chinese-black); border-color: var(--chinese-black);" onclick="abrirModalFiltros()"><i class="bi bi-sliders"></i> Filtros</button>
+
+                {# Nuevo envío — todos los roles operativos #}
+                {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
                 <a class="btn btn-neon" href="/envios/nuevo"><i class="bi bi-plus-circle"></i> Nuevo</a>
+                {% endif %}
+
             </div>
 
             <div class="d-flex gap-2 align-items-center">
-                {% if rol == 'ADMIN' %}
+
+                {# Gestión de Ruta (Asignar/Quitar mensajero) — CEO, FACTURACION y ADMINISTRATIVO #}
+                {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
                 <div class="dropdown">
                     <button class="btn-neon dropdown-toggle" type="button" data-bs-toggle="dropdown"><i class="bi bi-bicycle"></i> Gestión de Ruta</button>
                     <ul class="dropdown-menu dropdown-menu-dark p-3" style="min-width: 250px;">
-                        <li><label class="text-white small fw-bold">Mensajero:</label>
+                        <li>
+                            <label class="text-white small fw-bold">Mensajero:</label>
                             <select id="mensajeroSelect" class="form-select form-select-sm mt-1">
                                 <option value="">Seleccionar...</option>
                                 {% for m in mensajeros %}<option value="{{ m.id_usuario }}">{{ m.nombre }} {{ m.apellido }}</option>{% endfor %}
@@ -192,12 +212,20 @@
                     </ul>
                 </div>
                 {% endif %}
-                <a class="btn btn-neon" href="{{ '/home' if rol == 'ADMIN' else '/home_cliente' }}"><i class="bi bi-house-fill"></i></a>
+
+                {# Botón home — apunta al home correcto según rol #}
+                {% if rol == 'CLIENTE' %}
+                    <a class="btn btn-neon" href="/home_cliente"><i class="bi bi-house-fill"></i></a>
+                {% else %}
+                    <a class="btn btn-neon" href="/home"><i class="bi bi-house-fill"></i></a>
+                {% endif %}
+
             </div>
         </div>
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered align-middle text-center" id="tablaEnvios">
-                    <thead>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle text-center" id="tablaEnvios">
+                <thead>
                     <tr>
                         <th>#</th>
                         <th><input class="form-check-input" type="checkbox" id="selectAll"></th>
@@ -220,7 +248,7 @@
                         <td class="fw-bold">{{ loop.index }}</td>
                         <td><input class="form-check-input" type="checkbox" name="envio_ids" value="{{ e.envio_id }}"></td>
                         <td><span class="guia-text">{{ e.numero_guia }}</span></td>
-                        
+
                         <td>
                             <div class="d-flex align-items-center justify-content-center gap-2">
                                 {% if e.estado == 'Registrado' %}<span class="st-box bg-booking">REGISTRADO</span>
@@ -246,19 +274,28 @@
                             </div>
                         </td>
 
+                        {# ✅ AJUSTE DINÁMICO: Si está en ruta y proviene de una asignación "Solo C", vaciamos o filtramos datos del Destino en la UI #}
                         <td><small>{{ e.lugar_recogida.ciudad if e.lugar_recogida and e.lugar_recogida.ciudad else '---' }}</small></td>
                         <td><small>{{ (e.lugar_recogida.direccion or '')[:20] if e.lugar_recogida else 'N/A' }}</small></td>
-                        <td><small>{{ e.lugar_entrega.ciudad if e.lugar_entrega and e.lugar_entrega.ciudad else '---' }}</small></td>
-                        <td><small>{{ (e.lugar_entrega.direccion or '')[:20] if e.lugar_entrega else 'N/A' }}</small></td>x
-                        <td><small>{{ e.mensajero.nombre if e.mensajero else '---' }}</small></td>
-                        <td><small>{{ e.mensajero_entrega.nombre if e.mensajero_entrega else '---' }}</small></td>
-                        <td><small class="fw-bold text-primary">{{ e.ruta.nombre_sector if e.ruta else '---' }}</small></td>
                         
+                        <td><small>{% if e.estado == 'En_Ruta' and e.estado_entrega == 'Pendiente' %}---{% else %}{{ e.lugar_entrega.ciudad if e.lugar_entrega and e.lugar_entrega.ciudad else '---' }}{% endif %}</small></td>
+                        <td><small>{% if e.estado == 'En_Ruta' and e.estado_entrega == 'Pendiente' %}N/A{% else %}{{ (e.lugar_entrega.direccion or '')[:20] if e.lugar_entrega else 'N/A' }}{% endif %}</small></td>
+                        
+                        <td><small>{{ e.mensajero.nombre if e.mensajero else '---' }}</small></td>
+                        <td><small>{% if e.estado == 'En_Ruta' and e.estado_entrega == 'Pendiente' %}---{% else %}{{ e.mensajero_entrega.nombre if e.mensajero_entrega else '---' }}{% endif %}</small></td>
+                        <td><small class="fw-bold text-primary">{{ e.ruta.nombre_sector if e.ruta else '---' }}</small></td>
+
                         <td>
                             <div class="d-flex gap-1 justify-content-center">
                                 <a class="btn-action-custom btn-view-custom" href="/envios/detalle/{{ e.envio_id }}"><i class="bi bi-eye-fill"></i></a>
+                                {# Editar — CEO, FACTURACION y ADMINISTRATIVO #}
+                                {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
                                 <a class="btn-action-custom btn-edit-custom" href="/envios/editar/{{ e.envio_id }}"><i class="bi bi-pencil-square"></i></a>
+                                {% endif %}
+                                {# Eliminar — solo CEO #}
+                                {% if rol == 'CEO' %}
                                 <a class="btn-action-custom btn-delete-custom" href="/envios/eliminar/{{ e.envio_id }}" onclick="return confirm('¿Eliminar?')"><i class="bi bi-trash-fill"></i></a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -270,20 +307,45 @@
 
     <div class="modal-overlay-custom" id="modalFiltros" onclick="if(event.target===this)cerrarModalFiltros()">
         <div class="modal-custom">
-            <div class="modal-custom-header"><h5><i class="bi bi-sliders me-2"></i>Filtros avanzados</h5><button class="btn btn-sm text-white" onclick="cerrarModalFiltros()">&#x2715;</button></div>
-            <div class="modal-custom-body p-3">
-                <div class="row g-2 mb-2"><div class="col-6"><label class="small fw-bold">Desde</label><input type="date" id="filtroFechaDesde" class="form-control"></div><div class="col-6"><label class="small fw-bold">Hasta</label><input type="date" id="filtroFechaHasta" class="form-control"></div></div>
-                <div class="mb-2"><label class="small fw-bold">Estado</label><select id="filtroEstado" class="form-select"><option value="">Todos</option><option value="REGISTRADO">Registrado</option><option value="EN_RUTA">En ruta</option><option value="ENTREGADO">Entregado</option></select></div>
-                <div class="row g-2 mb-2"><div class="col-6"><label class="small fw-bold">Origen</label><input type="text" id="filtroCiudadOrigen" class="form-control"></div><div class="col-6"><label class="small fw-bold">Destino</label><input type="text" id="filtroCiudadDestino" class="form-control"></div></div>
-                <div class="mb-2"><label class="small fw-bold">Mensajero</label><select id="filtroMensajero" class="form-select"><option value="">Todos</option>{% for m in mensajeros %}<option value="{{ m.id_usuario }}">{{ m.nombre }}</option>{% endfor %}</select></div>
+            <div class="modal-custom-header">
+                <h5><i class="bi bi-sliders me-2"></i>Filtros avanzados</h5>
+                <button class="btn btn-sm text-white" onclick="cerrarModalFiltros()">&#x2715;</button>
             </div>
-            <div class="p-3 border-top d-flex justify-content-end gap-2"><button class="btn btn-sm btn-secondary" onclick="limpiarFiltrosAvanzados()">Limpiar</button><button class="btn btn-sm btn-neon" onclick="aplicarFiltrosAvanzados()">Aplicar</button></div>
+            <div class="modal-custom-body p-3">
+                <div class="row g-2 mb-2">
+                    <div class="col-6"><label class="small fw-bold">Desde</label><input type="date" id="filtroFechaDesde" class="form-control"></div>
+                    <div class="col-6"><label class="small fw-bold">Hasta</label><input type="date" id="filtroFechaHasta" class="form-control"></div>
+                </div>
+                <div class="mb-2">
+                    <label class="small fw-bold">Estado</label>
+                    <select id="filtroEstado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="REGISTRADO">Registrado</option>
+                        <option value="EN_RUTA">En ruta</option>
+                        <option value="ENTREGADO">Entregado</option>
+                    </select>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6"><label class="small fw-bold">Origen</label><input type="text" id="filtroCiudadOrigen" class="form-control"></div>
+                    <div class="col-6"><label class="small fw-bold">Destino</label><input type="text" id="filtroCiudadDestino" class="form-control"></div>
+                </div>
+                <div class="mb-2">
+                    <label class="small fw-bold">Mensajero</label>
+                    <select id="filtroMensajero" class="form-select">
+                        <option value="">Todos</option>
+                        {% for m in mensajeros %}<option value="{{ m.id_usuario }}">{{ m.nombre }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="p-3 border-top d-flex justify-content-end gap-2">
+                <button class="btn btn-sm btn-secondary" onclick="limpiarFiltrosAvanzados()">Limpiar</button>
+                <button class="btn btn-sm btn-neon" onclick="aplicarFiltrosAvanzados()">Apply</button>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ... (Tus funciones de JavaScript se mantienen iguales)
         function buscarGuiaManual() {
             const f = document.getElementById("searchInput").value.toUpperCase();
             document.querySelectorAll("#tablaEnvios tbody tr").forEach(r => {

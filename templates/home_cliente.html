@@ -9,13 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- ✅ Anti-caché a nivel HTML -->
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
     <script>
-        // ✅ Blindaje anti-caché: bloquea botón atrás y bfcache
         (function () {
             history.pushState(null, null, window.location.href);
             window.addEventListener("popstate", function () {
@@ -39,30 +37,30 @@
         --text-light:    #ffffff;
     }
 
-    body { 
+    body {
         background-color: var(--white);
-        color: var(--chinese-black); 
-        font-family: 'Montserrat', sans-serif; 
-        padding-top: 90px; 
+        color: var(--chinese-black);
+        font-family: 'Montserrat', sans-serif;
+        padding-top: 90px;
     }
 
-    .plan-mini-card h5, 
-    .section-title, 
-    .quick-card h5 { 
-        color: var(--chinese-black) !important; 
+    .plan-mini-card h5,
+    .section-title,
+    .quick-card h5 {
+        color: var(--chinese-black) !important;
         font-weight: 800;
         text-transform: uppercase;
     }
 
-    .plan-mini-card p, 
-    .quick-card p { 
-        color: var(--slate-gray) !important; 
+    .plan-mini-card p,
+    .quick-card p {
+        color: var(--slate-gray) !important;
         opacity: 1 !important;
     }
 
-    .btn-orange, 
-    .btn-orange i { 
-        background-color: var(--milano-red) !important; 
+    .btn-orange,
+    .btn-orange i {
+        background-color: var(--milano-red) !important;
         color: var(--text-light) !important;
         border: none;
         font-weight: 700;
@@ -74,19 +72,16 @@
         transform: translateY(-2px);
     }
 
-    .quick-card { 
-        background: #ecedf0; 
-        border: 1px solid rgba(0,0,0,0.1); 
-        border-radius: 18px; 
-        padding: 30px; 
-        transition: all 0.3s ease;  
+    .quick-card {
+        background: #ecedf0;
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 18px;
+        padding: 30px;
+        transition: all 0.3s ease;
         box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     }
 
-    .quick-card i {
-        color: var(--milano-red);
-        font-size: 2.5rem;
-    }
+    .quick-card i { color: var(--milano-red); font-size: 2.5rem; }
 
     .wallet-card {
         color: var(--text-light);
@@ -94,31 +89,15 @@
         border-left: 8px solid;
         padding: 24px 28px;
     }
+    .wallet-card.saldo-bajo   { background: #7B0D0D; border-left-color: #e74c3c; }
+    .wallet-card.saldo-medio  { background: #7A4A00; border-left-color: #f39c12; }
+    .wallet-card.saldo-ok     { background: #0B4A1E; border-left-color: #27ae60; }
+    .wallet-card h2, .wallet-card p, .wallet-card span { color: var(--text-light) !important; }
 
-    .wallet-card.saldo-bajo {
-        background: #7B0D0D;
-        border-left-color: #e74c3c;
+    .navbar {
+        background: var(--chinese-black);
+        border-bottom: 3px solid var(--milano-red);
     }
-
-    .wallet-card.saldo-medio {
-        background: #7A4A00;
-        border-left-color: #f39c12;
-    }
-
-    .wallet-card.saldo-ok {
-        background: #0B4A1E;
-        border-left-color: #27ae60;
-    }
-
-    .wallet-card h2, .wallet-card p, .wallet-card span {
-        color: var(--text-light) !important;
-    }
-
-    .navbar { 
-        background: var(--chinese-black); 
-        border-bottom: 3px solid var(--milano-red); 
-    }
-    
     .navbar-brand, .user-name { color: white !important; }
 
     .upgrade-banner {
@@ -133,7 +112,6 @@
         flex-wrap: wrap;
         margin-top: 20px;
     }
-    
     .upgrade-banner h5 { color: white !important; font-weight: 700; }
 
     #seccionPlanes {
@@ -141,12 +119,12 @@
         margin-top: 20px;
         animation: fadeDown 0.3s ease;
     }
-
     @keyframes fadeDown {
         from { opacity: 0; transform: translateY(-8px); }
         to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* ── BASE PLAN CARD ── */
     .plan-card {
         background: var(--white);
         border: 1.5px solid #ddd;
@@ -159,69 +137,101 @@
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
-
     .plan-card::before {
         content: '';
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 4px;
-        background: var(--milano-red);
+        background: var(--milano-red); /* fallback, se sobreescribe por plan */
     }
-
     .plan-card:hover {
-        border-color: var(--milano-red);
-        box-shadow: 0 8px 24px rgba(178,12,6,0.12);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         transform: translateY(-4px);
     }
 
     .plan-nombre {
-        font-weight: 800;
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: var(--chinese-black);
-        margin-bottom: 4px;
+        font-weight: 800; font-size: 1rem;
+        text-transform: uppercase; letter-spacing: 1px;
+        color: var(--chinese-black); margin-bottom: 4px;
     }
-
     .plan-envios {
-        font-size: 0.75rem;
-        color: var(--slate-gray);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-size: 0.75rem; color: var(--slate-gray);
+        text-transform: uppercase; letter-spacing: 0.5px;
         margin-bottom: 12px;
     }
-
     .plan-precio {
-        font-size: 1.6rem;
-        font-weight: 800;
-        color: var(--milano-red);
-        margin-bottom: 2px;
+        font-size: 1.6rem; font-weight: 800;
+        color: var(--milano-red); margin-bottom: 2px;
     }
-
     .plan-precio-label {
-        font-size: 0.7rem;
-        color: var(--slate-gray);
+        font-size: 0.7rem; color: var(--slate-gray);
         margin-bottom: 16px;
     }
+
+    /* ── BRONCE ── */
+    .plan-card.bronce::before          { background: #cd7f32; }
+    .plan-card.bronce                  { border-color: #e8c49a; }
+    .plan-card.bronce .plan-nombre     { color: #8B5A1A; }
+    .plan-card.bronce .plan-precio     { color: #cd7f32; }
+    .plan-card.bronce:hover            { border-color: #cd7f32; box-shadow: 0 8px 24px rgba(205,127,50,0.2); }
+    .plan-card.bronce .btn-plan        { background-color: #cd7f32 !important; color: #fff !important; }
+    .plan-card.bronce .btn-plan:hover  { background-color: #a0622a !important; }
+
+    /* ── PLATA ── */
+    .plan-card.plata::before           { background: #9e9e9e; }
+    .plan-card.plata                   { border-color: #d0d0d0; }
+    .plan-card.plata .plan-nombre      { color: #555; }
+    .plan-card.plata .plan-precio      { color: #757575; }
+    .plan-card.plata:hover             { border-color: #9e9e9e; box-shadow: 0 8px 24px rgba(158,158,158,0.25); }
+    .plan-card.plata .btn-plan         { background-color: #9e9e9e !important; color: #fff !important; }
+    .plan-card.plata .btn-plan:hover   { background-color: #757575 !important; }
+
+    /* ── ORO ── */
+    .plan-card.oro::before             { background: #FFD700; }
+    .plan-card.oro                     { border-color: #ffe66a; }
+    .plan-card.oro .plan-nombre        { color: #997a00; }
+    .plan-card.oro .plan-precio        { color: #b8860b; }
+    .plan-card.oro:hover               { border-color: #FFD700; box-shadow: 0 8px 24px rgba(255,215,0,0.3); }
+    .plan-card.oro .btn-plan           { background-color: #FFD700 !important; color: #000 !important; }
+    .plan-card.oro .btn-plan:hover     { background-color: #c9a800 !important; }
+
+    /* ── DIAMANTE ── */
+    .plan-card.diamante::before        { background: linear-gradient(90deg,#00bcd4,#7c4dff); }
+    .plan-card.diamante                { border-color: #b2ebf2; }
+    .plan-card.diamante .plan-nombre   { color: #006064; }
+    .plan-card.diamante .plan-precio   { color: #00838f; }
+    .plan-card.diamante:hover          { border-color: #00bcd4; box-shadow: 0 8px 24px rgba(0,188,212,0.25); }
+    .plan-card.diamante .btn-plan      { background: linear-gradient(90deg,#00bcd4,#7c4dff) !important; color: #fff !important; }
+    .plan-card.diamante .btn-plan:hover{ opacity: 0.88; }
+
+    /* btn-plan base */
+    .btn-plan {
+        border: none; font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+        transition: all 0.25s; border-radius: 8px;
+        padding: 8px 0; width: 100%; font-size: 0.8rem;
+        cursor: pointer; text-decoration: none;
+        display: inline-block; text-align: center;
+    }
+    .btn-plan:hover { transform: translateY(-1px); }
 </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold fs-3" href="/home_cliente" style="color: #ff8000;">
-            ENVI<span class="text-light">EXPRESS</span>
+        <a class="navbar-brand fw-bold fs-3" href="/home_cliente">
+            <span style="color: var(--milano-red);">ENVI</span><span class="text-white">EXPRESS</span>
         </a>
         <div id="nav" class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto gap-3 align-items-center">
                 <li class="nav-item">
                     <div class="user-info">
-                        <i class="bi bi-person-circle text-orange"></i>
+                        <i class="bi bi-person-circle"></i>
                         <span class="user-name text-white">{{ usuario.user_name }}</span>
                     </div>
                 </li>
                 <li class="nav-item">
-                    <!-- ✅ POST a /logout → destruye sesión y cookie -->
                     <form action="/logout" method="post" class="m-0">
                         <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
                             <i class="bi bi-box-arrow-right"></i> Salir
@@ -235,16 +245,15 @@
 
 <div class="container text-center mb-4">
     <h1 class="title-glow">Panel de Cliente</h1>
-    
+
     <div class="welcome-badge">
-        <i class="bi bi-shield-check text-orange me-2"></i>
-        Sesión activa: <span class="text-orange fw-bold">{{ usuario.nombre }} {{ usuario.apellido }}</span>
+        <i class="bi bi-shield-check me-2"></i>
+        Sesión activa: <span class="fw-bold">{{ usuario.nombre }} {{ usuario.apellido }}</span>
     </div>
 
     <div class="row justify-content-center mt-5">
         <div class="col-md-10">
 
-            {# CÁLCULO DE CLASE DE SALDO #}
             {% set s = usuario.saldo_plan if usuario.saldo_plan is not none else 0 %}
             {% if s < 12000 %}
                 {% set clase_w = 'saldo-bajo' %}
@@ -254,35 +263,44 @@
                 {% set clase_w = 'saldo-ok' %}
             {% endif %}
 
-            {# BILLETERA #}
-            <div class="wallet-card shadow-lg {{ clase_w }}">
-                <div class="row align-items-center">
-                    <div class="col-md-7 text-start text-white">
-                        <p class="text-uppercase small fw-bold mb-1 opacity-75">Saldo de Envío Disponible</p>
-                        <h2 class="fw-bold mb-0" style="font-size: 2rem;">
-                            $ {{ "{:,.0f}".format(s).replace(',', '.') }}
-                        </h2>
-                        <p class="small mt-2 mb-0">
-                            <i class="bi bi-info-circle"></i>
-                            Tu tarifa plana: 
-                            <strong>
-                                $ 
-                                {% if usuario.tarifa and usuario.tarifa.precio_plan %}
-                                    {{ "{:,.0f}".format(usuario.tarifa.precio_plan).replace(',', '.') }}
-                                {% else %}
-                                    {{ "{:,.0f}".format(usuario.cuota_fija or 0).replace(',', '.') }}
-                                {% endif %}
-                            </strong> por guía.
-                        </p>    
-                    </div>
-                    <div class="col-md-5 text-end border-start border-white border-opacity-25">
-                        <i class="bi bi-wallet2 display-4 opacity-50 mb-3 d-block text-white"></i>
-                        <a href="/envios/nuevo" class="btn btn-orange w-100 shadow-sm text-white">
-                            <i class="bi bi-plus-circle me-1"></i> NUEVO ENVÍO
-                        </a>
-                    </div>
-                </div>
+          {# BILLETERA — desplegable #}
+<div class="text-start mb-3">
+    <button class="btn btn-orange px-4" onclick="toggleSaldo()">
+        <i class="bi bi-wallet2 me-2"></i> Ver Saldo
+        <i class="bi bi-chevron-down ms-2" id="iconSaldo"></i>
+    </button>
+</div>
+
+<div id="walletCard" style="display:none; animation: fadeDown 0.3s ease;">
+    <div class="wallet-card shadow-lg {{ clase_w }}">
+        <div class="row align-items-center">
+            <div class="col-md-7 text-start text-white">
+                <p class="text-uppercase small fw-bold mb-1 opacity-75">Saldo de Envío Disponible</p>
+                <h2 class="fw-bold mb-0" style="font-size: 2rem;">
+                    $ {{ "{:,.0f}".format(s).replace(',', '.') }}
+                </h2>
+                <p class="small mt-2 mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Tu tarifa plana:
+                    <strong>
+                        $
+                        {% if usuario.tarifa and usuario.tarifa.precio_plan %}
+                            {{ "{:,.0f}".format(usuario.tarifa.precio_plan).replace(',', '.') }}
+                        {% else %}
+                            {{ "{:,.0f}".format(usuario.cuota_fija or 0).replace(',', '.') }}
+                        {% endif %}
+                    </strong> por guía.
+                </p>
             </div>
+            <div class="col-md-5 text-end border-start border-white border-opacity-25">
+                <i class="bi bi-wallet2 display-4 opacity-50 mb-3 d-block text-white"></i>
+                <a href="/envios/nuevo" class="btn btn-orange w-100 shadow-sm text-white">
+                    <i class="bi bi-plus-circle me-1"></i> NUEVO ENVÍO
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
             {# BANNER ADQUIRIR PLAN #}
             <div class="upgrade-banner">
@@ -298,25 +316,42 @@
                 </button>
             </div>
 
-            {# PLANES DESPLEGABLES EN TARJETAS #}
+            {# PLANES DESPLEGABLES #}
             <div id="seccionPlanes">
-                <h5 class="section-title text-start mb-3">Planes Disponibles</h5>
+                <h5 class="section-title text-start mb-3 mt-3">Planes Disponibles</h5>
                 <div class="row g-3">
                     {% if tarifas %}
                         {% for t in tarifas %}
+                        {# Ocultar plan nacionales #}
+                        {% set nombre_lower = t.nombre.lower() %}
+                        {% if 'nacional' not in nombre_lower %}
+                        {# Determinar clase CSS según nombre #}
+                        {% if 'bronce' in nombre_lower %}
+                            {% set clase_plan = 'bronce' %}
+                        {% elif 'plata' in nombre_lower %}
+                            {% set clase_plan = 'plata' %}
+                        {% elif 'oro' in nombre_lower %}
+                            {% set clase_plan = 'oro' %}
+                        {% elif 'diamante' in nombre_lower %}
+                            {% set clase_plan = 'diamante' %}
+                        {% else %}
+                            {% set clase_plan = '' %}
+                        {% endif %}
                         <div class="col-6 col-md-3">
-                            <div class="plan-card">
+                            <div class="plan-card {{ clase_plan }}">
                                 <div class="plan-nombre">{{ t.nombre }}</div>
                                 <div class="plan-envios">{{ t.envios_incluidos or '—' }} envíos</div>
                                 <div class="plan-precio">
                                     $ {{ "{:,.0f}".format((t.precio_plan or 0) * (t.envios_incluidos or 1)).replace(',', '.') }}
                                 </div>
                                 <div class="plan-precio-label">valor total del plan</div>
-                                <a href="/planes/detallado/{{ t.nombre.lower() }}" class="btn btn-orange btn-sm w-100 text-white">
+                                <a href="/planes/detallado/{{ t.nombre.lower() }}"
+                                   class="btn-plan {% if clase_plan %}{% else %}btn-orange{% endif %}">
                                     <i class="bi bi-credit-card me-1"></i> Adquirir
                                 </a>
                             </div>
                         </div>
+                        {% endif %}
                         {% endfor %}
                     {% else %}
                         <p class="text-muted small">No hay planes disponibles en este momento.</p>
@@ -330,7 +365,7 @@
 
 <section class="container py-4">
     <h2 class="mb-4 fw-bold section-title"><i class="bi bi-lightning-fill"></i> Acceso Rápido</h2>
-    <div class="row g-4 text-white">
+    <div class="row g-4">
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-geo-alt fs-1"></i>
@@ -370,6 +405,24 @@
 </footer>
 
 <script>
+    function toggleSaldo() {
+    const card  = document.getElementById('walletCard');
+    const icon  = document.getElementById('iconSaldo');
+    const btn   = icon.closest('button');
+    const visible = card.style.display === 'block';
+
+    card.style.display = visible ? 'none' : 'block';
+    icon.className = visible
+        ? 'bi bi-chevron-down ms-2'
+        : 'bi bi-chevron-up ms-2';
+    btn.innerHTML = `<i class="bi bi-wallet2 me-2"></i> ${visible ? 'Ver Saldo' : 'Ocultar Saldo'} <i class="${icon.className}" id="iconSaldo"></i>`;
+
+    if (!visible) {
+        setTimeout(() => {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 50);
+    }
+}
     function mostrarPlanes() {
         const seccion = document.getElementById('seccionPlanes');
         if (seccion.style.display === 'block') {

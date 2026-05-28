@@ -15,19 +15,20 @@ from app.config.templates import templates
 
 router = APIRouter(tags=["Finanzas"])
 
+# Roles con acceso al módulo financiero
+ROLES_FINANCIEROS = {"CEO", "FACTURACION"}
+
 
 @router.get("/admin/finanzas")
 def panel_finanzas(request: Request, db: Session = Depends(get_db)):
-    """
-    Panel de Finanzas para el Administrador.
-    Muestra resumen global + detalle de todas las transacciones de tipo CARGA (compra de planes).
-    """
     user_id = request.session.get("user_id")
     if not user_id:
         return RedirectResponse(url="/login")
 
     admin = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
-    if not admin or admin.rol != "ADMIN":
+
+    # ✅ Acepta CEO y FACTURACION en vez de solo ADMIN
+    if not admin or admin.rol not in ROLES_FINANCIEROS:
         return RedirectResponse(url="/home")
 
     # --- DETALLE: Todas las transacciones de compra de planes ---
@@ -48,24 +49,21 @@ def panel_finanzas(request: Request, db: Session = Depends(get_db)):
         Transaccion.tipo_movimiento == "CARGA"
     ).scalar() or 0
 
-    # Clientes únicos que han comprado al menos un plan
     clientes_activos = db.query(func.count(func.distinct(Transaccion.usuario_id))).filter(
         Transaccion.tipo_movimiento == "CARGA"
     ).scalar() or 0
 
-    # Ingreso promedio por transacción
     promedio_ingreso = (
         (total_ingresos / total_transacciones)
         if total_transacciones > 0
         else Decimal("0.00")
     )
 
-    # Ingresos del mes actual
     now = datetime.now()
     ingresos_mes = db.query(func.sum(Transaccion.monto)).filter(
         Transaccion.tipo_movimiento == "CARGA",
         extract("month", Transaccion.fecha_creacion) == now.month,
-        extract("year", Transaccion.fecha_creacion) == now.year,
+        extract("year",  Transaccion.fecha_creacion) == now.year,
     ).scalar() or Decimal("0.00")
 
     # --- DESGLOSE POR PLAN ---
@@ -86,16 +84,16 @@ def panel_finanzas(request: Request, db: Session = Depends(get_db)):
         return f"${int(n):,}".replace(",", ".")
 
     return templates.TemplateResponse("finanzas.html", {
-        "request": request,
-        "usuario": admin,
-        "rol": "ADMIN",
-        "transacciones": transacciones,
-        "total_ingresos": fmt(total_ingresos),
-        "total_transacciones": total_transacciones,
-        "clientes_activos": clientes_activos,
-        "promedio_ingreso": fmt(promedio_ingreso),
-        "ingresos_mes": fmt(ingresos_mes),
-        "planes_resumen": planes_resumen,
-        "fmt": fmt,
-        "mes_actual": now.strftime("%B %Y"),
+        "request":            request,
+        "usuario":            admin,
+        "rol":                admin.rol,   # ✅ pasa el rol real (CEO o FACTURACION)
+        "transacciones":      transacciones,
+        "total_ingresos":     fmt(total_ingresos),
+        "total_transacciones":total_transacciones,
+        "clientes_activos":   clientes_activos,
+        "promedio_ingreso":   fmt(promedio_ingreso),
+        "ingresos_mes":       fmt(ingresos_mes),
+        "planes_resumen":     planes_resumen,
+        "fmt":                fmt,
+        "mes_actual":         now.strftime("%B %Y"),
     })

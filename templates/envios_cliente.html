@@ -21,55 +21,53 @@
 
     <style>
         :root {
-            --primary-dark: #00235a;
-            --primary-blue: #003a8c;
-            --accent-orange: #ff8c00;
-            --text-light: #ffffff;
+            /* Nueva paleta de colores corporativa ENVIEXPRESS */
+            --rojo-milan: #B20C06;
+            --rojo-hover: #8a0a05;
+            --negro-puro: #000000;
+            --blanco-puro: #ffffff;
+            --fondo-gris: #f4f4f4;
+            --card-bg: #ffffff; 
+            --input-bg: #fdfdfd;
         }
 
         body { 
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+            background-color: var(--fondo-gris); /* Cambio a fondo gris corporativo */
             min-height: 100vh; 
-            color: var(--text-light); 
+            color: var(--negro-puro); /* Texto principal negro */
             font-family: 'Montserrat', sans-serif; 
-            padding-top: 90px; 
+            padding-top: 110px; 
         }
 
         .navbar { 
             backdrop-filter: blur(15px); 
-            background: rgba(0, 35, 90, 0.7); 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            background: var(--negro-puro); /* Navbar en negro puro */
+            border-bottom: 3px solid var(--rojo-milan); /* Línea inferior en Rojo Milán */
         }
 
         .card-custom {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-bg); /* Contenedores ahora blancos limpios */
+            border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: 20px;
             padding: 25px;
             margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
         }
-
-        /* ── SECCIÓN DE SALDO (BILLETERA) ── */
-        .wallet-card {
-            background: #003a8c;
-            border-radius: 20px;
-            border-left: 6px solid var(--accent-orange);
-            padding: 30px;
-            position: relative;
-            margin-bottom: 30px;
-            z-index: 10;
-        }
-        .wallet-card h1 { font-weight: 800; font-size: 3.5rem; margin: 0; }
-        .wallet-label { font-size: 0.85rem; font-weight: 700; opacity: 0.8; letter-spacing: 1px; }
-        .wallet-icon { position: absolute; right: 30px; top: 30px; font-size: 4rem; opacity: 0.2; pointer-events: none; }
 
         .dropdown-menu {
             z-index: 10000 !important;
         }
 
-        .table { color: white; }
-        .table thead th { color: var(--accent-orange); border-bottom: 2px solid var(--accent-orange); }
+        .table { color: var(--negro-puro); }
+        .table thead th { 
+            color: var(--rojo-milan); 
+            border-bottom: 2px solid var(--rojo-milan); 
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .table tbody td { border-bottom: 1px solid #eeeeee; }
+
         .badge-status {
             border-radius: 4px;
             padding: 6px 12px;
@@ -84,55 +82,76 @@
             border: 1px solid rgba(0,0,0,0.05);
         }
 
+        /* Lógica de colores de estados de envío */
         .bg-booking    { background-color: #eaff00; color: #000; }
         .bg-colectado  { background-color: #057af7fd; color: #fff; }
         .bg-ruta       { background-color: #ff8c00; color: #fff; }
         .bg-entregado  { background-color: #28a745; color: #fff; }
-        .bg-cancelado  { background-color: var(--milano-red); color: #fff; }
+        .bg-cancelado  { background-color: var(--rojo-milan); color: #fff; }
         .bg-retorno    { background-color: #6c757d; color: #fff; }
         .bg-en_bodega  { background-color: #a407ff; color: #edf1f5; }
         .bg-devolucion { background-color: #7c2d0ee7; color: #fff; }
         .bg-rechazado  { background-color: #dc3545; color: #fff; }
         
-        .btn-orange { background: var(--accent-orange); color: white; border-radius: 10px; font-weight: 700; border: none; padding: 12px 25px; }
-        .btn-orange:hover { background: #e67e00; color: white; transform: translateY(-2px); }
+        .btn-orange { 
+            background: var(--rojo-milan); 
+            color: var(--blanco-puro); 
+            border-radius: 10px; 
+            font-weight: 700; 
+            border: none; 
+            padding: 12px 25px; 
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        .btn-orange:hover { 
+            background: var(--rojo-hover); 
+            color: var(--blanco-puro); 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(178, 12, 6, 0.3);
+        }
 
         .btn-accion {
             width: 36px; height: 36px; border-radius: 8px;
             display: inline-flex; align-items: center; justify-content: center;
             font-size: 0.95rem; border: none; transition: all 0.2s; color: white; text-decoration: none;
         }
-        .btn-accion:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.35); color: white; }
-        .btn-ver      { background: #e67e00; }
-        .btn-imprimir { background: #2c2c2c; }
+        .btn-accion:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); color: white; }
+        .btn-ver      { background: #7f8c8d; } /* Ajustado a gris elegante */
+        .btn-imprimir { background: var(--negro-puro); }
         .btn-editar   { background: #1a6fc4; }
-        .btn-eliminar { background: #c0392b; }
+        .btn-eliminar { background: var(--rojo-milan); }
 
         .btn-movimientos {
-            background: rgba(255, 140, 0, 0.15);
-            border: 2px solid var(--accent-orange);
-            color: var(--accent-orange);
+            background: rgba(178, 12, 6, 0.08);
+            border: 2px solid var(--rojo-milan);
+            color: var(--rojo-milan);
             border-radius: 50px;
             padding: 10px 28px;
             font-weight: 700;
+            text-transform: uppercase;
             transition: all 0.3s;
         }
-        .btn-movimientos:hover { background: var(--accent-orange); color: white; }
+        .btn-movimientos:hover { background: var(--rojo-milan); color: var(--blanco-puro); }
 
         .modal-movimientos .modal-content {
-            background: linear-gradient(160deg, #00235a, #003a8c);
-            border: 1px solid rgba(255, 140, 0, 0.3);
-            border-radius: 20px; color: white;
+            background: var(--blanco-puro);
+            border: 2px solid var(--rojo-milan);
+            border-radius: 20px; color: var(--negro-puro);
+        }
+        .modal-movimientos .modal-header {
+            background: var(--negro-puro);
+            color: var(--blanco-puro);
+            border-bottom: none;
         }
         .mov-badge-positivo { color: #2ecc71; font-weight: 700; }
         .mov-badge-negativo { color: #e74c3c; font-weight: 700; }
 
         /* ── ALERTA SALDO INSUFICIENTE ── */
         .alert-saldo {
-            background: rgba(220, 53, 69, 0.15);
-            border: 1.5px solid #dc3545;
+            background: rgba(220, 53, 69, 0.08);
+            border: 2px solid #dc3545;
             border-radius: 14px;
-            color: white;
+            color: #dc3545;
             padding: 16px 20px;
             display: flex;
             align-items: center;
@@ -145,22 +164,22 @@
             to   { opacity: 1; transform: translateY(0); }
         }
         .alert-saldo .alert-icon { font-size: 1.6rem; color: #dc3545; flex-shrink: 0; }
-        .alert-saldo strong { display: block; font-size: 1rem; margin-bottom: 2px; }
-        .alert-saldo span   { font-size: 0.85rem; opacity: 0.85; }
+        .alert-saldo strong { display: block; font-size: 1rem; margin-bottom: 2px; color: #bd2130; }
+        .alert-saldo span   { font-size: 0.85rem; color: var(--negro-puro); font-weight: 500; }
 
         /* ── BOTÓN SIN SALDO ── */
         .btn-sin-saldo {
-            background: #4b5563;
-            color: #9ca3af;
+            background: #e2e8f0;
+            color: #94a3b8;
             border-radius: 10px;
             font-weight: 700;
             border: none;
             padding: 12px 25px;
             cursor: not-allowed;
-            opacity: 0.7;
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            text-transform: uppercase;
         }
     </style>
 </head>
@@ -168,11 +187,11 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold fs-3" href="/home_cliente" style="color: #ff8000;">
+        <a class="navbar-brand fw-bold fs-3" href="/home_cliente" style="color: var(--rojo-milan); letter-spacing: 0.5px;">
             ENVI<span class="text-light">EXPRESS</span>
         </a>
         <div class="ms-auto d-flex align-items-center gap-3">
-            <span class="small opacity-75"><i class="bi bi-person-circle"></i> {{ current_user.user_name if current_user else username }}</span>
+            <span class="small text-light opacity-75"><i class="bi bi-person-circle"></i> {{ current_user.user_name if current_user else username }}</span>
             <form action="/logout" method="post" class="m-0">
                 <button class="btn btn-outline-danger btn-sm rounded-pill">Salir</button>
             </form>
@@ -193,64 +212,14 @@
     </div>
     {% endif %}
 
-    <div class="wallet-card card-custom">
-        <i class="bi bi-wallet2 wallet-icon"></i>
-        <div class="row align-items-center">
-            <div class="col-md-7">
-                <p class="wallet-label mb-1">SALDO DE ENVÍO DISPONIBLE</p>
-                <h1>$ {{ "{:,.0f}".format(current_user.saldo_plan).replace(',', '.') }}</h1>
-                <p class="mt-2 mb-0 opacity-75">
-                    <i class="bi bi-info-circle-fill text-warning"></i> 
-                    Tu tarifa plana: 
-                    <b>$ 
-                        {% if current_user.tarifa %}
-                            {{ "{:,.0f}".format(current_user.tarifa.precio_plan).replace(',', '.') }}
-                        {% else %}
-                            {{ "{:,.0f}".format(current_user.cuota_fija).replace(',', '.') }}
-                        {% endif %}
-                    </b> por guía.
-                </p>
-            </div>
-            <div class="col-md-5 text-md-end mt-4 mt-md-0">
-                <div class="dropdown d-inline-block">
-                    <button class="btn btn-orange dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport">
-                        <i class="bi bi-plus-circle-fill me-2"></i>RECARGAR SALDO
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark border-warning shadow-lg p-3" style="min-width: 280px;">
-                        <li class="small text-warning fw-bold mb-2 text-uppercase">Planes de Recarga Dinámica:</li>
-                        <li><hr class="dropdown-divider border-secondary"></li>
-                        
-                        {% if tarifas %}
-                            {% for t in tarifas %}
-                            <li class="mb-2">
-                                <a href="/planes/pago/{{ t.nombre.lower() }}" class="btn btn-sm btn-outline-light w-100 text-start d-flex justify-content-between align-items-center border-0 p-2">
-                                    <span>
-                                        <i class="bi bi-lightning-charge text-warning me-1"></i> 
-                                        Plan {{ t.nombre }}
-                                    </span>
-                                    <span class="badge bg-warning text-dark">
-                                        $ {{ "{:,.0f}".format(t.precio_plan * t.envios_incluidos).replace(',', '.') }}
-                                    </span>
-                                </a>
-                            </li>
-                            {% endfor %}
-                        {% else %}
-                            <li class="small text-white opacity-50 text-center">No hay planes configurados.</li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold m-0"><i class="bi bi-box-seam" style="color: var(--accent-orange);"></i> Mis Envíos</h2>
+        <h2 class="fw-bold m-0" style="color: var(--negro-puro);"><i class="bi bi-box-seam" style="color: var(--rojo-milan);"></i> Mis Envíos</h2>
         <div class="d-flex gap-2 align-items-center">
             <button class="btn-movimientos" data-bs-toggle="modal" data-bs-target="#modalMovimientos">
                 <i class="bi bi-clock-history me-2"></i>Historial de Pagos
             </button>
 
-            {# ── BOTÓN GENERAR GUÍA: bloqueado si no hay saldo ── #}
+            {# ── BOTÓN GENERAR GUÍA ── #}
             {% if current_user.saldo_plan <= 0 %}
                 <button class="btn-sin-saldo"
                         disabled
@@ -281,11 +250,11 @@
                 <tbody>
                     {% for e in envios %}
                     <tr>
-                        <td class="fw-bold" style="color: var(--accent-orange);">{{ e.numero_guia }}</td>
+                        <td class="fw-bold" style="color: var(--rojo-milan);">{{ e.numero_guia }}</td>
                         <td>{{ e.fecha_creacion.strftime('%d/%m/%Y') }}</td>
                         <td>
-                            <small class="d-block text-uppercase">{{ e.lugar_entrega.ciudad }}</small>
-                            <small class="opacity-50">{{ e.lugar_entrega.direccion }}</small>
+                            <small class="d-block text-uppercase fw-semibold">{{ e.lugar_entrega.ciudad }}</small>
+                            <small class="text-muted">{{ e.lugar_entrega.direccion }}</small>
                         </td>
                         <td>
                             {% if e.estado == 'Registrado' %}
@@ -342,7 +311,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center py-5 opacity-50">No has realizado envíos aún.</td>
+                        <td colspan="6" class="text-center py-5 text-muted opacity-75">No has realizado envíos aún.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -371,7 +340,7 @@
                     <tbody>
                         {% for t in transacciones %}
                         <tr>
-                            <td class="small opacity-75">{{ t.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td class="small text-muted">{{ t.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
                             <td>{{ t.concepto }}</td>
                             <td class="text-end {% if t.monto > 0 %}mov-badge-positivo{% else %}mov-badge-negativo{% endif %}">
                                 {{ "$ {:,.0f}".format(t.monto).replace(',', '.') }}

@@ -1,21 +1,29 @@
-from fastapi import APIRouter, Request, Depends, BackgroundTasks
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session, joinedload
 from datetime import datetime
 from decimal import Decimal
+import os
+import uuid
+
 from app.config.database import get_db
 from app.models.Usuario import Usuario
-from app.models.Envio import Envio
 from app.models.Transaccion import Transaccion
 from app.models.Tarifa import Tarifa
 from app.config.templates import templates
-
-# Seguridad
 from app.security.SecurityConfig import get_current_user
 
 router = APIRouter(tags=["Home"])
 
-# --- RUTAS DE NAVEGACIÓN PRINCIPAL ---
+# ─────────────────────────────────────────────
+# CADA ROL TIENE SU PROPIO TEMPLATE
+# ─────────────────────────────────────────────
+# CEO            → home.html
+# FACTURACION    → home_facturacion.html
+# ADMINISTRATIVO → home_administrativo.html
+# MENSAJERO      → home_mensajero.html
+# CLIENTE        → home_cliente.html
+# ─────────────────────────────────────────────
 
 @router.get("/home")
 def home(request: Request, db: Session = Depends(get_db)):
@@ -27,22 +35,43 @@ def home(request: Request, db: Session = Depends(get_db)):
     if not usuario:
         return RedirectResponse(url="/login")
 
-    if usuario.rol == "ADMIN":
+    # ── CEO ──
+    if usuario.rol == "CEO":
         return templates.TemplateResponse("home.html", {
             "request": request,
-            "rol": "ADMIN",
-            "usuario": usuario
+            "rol": usuario.rol,
+            "usuario": usuario,
+            "puede_ver_finanzas": True,
+            "es_ceo": True,
         })
-    elif usuario.rol == "MENSAJERO":
+
+    # ── FACTURACION ──
+    if usuario.rol == "FACTURACION":
+        return templates.TemplateResponse("home_facturacion.html", {
+            "request": request,
+            "rol": usuario.rol,
+            "usuario": usuario,
+        })
+
+    # ── ADMINISTRATIVO ──
+    if usuario.rol == "ADMINISTRATIVO":
+        return templates.TemplateResponse("home_administrativo.html", {
+            "request": request,
+            "rol": usuario.rol,
+            "usuario": usuario,
+        })
+
+    # ── MENSAJERO ──
+    if usuario.rol == "MENSAJERO":
         return templates.TemplateResponse("home_mensajero.html", {
             "request": request,
-            "rol": "MENSAJERO",
-            "usuario": usuario
+            "rol": usuario.rol,
+            "usuario": usuario,
         })
 
+    # ── CLIENTE y cualquier otro ──
     return RedirectResponse(url="/home_cliente")
 
-# app/controllers/HomeController.py
 
 @router.get("/home_cliente")
 def home_cliente(request: Request, db: Session = Depends(get_db)):
@@ -50,19 +79,22 @@ def home_cliente(request: Request, db: Session = Depends(get_db)):
     if not user_id:
         return RedirectResponse(url="/login")
 
-    # Traemos al usuario con su tarifa
-    usuario = db.query(Usuario).options(joinedload(Usuario.tarifa)).filter(Usuario.id_usuario == user_id).first()
-    
-    # BUSCAMOS TODAS LAS TARIFAS PARA LOS BOTONES FLOTANTES
+    usuario = db.query(Usuario).options(joinedload(Usuario.tarifa)).filter(
+        Usuario.id_usuario == user_id
+    ).first()
     tarifas_db = db.query(Tarifa).all()
 
     return templates.TemplateResponse("home_cliente.html", {
         "request": request,
         "usuario": usuario,
-        "tarifas": tarifas_db,  # <--- Esto es lo que hace que sea dinámico
+        "tarifas": tarifas_db,
         "s": usuario.saldo_plan
     })
-# --- RUTAS DE PLANES Y PAGOS (TOTALMENTE DINÁMICAS) ---
+
+
+# ─────────────────────────────────────────────
+# PLANES Y PAGOS
+# ─────────────────────────────────────────────
 
 @router.get('/planes/detallado/{nombre_plan}')
 def detalle_plan(request: Request, nombre_plan: str):
@@ -71,95 +103,91 @@ def detalle_plan(request: Request, nombre_plan: str):
         "plan": nombre_plan
     })
 
+
 @router.get('/planes/pago/{nombre_plan}')
 def pasarela_pago(request: Request, nombre_plan: str, db: Session = Depends(get_db)):
-    """
-    Trae el precio vivo desde la BD. Elimina fallbacks estáticos.
-    """
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login")
+
     tarifa = db.query(Tarifa).filter(Tarifa.nombre.ilike(nombre_plan)).first()
+    if not tarifa:
+        return RedirectResponse(url="/home_cliente?error=tarifa_no_encontrada")
 
     def fmt(n):
         return f"{int(n):,}".replace(",", ".")
 
-    if not tarifa:
-        # Si la tarifa no existe en la BD, no podemos cobrar.
-        return RedirectResponse(url="/home_cliente?error=tarifa_no_encontrada")
+    monto_cuota = int(tarifa.precio_plan or 0)
+    monto_total = monto_cuota * (tarifa.envios_incluidos or 0)
+    referencia  = f"ENVIX-{nombre_plan.upper()}-{uuid.uuid4().hex[:8].upper()}"
+    wompi_public_key = os.getenv("WOMPI_PUBLIC_KEY", "")
 
-    # Calculamos montos basados en la configuración actual del Admin
-    monto_cuota = tarifa.precio_plan
-    monto_total = int(tarifa.precio_plan) * tarifa.envios_incluidos
+    print(f">>> WOMPI KEY en pasarela_pago: '{wompi_public_key}'")
 
     return templates.TemplateResponse('pago.html', {
         "request": request,
         "plan": nombre_plan,
         "precio": fmt(monto_total),
-        "cuota": fmt(monto_cuota)
+        "cuota": fmt(monto_cuota),
+        "precio_centavos": monto_total * 100,
+        "referencia": referencia,
+        "wompi_public_key": wompi_public_key,
     })
 
-@router.post('/planes/confirmar')
-async def confirmar_pago(request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    """
-    Procesa el pago usando los valores reales de la tabla Tarifa al momento de la transacción.
-    """
-    try:
-        user_id = request.session.get("user_id")
-        if not user_id:
-            return RedirectResponse(url="/login")
 
-        form_data = await request.form()
-        plan_nombre = form_data.get("plan").lower()
+@router.post('/planes/confirmar-wompi')
+async def confirmar_wompi(request: Request, db: Session = Depends(get_db)):
+    body        = await request.json()
+    transaction_id = body.get("transaction_id")
+    plan_nombre    = body.get("plan")
+    status_tx      = body.get("status")
 
-        # CONSULTA A LA BD PARA OBTENER PRECIOS ACTUALES
-        tarifa = db.query(Tarifa).filter(Tarifa.nombre.ilike(plan_nombre)).first()
+    if status_tx != "APPROVED":
+        return {"ok": False, "mensaje": f"Estado: {status_tx}"}
 
-        if not tarifa:
-            return RedirectResponse(url="/home_cliente?error=plan_invalido")
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return {"ok": False, "mensaje": "Sesión expirada"}
 
-        # Usamos los valores configurados por el administrador
-        monto_cuota = int(tarifa.precio_plan)
-        monto_total = monto_cuota * tarifa.envios_incluidos
-        monto_total_dec = Decimal(str(monto_total))
+    tarifa  = db.query(Tarifa).filter(Tarifa.nombre.ilike(plan_nombre)).first()
+    usuario = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
 
-        usuario = db.query(Usuario).filter(Usuario.id_usuario == user_id).first()
+    if not tarifa or not usuario:
+        return {"ok": False, "mensaje": "Datos no encontrados"}
 
-        if usuario:
-            # El saldo se ACUMULA
-            usuario.saldo_plan = (usuario.saldo_plan or Decimal('0')) + monto_total_dec
-            # Sincronizamos los datos del usuario con el plan adquirido
-            usuario.cuota_fija = monto_cuota
-            usuario.rol = plan_nombre.upper()
-            usuario.tarifa_id = tarifa.id # Vinculación para que el banner sea dinámico
+    monto_cuota = int(tarifa.precio_plan or 0)
+    monto_total = Decimal(str(monto_cuota * (tarifa.envios_incluidos or 0)))
 
-            nueva_trans = Transaccion(
-                usuario_id=usuario.id_usuario,
-                tipo_movimiento='CARGA',
-                monto=monto_total_dec,
-                concepto=f"Activación de Plan {plan_nombre.upper()} - ${monto_cuota} por guía",
-                fecha_creacion=datetime.now()
-            )
-            db.add(nueva_trans)
-            db.commit()
+    usuario.saldo_plan = (usuario.saldo_plan or Decimal('0')) + monto_total
+    usuario.cuota_fija = monto_cuota
+    usuario.tarifa_id  = tarifa.id
 
-            print(f"SISTEMA: Plan {plan_nombre.upper()} activado dinámicamente.")
-            background_tasks.add_task(enviar_factura_email, usuario.correo, plan_nombre)
+    nueva_trans = Transaccion(
+        usuario_id=usuario.id_usuario,
+        tipo_movimiento='CARGA',
+        monto=monto_total,
+        concepto=f"Plan {plan_nombre.upper()} - TX Wompi {transaction_id}",
+        fecha_creacion=datetime.now()
+    )
+    db.add(nueva_trans)
+    db.commit()
 
-            return templates.TemplateResponse("pago_exitoso.html", {
-                "request": request,
-                "plan": plan_nombre,
-                "usuario": usuario.nombre,
-                "total": monto_total_dec,
-                "saldo_cargado": usuario.saldo_plan,
-                "cuota_fija": usuario.cuota_fija
-            })
+    return {"ok": True, "mensaje": "Plan activado correctamente"}
 
-        return RedirectResponse(url="/login")
 
-    except Exception as e:
-        db.rollback()
-        print(f"ERROR CRÍTICO EN PAGO: {e}")
-        return RedirectResponse(url="/home_cliente?error=pago_fallido")
+@router.get('/planes/resultado-pago')
+def resultado_pago(request: Request, status: str = "UNKNOWN", ref: str = ""):
+    return templates.TemplateResponse("resultado_pago.html", {
+        "request": request,
+        "status": status,
+        "referencia": ref,
+        "aprobado": status == "APPROVED",
+    })
 
-# --- FUNCIONES DE APOYO ---
+
+# ─────────────────────────────────────────────
+# FUNCIONES DE APOYO
+# ─────────────────────────────────────────────
 
 def enviar_factura_email(email: str, plan: str):
     print(f"\n--- ENVIEXPRESS MAIL SERVER ---")

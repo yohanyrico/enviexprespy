@@ -10,12 +10,26 @@ from app.models.Usuario import Usuario
 import app.repositories.UsuarioRepository as usuario_repo
 
 # --- CONFIGURACIÓN JWT ---
-SECRET_KEY = "tu_clave_secreta_super_segura_2026" # Cambia esto por algo único
+SECRET_KEY = "tu_clave_secreta_super_segura_2026"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 día de duración
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 día
 
-# Esto permite que Swagger y FastAPI lean el token de la cabecera Authorization
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login", auto_error=False)
+
+# ─────────────────────────────────────────────
+# ROLES DISPONIBLES EN EL SISTEMA
+# ─────────────────────────────────────────────
+# CEO          → Acceso total (finanzas + operativo + configuración)
+# FACTURACION  → Acceso total igual que CEO (excepto gestión de otros CEO)
+# ADMINISTRATIVO → Operativo sin módulo financiero
+# CLIENTE      → Solo sus propios envíos y reporte financiero de su cuenta
+# MENSAJERO    → App móvil + mapa operaciones
+# ─────────────────────────────────────────────
+
+ROLES_FINANCIEROS   = {"CEO", "FACTURACION"}
+ROLES_OPERATIVOS    = {"CEO", "FACTURACION", "ADMINISTRATIVO"}
+ROLES_SOLO_CEO      = {"CEO"}  # configuración del sistema, gestión de otros CEO
+
 
 # --- FUNCIONES DE CONTRASEÑA ---
 
@@ -31,31 +45,25 @@ def authenticate_user(db: Session, user_name: str, password: str) -> Usuario | N
         return None
     return user
 
-# --- NUEVA FUNCIÓN: CREAR TOKEN JWT ---
+
+# --- TOKEN JWT ---
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# --- FUNCIÓN CORREGIDA: OBTENER USUARIO ACTUAL (SOPORTA SESIÓN Y TOKEN) ---
+
+# --- OBTENER USUARIO ACTUAL (sesión web + token Flutter) ---
 
 def get_current_user(
-    request: Request, 
-    db: Session = Depends(get_db), 
+    request: Request,
+    db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ) -> Usuario:
-    username = None
-    
-    # 1. Intentar por Sesión (Navegador Web)
     username = request.session.get("username")
-    
-    # 2. Si no hay sesión, intentar por Token (App Flutter)
+
     if not username and token:
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -80,18 +88,58 @@ def get_current_user(
         )
     return user
 
-# --- FUNCIONES DE ROLES ---
+
+# ─────────────────────────────────────────────
+# FUNCIONES DE CONTROL DE ROLES
+# ─────────────────────────────────────────────
 
 def require_admin(usuario: Usuario):
-    if usuario.rol != "ADMIN":
+    """
+    Compatibilidad: acepta CEO, FACTURACION y ADMINISTRATIVO.
+    Reemplaza todos los require_admin() anteriores que usaban 'ADMIN'.
+    """
+    if usuario.rol not in ROLES_OPERATIVOS:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acceso denegado. Se requiere rol ADMIN"
+            detail="Acceso denegado. Se requiere rol operativo."
+        )
+
+def require_financiero(usuario: Usuario):
+    """Solo CEO y FACTURACION pueden acceder al módulo financiero."""
+    if usuario.rol not in ROLES_FINANCIEROS:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso denegado. Se requiere rol CEO o FACTURACION."
+        )
+
+def require_ceo(usuario: Usuario):
+    """Solo CEO puede acceder a configuración del sistema y gestión de otros CEO."""
+    if usuario.rol not in ROLES_SOLO_CEO:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso denegado. Se requiere rol CEO."
+        )
+
+def require_operativo(usuario: Usuario):
+    """CEO, FACTURACION y ADMINISTRATIVO pueden acceder a operaciones."""
+    if usuario.rol not in ROLES_OPERATIVOS:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso denegado. Se requiere rol operativo."
         )
 
 def require_admin_or_mensajero(usuario: Usuario):
-    if usuario.rol not in ["ADMIN", "MENSAJERO"]:
+    """CEO, FACTURACION, ADMINISTRATIVO y MENSAJERO."""
+    if usuario.rol not in {*ROLES_OPERATIVOS, "MENSAJERO"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acceso denegado"
+            detail="Acceso denegado."
         )
+
+def is_financiero(usuario: Usuario) -> bool:
+    """Helper booleano para usar en templates o lógica condicional."""
+    return usuario.rol in ROLES_FINANCIEROS
+
+def is_operativo(usuario: Usuario) -> bool:
+    """Helper booleano: True para CEO, FACTURACION, ADMINISTRATIVO."""
+    return usuario.rol in ROLES_OPERATIVOS

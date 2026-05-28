@@ -397,14 +397,32 @@ selCiudad.addEventListener('change', function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    const raw = ciudadRaw.value;
-    if (raw && raw.includes(' (')) {
-        const partes = raw.split(' (');
-        const ciudad = partes[0].trim();
-        const depto  = partes[1].replace(')', '').trim();
+    const raw = ciudadRaw.value;  // ej: "BOGOTÁ, D.C. (BOGOTÁ, D.C.)" o "Medellín (ANTIOQUIA)"
+    if (!raw) return;
+
+    let ciudad, depto;
+
+    // Formato guardado: "Ciudad (Departamento)"
+    const match = raw.match(/^(.+)\s\((.+)\)$/);
+    if (match) {
+        ciudad = match[1].trim();
+        depto  = match[2].trim();
+    } else {
+        // Fallback: ciudad sin departamento (datos viejos)
+        ciudad = raw.trim();
+        // Buscar en qué depto está esa ciudad
+        depto = Object.keys(ciudadesPorDepto).find(d =>
+            ciudadesPorDepto[d].includes(ciudad)
+        ) || '';
+    }
+
+    if (depto) {
         selDepto.value = depto;
         poblarCiudades(depto, ciudad);
     }
+
+    // Mostrar/ocultar localidad
+    colLoc.style.display = depto === 'BOGOTÁ, D.C.' ? '' : 'none';
 });
 
 function validarFormulario() {

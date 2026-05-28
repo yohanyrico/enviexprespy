@@ -14,8 +14,6 @@
     <script>
         (function () {
             window.onpageshow = function (event) {
-                // Si la página viene de la caché del navegador (back-forward cache)
-                // o si el tipo de navegación es de retroceso (type 2)
                 if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
                     window.location.reload();
                 }
@@ -23,117 +21,198 @@
         })();
     </script>
 
-    <style>
-        :root {
-            --azul-profundo: #002B5B;
-            --azul-medio: #004085;
-            --azul-oscuro: #001a33;
-            --naranja: #FF8C00;
-            --naranja-hover: #E67E00;
-            --blanco: #ffffff;
-            --btn-editar: #0d6efd;
-            --btn-eliminar: #dc3545;
-            --btn-recarga: #198754;
-        }
-        body {
-            background: linear-gradient(135deg, var(--azul-profundo), var(--azul-medio), var(--azul-oscuro));
-            min-height: 100vh;
-            color: var(--blanco);
-            font-family: 'Montserrat', sans-serif;
-            padding-top: 100px;
-            margin: 0;
-        }
-        .navbar {
-            backdrop-filter: blur(12px);
-            background: rgba(0, 43, 91, 0.8);
-            border-bottom: 2px solid var(--naranja);
-        }
-        .title-glow {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--blanco);
-            margin-bottom: 30px;
-            text-align: center;
-            text-transform: uppercase;
-        }
+<style>
+    :root {
+        /* Nueva paleta de colores memorizada */
+        --rojo-milan: #B20C06;
+        --rojo-hover: #8a0a05;
+        --negro-puro: #000000;
+        --blanco-puro: #ffffff;
+        --fondo-gris: #f4f4f4;
+        --card-bg: #ffffff; 
+        --input-bg: #fdfdfd;
         
-        .btn-green {
-            background: var(--naranja);
-            border: none;
-            padding: 10px 20px;
-            color: var(--blanco) !important;
-            font-weight: 700;
-            border-radius: 10px;
-            transition: .3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-green:hover {
-            transform: scale(1.05);
-            background: var(--naranja-hover);
-            box-shadow: 0 4px 15px rgba(255,140,0,0.4);
-        }
+        /* Mapeo de variables de estado */
+        --btn-editar: #0d6efd;
+        --btn-eliminar: var(--rojo-milan);
+        --btn-recarga: #198754;
+    }
 
-        .actions-bar {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 15px 25px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+    body {
+        background-color: var(--fondo-gris);
+        min-height: 100vh;
+        color: var(--negro-puro);
+        font-family: 'Montserrat', sans-serif;
+        padding-top: 100px;
+        margin: 0;
+    }
 
-        .table-container {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-        }
-        .table { color: var(--blanco); margin-bottom: 0; }
-        .table thead th { color: var(--naranja); text-transform: uppercase; font-size: 0.85rem; border-bottom: 2px solid var(--naranja); padding: 15px; }
-        .table tbody td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .navbar {
+        backdrop-filter: blur(12px);
+        background: rgba(0, 0, 0, 0.9); /* Negro sólido para contraste */
+        border-bottom: 3px solid var(--rojo-milan);
+    }
 
-        .btn-edit { background: var(--btn-editar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; display: inline-flex; }
-        .btn-delete { background: var(--btn-eliminar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; display: inline-flex; }
-        .btn-recharge { background: var(--btn-recarga); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; cursor: pointer; display: inline-flex; }
-        
-        .btn-edit:hover, .btn-delete:hover, .btn-recharge:hover { transform: scale(1.1); filter: brightness(1.2); }
+    .title-glow {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--negro-puro);
+        margin-bottom: 30px;
+        text-align: center;
+        text-transform: uppercase;
+    }
+    
+    .btn-green {
+        background: var(--rojo-milan);
+        border: 2px solid var(--blanco-puro);
+        padding: 10px 20px;
+        color: var(--blanco-puro) !important;
+        font-weight: 700;
+        border-radius: 10px;
+        transition: .3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-        .modal-content { background: #0f172a; color: white; border: 1px solid var(--naranja); border-radius: 15px; }
-        .modal-header { border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .form-control { background: rgba(255,255,255,1); border: 1px solid rgba(255,255,255,0.2); color: black !important; font-weight: 600; }
+    .btn-green:hover {
+        transform: translateY(-2px);
+        background: var(--rojo-hover);
+        box-shadow: 0 4px 15px rgba(178, 12, 6, 0.4);
+    }
 
-        .modal-reporte { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; }
-        .modal-reporte.open { display: flex; }
-        .modal-card { background: #0f172a; border: 1px solid var(--naranja); border-radius: 16px; padding: 30px; width: 90%; max-width: 600px; position: relative; }
-        
-        .stat-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        .bar-track { background: rgba(255,255,255,0.1); border-radius: 10px; height: 10px; margin-top: 5px; overflow: hidden; }
-        .bar-fill { height: 100%; background: var(--naranja); }
-        .text-orange { color: var(--naranja); }
-    </style>
+    .actions-bar {
+        background: var(--card-bg);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        padding: 15px 25px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .table-container {
+        background: var(--card-bg);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .table { color: var(--negro-puro); margin-bottom: 0; }
+    
+    .table thead th { 
+        color: var(--rojo-milan); 
+        text-transform: uppercase; 
+        font-size: 0.85rem; 
+        border-bottom: 2px solid var(--rojo-milan); 
+        padding: 15px; 
+    }
+
+    .table tbody td { 
+        padding: 12px 15px; 
+        border-bottom: 1px solid #eee; 
+    }
+
+    /* Botones de acción */
+    .btn-edit { background: var(--btn-editar); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; display: inline-flex; }
+    .btn-delete { background: var(--rojo-milan); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; display: inline-flex; }
+    .btn-recharge { background: var(--btn-recarga); color: white !important; border: none; padding: 8px; border-radius: 8px; transition: 0.3s; cursor: pointer; display: inline-flex; }
+    
+    .btn-edit:hover, .btn-delete:hover, .btn-recharge:hover { transform: scale(1.1); filter: brightness(1.1); }
+
+    /* Modales adaptados */
+    .modal-content { 
+        background: var(--blanco-puro); 
+        color: var(--negro-puro); 
+        border: 2px solid var(--rojo-milan); 
+        border-radius: 15px; 
+    }
+
+    .modal-header { 
+        background: var(--negro-puro); 
+        color: var(--blanco-puro); 
+        border-bottom: none; 
+    }
+
+    .form-control, .form-select { 
+        background: var(--input-bg); 
+        border: 2px solid #e1e8ef; 
+        color: var(--negro-puro) !important; 
+        font-weight: 500; 
+    }
+
+    .form-control:focus {
+        border-color: var(--rojo-milan);
+        box-shadow: 0 0 0 0.25rem rgba(178, 12, 6, 0.1);
+    }
+
+    .modal-reporte { 
+        display: none; 
+        position: fixed; 
+        inset: 0; 
+        background: rgba(0,0,0,0.6); 
+        z-index: 9999; 
+        align-items: center; 
+        justify-content: center; 
+    }
+
+    .modal-card { 
+        background: var(--blanco-puro); 
+        border: 1px solid var(--rojo-milan); 
+        border-radius: 16px; 
+        padding: 30px; 
+        width: 90%; 
+        max-width: 600px; 
+        color: var(--negro-puro);
+    }
+    
+    .stat-box { 
+        background: var(--fondo-gris); 
+        padding: 15px; 
+        border-radius: 10px; 
+        text-align: center; 
+        border: 1px solid rgba(0,0,0,0.1); 
+    }
+
+    .bar-track { background: #ddd; border-radius: 10px; height: 10px; margin-top: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--rojo-milan); }
+
+    /* ==========================================
+       CAMBIO DE COLOR PARA ENVIEXPRESS
+    ========================================== */
+    /* Si usas la clase típica de Bootstrap para el logo de la barra de navegación */
+    .navbar-brand span:first-child, 
+    .logo-envi {
+        color: var(--rojo-milan) !important;
+    }
+
+    .navbar-brand span:last-child,
+    .logo-express {
+        color: var(--blanco-puro) !important;
+    }
+</style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold fs-3 text-warning" href="/envios/">ENVI<span class="text-light">EXPRESS</span></a>
+        <a class="navbar-brand fw-bold fs-3" href="/home/">
+            <span class="logo-envi">ENVI</span><span class="text-light">EXPRESS</span>
+        </a>
         <div class="ms-auto d-flex gap-2">
-            <a href="/envios/" class="btn btn-outline-light btn-sm"><i class="bi bi-house-fill"></i></a>
+            <a href="/home/" class="btn btn-outline-light btn-sm"><i class="bi bi-house-fill"></i></a>
             <form action="/logout" method="post" style="margin:0;">
                 <button class="btn btn-danger btn-sm"><i class="bi bi-box-arrow-right"></i></button>
             </form>
         </div>
     </div>
 </nav>
-
 <div class="container">
     <h1 class="title-glow"><i class="bi bi-people-fill"></i> Gestión de Usuarios</h1>
 
@@ -177,7 +256,7 @@
                         <td><span class="fw-bold">{{ u.user_name }}</span></td>
                         <td>{{ u.nombre }} {{ u.apellido }}</td>
                         <td class="text-center">
-                            <span class="badge {{ 'bg-info' if u.rol == 'ADMIN' else 'bg-secondary' }}">
+                            <span class="badge {{ 'bg-info' if u.rol == 'ADMIN' else 'bg-warning text-dark' if u.rol == 'CEO' else 'bg-secondary' }}">
                                 {{ u.rol }}
                             </span>
                         </td>
@@ -206,9 +285,11 @@
                         </td>
                         <td class="text-center">
                             <div class="d-flex gap-2 justify-content-center">
+                                {% if puede_ver_finanzas %}
                                 <button type="button" class="btn-recharge" data-bs-toggle="modal" data-bs-target="#modalRecarga{{ u.id_usuario }}">
                                     <i class="bi bi-wallet2"></i>
                                 </button>
+                                {% endif %}
                                 <a class="btn-edit" href="/usuarios/editar/{{ u.id_usuario }}"><i class="bi bi-pencil-fill"></i></a>
                                 <a class="btn-delete" href="/usuarios/eliminar/{{ u.id_usuario }}" onclick="return confirm('¿Eliminar usuario?')"><i class="bi bi-trash-fill"></i></a>
                             </div>
@@ -224,8 +305,8 @@
 {% for u in usuarios %}
 <div class="modal fade" id="modalRecarga{{ u.id_usuario }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-                <form action="/usuarios/procesar-recarga" method="POST">
-                <div class="modal-header">
+        <form action="/usuarios/procesar-recarga" method="POST" class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-cash-coin text-warning"></i> Cargar Saldo: {{ u.user_name }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -239,7 +320,7 @@
                     <label class="form-label fw-bold">Monto a Recargar ($)</label>
                     <div class="input-group">
                         <span class="input-group-text bg-dark text-white border-0">$</span>
-                        <input type="number" name="monto" class="form-control" placeholder="Ej: 50000 o -50000 para descontar" required>
+                        <input type="number" name="monto" class="form-control" required>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -270,63 +351,60 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function leerUsuarios() {
-    return Array.from(document.querySelectorAll('#tablaUsuarios tbody tr')).map(tr => {
-        const celdas = tr.querySelectorAll('td');
-        return {
-            id: celdas[0].innerText,
-            usuario: celdas[1].innerText,
-            nombre: celdas[2].innerText,
-            rol: celdas[3].innerText,
-            tarifa: celdas[4].innerText,
-            saldo: celdas[5].innerText,
-            activo: celdas[6].innerText
-        };
-    });
-}
+    /* SCRIPTS ORIGINALES MANTENIDOS */
+    function leerUsuarios() {
+        return Array.from(document.querySelectorAll('#tablaUsuarios tbody tr')).map(tr => {
+            const celdas = tr.querySelectorAll('td');
+            return {
+                id: celdas[0].innerText,
+                usuario: celdas[1].innerText,
+                nombre: celdas[2].innerText,
+                rol: celdas[3].innerText,
+                tarifa: celdas[4].innerText,
+                saldo: celdas[5].innerText,
+                activo: celdas[6].innerText
+            };
+        });
+    }
 
-function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4');
-    doc.text("Reporte de Usuarios - EnviExpress", 14, 15);
-    const data = leerUsuarios().map(u => [u.id, u.usuario, u.nombre, u.rol, u.tarifa, u.saldo, u.activo]);
-    doc.autoTable({ head: [['ID', 'Usuario', 'Nombre', 'Rol', 'Tarifa', 'Saldo', 'Estado']], body: data, startY: 20, theme: 'grid' });
-    doc.save('usuarios_enviexpress.pdf');
-}
+    function exportarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+        doc.text("Reporte de Usuarios - EnviExpress", 14, 15);
+        const data = leerUsuarios().map(u => [u.id, u.usuario, u.nombre, u.rol, u.tarifa, u.saldo, u.activo]);
+        doc.autoTable({ head: [['ID', 'Usuario', 'Nombre', 'Rol', 'Tarifa', 'Saldo', 'Estado']], body: data, startY: 20, theme: 'grid' });
+        doc.save('usuarios_enviexpress.pdf');
+    }
 
-function exportarCSV() {
-    const data = leerUsuarios();
-    let csv = "ID,Usuario,Nombre,Rol,Tarifa,Saldo,Estado\n";
-    data.forEach(u => csv += `${u.id},${u.usuario},${u.nombre},${u.rol},${u.tarifa},"${u.saldo}",${u.activo}\n`);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'usuarios.csv'; a.click();
-}
+    function exportarCSV() {
+        const data = leerUsuarios();
+        let csv = "ID,Usuario,Nombre,Rol,Tarifa,Saldo,Estado\n";
+        data.forEach(u => csv += `${u.id},${u.usuario},${u.nombre},${u.rol},${u.tarifa},"${u.saldo}",${u.activo}\n`);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'usuarios.csv'; a.click();
+    }
 
-function abrirReporteVisual() {
-    const usuarios = leerUsuarios();
-    const total = usuarios.length;
-    const activos = usuarios.filter(u => u.activo.trim() === 'Activo').length;
-    
-    document.getElementById('statGrid').innerHTML = `
-        <div class="col-6"><div class="stat-box"><div class="num text-warning" style="font-size:2rem; font-weight:800;">${total}</div><div class="small">Total Usuarios</div></div></div>
-        <div class="col-6"><div class="stat-box"><div class="num text-success" style="font-size:2rem; font-weight:800;">${activos}</div><div class="small">Activos</div></div></div>
-    `;
-
-    const roles = {};
-    usuarios.forEach(u => roles[u.rol] = (roles[u.rol] || 0) + 1);
-    
-    let bars = '';
-    Object.entries(roles).forEach(([rol, count]) => {
-        const porc = (count / total) * 100;
-        bars += `<div class="mb-3"><div class="d-flex justify-content-between"><small>${rol}</small><small>${count}</small></div><div class="bar-track"><div class="bar-fill" style="width:${porc}%"></div></div></div>`;
-    });
-    document.getElementById('rolBars').innerHTML = bars;
-    document.getElementById('modalReporte').classList.add('open');
-}
-
-function cerrarModal() { document.getElementById('modalReporte').classList.remove('open'); }
+    function abrirReporteVisual() {
+        const usuarios = leerUsuarios();
+        const total = usuarios.length;
+        const activos = usuarios.filter(u => u.activo.trim() === 'Activo').length;
+        document.getElementById('statGrid').innerHTML = `
+            <div class="col-6"><div class="stat-box"><div class="num text-warning" style="font-size:2rem; font-weight:800;">${total}</div><div class="small">Total Usuarios</div></div></div>
+            <div class="col-6"><div class="stat-box"><div class="num text-success" style="font-size:2rem; font-weight:800;">${activos}</div><div class="small">Activos</div></div></div>
+        `;
+        const roles = {};
+        usuarios.forEach(u => roles[u.rol] = (roles[u.rol] || 0) + 1);
+        let bars = '';
+        Object.entries(roles).forEach(([rol, count]) => {
+            const porc = (count / total) * 100;
+            bars += `<div class="mb-3"><div class="d-flex justify-content-between"><small>${rol}</small><small>${count}</small></div><div class="bar-track"><div class="bar-fill" style="width:${porc}%"></div></div></div>`;
+        });
+        document.getElementById('rolBars').innerHTML = bars;
+        document.getElementById('modalReporte').classList.add('open');
+    }
+    function cerrarModal() { document.getElementById('modalReporte').classList.remove('open'); }
 </script>
 </body>
 </html>

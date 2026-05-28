@@ -1,21 +1,28 @@
 import os
 import uvicorn
+from dotenv import load_dotenv
+load_dotenv() 
+
+print("------------------------------------------")
+print(f"VALOR DE WOMPI_KEY: {os.getenv('WOMPI_PUBLIC_KEY')}")
+print("------------------------------------------") # ✅ DEBE IR ANTES DE TODO
+
 from fastapi import Depends, FastAPI, HTTPException, Request
-from sqlalchemy.orm import Session  # <--- CORREGIDO: Usamos SQLAlchemy, no requests
+from sqlalchemy.orm import Session
+from sqlalchemy import text  # ✅ Agregado para poder ejecutar la consulta SQL nativa del mapa
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-
 # Importar configuración de DB
-from app.config.database import engine, Base, SessionLocal
+# 🛠️ CORRECCIÓN: Se unificó get_db en una sola línea para evitar importaciones repetidas
+from app.config.database import engine, Base, SessionLocal, get_db
 from app.config.data_initializer import init_database
 from app.config.templates import templates 
-from app.security.SecurityConfig import hash_password  # asegúrate que esté importado
+from app.security.SecurityConfig import hash_password
 
-# Importar modelos (Asegúrate de importar el modelo Usuario para la consulta)
+# Importar modelos
 from app.models.Usuario import Usuario 
-from app.models.Usuario import Usuario
 
 # Importar los routers
 from app.controllers.LandingController import router as landing_router
@@ -26,9 +33,9 @@ from app.controllers.VehiculoController import router as vehiculo_router
 from app.controllers.TarifaController import router as tarifa_router
 from app.controllers.SeguimientoController import router as seguimiento_router
 from app.controllers.RutaController import router as ruta_router
-from app.config.database import get_db
 from app.controllers.AppMensajeroController import router as app_mensajero_router
 from app.controllers.FinanzasController import router as finanzas_router
+from app.controllers.PlanController import router as plan_router
 import app.controllers.UsuarioController as UsuarioController
 
 # Importar servicios
@@ -45,7 +52,7 @@ app = FastAPI(
 app.add_middleware(
     SessionMiddleware,
     secret_key="tu_secret_key",
-    max_age=3600,      # 1 hora
+    max_age=3600,
     same_site="lax",
     https_only=False
 )
@@ -61,7 +68,6 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 # --- Montar Archivos Estáticos ---
-# Movido fuera del startup para evitar errores de acceso
 if not os.path.exists("app/static"):
     os.makedirs("app/static")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -77,6 +83,36 @@ app.include_router(seguimiento_router)
 app.include_router(ruta_router)
 app.include_router(app_mensajero_router)
 app.include_router(finanzas_router)
+app.include_router(plan_router)
+
+# --- NUEVO ENDPOINT GLOBAL PARA EL MAPA DEL ADMINISTRADOR ---
+# 🚀 Esto responde a tu necesidad de ver al mensajero en el mapa APENAS inicie sesión, con o sin pedidos.
+@app.get("/api/admin/ubicaciones-mensajeros")
+def obtener_ubicaciones_actuales(db: Session = Depends(get_db)):
+    """
+    Busca el último registro de coordenadas reportado por cada usuario en el sistema.
+    Ideal para pintar todas las motos activas en el mapa de Bogotá.
+    """
+    try:
+        # Consulta SQL nativa usando DISTINCT ON para traer solo la última coordenada de cada mensajero
+        query = """
+            SELECT DISTINCT ON (usuario) usuario, latitud, longitud, fecha
+            FROM ubicaciones_mensajeros
+            ORDER BY usuario, fecha DESC
+        """
+        resultados = db.execute(text(query)).fetchall()
+        
+        return [
+            {
+                "usuario": r.usuario, 
+                "latitud": r.latitud, 
+                "longitud": r.longitud, 
+                "fecha": r.fecha.isoformat() if hasattr(r.fecha, 'isoformat') else str(r.fecha)
+            }
+            for r in resultados
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al consultar ubicaciones: {str(e)}")
 
 
 # --- Eventos de Ciclo de Vida ---
@@ -91,29 +127,19 @@ def startup_event():
 # --- RUTA DE RECUPERACIÓN ---
 @app.post("/recuperar")
 async def solicitar_recuperacion(email: str, db: Session = Depends(get_db)):
-    # 1. Verificar si el usuario existe
     usuario = db.query(Usuario).filter(Usuario.correo == email).first()
-    
     if not usuario:
-        # Por seguridad, no confirmamos si el correo existe
         return {"message": "Si el correo es válido, recibirás un enlace"}
-
     try:
-        # 2. Generar un token real usando tu utilidad
         token = crear_token_recuperacion(usuario.correo)
-        
-        # 3. Enviar el email
         resultado = enviar_email_recuperacion(email, token)
-        
         if resultado:
             return {"message": "Enlace enviado correctamente a su bandeja de entrada"}
         else:
             raise HTTPException(status_code=500, detail="Error al conectar con el servidor de correos")
-            
     except Exception as e:
-        # Esto te dirá el error real en Swagger (ej. si las 16 letras están mal)
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-    
+
 @app.get("/reset-password")
 async def vista_reset_password(request: Request, token: str):
     return templates.TemplateResponse("reset_password.html", {"request": request, "token": token})
@@ -123,14 +149,11 @@ async def reset_password(token: str, nueva_clave: str, db: Session = Depends(get
     email = validar_token_recuperacion(token)
     if not email:
         raise HTTPException(status_code=400, detail="El enlace ha expirado o es inválido")
-    
     usuario = db.query(Usuario).filter(Usuario.correo == email).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    
-    usuario.password = hash_password(nueva_clave)  # ← hasheada ✅
+    usuario.password = hash_password(nueva_clave)
     db.commit()
-    
     return {"message": "Contraseña actualizada con éxito. Ya puedes iniciar sesión."}
 
 @app.get("/recuperar")
@@ -142,3 +165,5 @@ if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
     
     #uvicorn main:app --reload --port 8080
+    #https://matcher-zoom-deploy.ngrok-free.dev/planes/pago/oro
+    #ngrok config add-authtoken 3DKTNnRXfbOGJSKoszkQ2Ooko9r_7U6MQpxVy1CNTfTkGBXq1 ngrok http 8080

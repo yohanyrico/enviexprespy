@@ -1,4 +1,4 @@
-{# templates/seguimiento.html - Versión Visual Pro con Línea de Tiempo #}
+{# templates/seguimiento.html #}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,146 +6,575 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rastrear Envío – EnviExpress</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
     <style>
         :root {
-            --primary-dark: #001a41;
-            --accent-orange: #ff8c00;
-            --glass-bg: rgba(255, 255, 255, 0.08);
+            --red:      #B20C06;
+            --red-dark: #8a0904;
+            --black:    #000000;
+            --slate:    #738589;
+            --slate-lt: #b0bec5;
+            --bg:       #dad5d5;
+            --white:    #ffffff;
         }
 
-        body { 
-            background: linear-gradient(135deg, var(--primary-dark) 0%, #003a8c 100%);
-            min-height: 100vh; color: white; font-family: 'Montserrat', sans-serif; padding-top: 90px; 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
         }
 
-        .search-container { 
-            max-width: 850px; margin: 0 auto; padding: 40px; 
-            background: var(--glass-bg); backdrop-filter: blur(15px);
-            border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        /* ══ NAVBAR ══ */
+        .navbar {
+            background: var(--black) !important;
+            border-bottom: 3px solid var(--red);
+            padding: 10px 0;
+        }
+        .navbar-brand {
+            font-size: 1.45rem; font-weight: 800;
+            color: var(--red) !important; letter-spacing: 1px;
+        }
+        .navbar-brand span { color: var(--white); }
+        .btn-nav-home {
+            border: 2px solid rgba(255,255,255,0.25);
+            color: #fff; border-radius: 6px;
+            padding: 5px 16px; font-size: 0.8rem;
+            font-weight: 700; text-decoration: none;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+        .btn-nav-home:hover { background: var(--red); border-color: var(--red); color: #fff; }
+
+        /* ══ WRAPPER ══ */
+        .page-wrapper {
+            max-width: 720px;       /* ← ancho global reducido y centrado */
+            margin: 0 auto;
+            padding: 36px 16px 80px;
         }
 
-        /* BARRA DE PROGRESO VISUAL */
-        .tracking-status { display: flex; justify-content: space-between; position: relative; margin-bottom: 50px; padding: 0 20px; }
-        .tracking-status::before { content: ""; position: absolute; top: 25px; left: 10%; right: 10%; height: 4px; background: rgba(255,255,255,0.1); z-index: 0; }
-        
-        .status-step { position: relative; z-index: 1; text-align: center; width: 80px; filter: grayscale(1); opacity: 0.4; transition: 0.5s; }
-        .status-step.active { filter: grayscale(0); opacity: 1; transform: scale(1.1); }
-        
-        .step-icon { width: 55px; height: 55px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid var(--primary-dark); font-size: 1.5rem; color: var(--primary-dark); }
-        .status-step.active .step-icon { background: var(--accent-orange); color: white; box-shadow: 0 0 20px rgba(255, 140, 0, 0.5); }
-        .step-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* HISTORIAL POR TARJETAS */
-        .history-card { 
-            background: rgba(255, 255, 255, 0.03); border-radius: 16px; padding: 20px; 
-            margin-bottom: 15px; border-left: 5px solid rgba(255,255,255,0.1);
-            transition: 0.3s;
+        /* ══ HEADER ══ */
+        .page-header {
+            display: flex; align-items: center;
+            justify-content: center; gap: 12px;
+            margin-bottom: 24px;
         }
-        .history-card.completed { border-left-color: var(--accent-orange); background: rgba(255, 140, 0, 0.05); }
-        .history-card h5 { color: var(--accent-orange); font-weight: 800; font-size: 1rem; margin-bottom: 8px; }
-        .history-detail { font-size: 0.9rem; opacity: 0.8; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .page-header i { font-size: 1.8rem; color: var(--red); }
+        .page-header h1 {
+            font-size: 1.5rem; font-weight: 800;
+            color: var(--black); text-transform: uppercase;
+            letter-spacing: 1px; margin: 0;
+        }
 
-        .search-box { display: flex; gap: 10px; margin-bottom: 40px; }
-        .search-input { flex: 1; padding: 18px; border: 2px solid rgba(255,140,0,0.2); border-radius: 15px; background: rgba(0,0,0,0.3); color: white; font-weight: 600; }
-        .search-input:focus { outline: none; border-color: var(--accent-orange); box-shadow: 0 0 20px rgba(255,140,0,0.3); }
-        .btn-search { padding: 0 35px; background: var(--accent-orange); border: none; border-radius: 15px; color: white; font-weight: 800; transition: 0.3s; }
-        .btn-search:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255,140,0,0.4); background: #e67e00; }
+        /* ══ BUSCADOR ══ */
+        .search-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+        .search-input {
+            flex: 1; padding: 11px 16px;
+            border: 2px solid var(--slate); border-radius: 6px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.88rem; font-weight: 600;
+            color: var(--black); background: var(--white);
+            outline: none; text-transform: uppercase;
+            letter-spacing: 1px; transition: border-color 0.2s;
+        }
+        .search-input::placeholder { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--slate); }
+        .search-input:focus { border-color: var(--red); }
+        .btn-buscar {
+            padding: 11px 22px; background: var(--red);
+            color: #fff; border: none; border-radius: 6px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; text-transform: uppercase;
+            letter-spacing: 0.5px; transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .btn-buscar:hover { background: var(--red-dark); }
 
-        .navbar { backdrop-filter: blur(12px); background: rgba(0, 35, 90, 0.8); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        /* ══ TARJETAS — 2 columnas centradas ══ */
+        .cards-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 560px) { .cards-row { grid-template-columns: 1fr; } }
+
+        .info-card {
+            background: var(--white);
+            border-radius: 8px;
+            border-top: 4px solid var(--red);
+            padding: 16px 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        }
+        .card-label {
+            font-size: 0.62rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--slate); margin-bottom: 7px;
+        }
+        .card-val { font-size: 0.95rem; font-weight: 700; color: var(--black); }
+        .card-sub { font-size: 0.74rem; color: var(--slate); margin-top: 4px; }
+
+        /* Badge guía */
+        .guia-badge {
+            display: inline-block;
+            border: 2px solid var(--red); color: var(--red);
+            border-radius: 4px; padding: 2px 10px;
+            font-weight: 800; font-size: 0.95rem; letter-spacing: 1px;
+        }
+
+        /* Badge estado */
+        .badge-estado {
+            display: inline-block; padding: 4px 12px;
+            border-radius: 4px; font-size: 0.7rem;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .badge-Registrado  { background:#fff3cd; color:#856404; }
+        .badge-En_Bodega   { background:#fff3cd; color:#856404; }
+        .badge-En_Ruta     { background:#cff4fc; color:#055160; }
+        .badge-En_Destino  { background:#d1e7dd; color:#0a3622; }
+        .badge-Entregado   { background:#d1e7dd; color:#0a3622; }
+        .badge-Fallido     { background:#f8d7da; color:#842029; }
+        .badge-Cancelado   { background:#e2e3e5; color:#383d41; }
+        .badge-Devolucion  { background:#f8d7da; color:#842029; }
+        .badge-Retorno     { background:#f8d7da; color:#842029; }
+        .badge-Rechazado   { background:#f8d7da; color:#842029; }
+
+        /* ══ FOTO ENTREGA ══ */
+        .foto-entrega {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+            border-top: 4px solid var(--red);
+        }
+        .foto-entrega-title {
+            font-size: 0.62rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--slate); margin-bottom: 10px;
+        }
+        .foto-entrega img {
+            width: 100%; max-width: 380px;
+            border-radius: 6px;
+            border: 2px solid var(--bg);
+            display: block;
+        }
+
+        /* ══ TIMELINE — compacto ══ */
+        .timeline-panel {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 14px 18px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        }
+        .section-label {
+            font-size: 0.6rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--slate); margin-bottom: 14px;
+        }
+
+        .steps-row {
+            display: flex; align-items: flex-start; position: relative;
+        }
+        /* línea de fondo: centrada en los iconos de 34px → top = 17px */
+        .steps-row::before {
+            content: ''; position: absolute;
+            top: 17px; left: 17px; right: 17px;
+            height: 2px; background: var(--bg); z-index: 0;
+        }
+        .progress-fill {
+            position: absolute; top: 17px; left: 17px;
+            height: 2px; background: var(--red);
+            z-index: 1; transition: width 0.6s ease;
+        }
+
+        .step {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; position: relative; z-index: 2;
+        }
+        .step-icon {
+            width: 34px; height: 34px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; margin-bottom: 6px;
+        }
+        .step-icon.done    { background: var(--red);   color: #fff; box-shadow: 0 3px 8px rgba(178,12,6,0.28); }
+        .step-icon.current { background: var(--black); color: #fff; box-shadow: 0 3px 8px rgba(0,0,0,0.22); }
+        .step-icon.pending { background: var(--bg); border: 2px solid var(--slate-lt); color: var(--slate-lt); }
+
+        .step-lbl {
+            font-size: 0.56rem; font-weight: 700;
+            text-align: center; color: var(--black);
+            text-transform: uppercase; letter-spacing: 0.3px; line-height: 1.3;
+        }
+        .step-date {
+            font-size: 0.52rem; color: var(--slate);
+            text-align: center; margin-bottom: 3px; line-height: 1.3;
+        }
+        .step.pending .step-lbl  { color: var(--slate-lt); }
+        .step.pending .step-date { color: var(--slate-lt); }
+
+        /* ══ HISTORIAL ══ */
+        .historial-panel {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 18px 22px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        }
+        .historial-title {
+            font-size: 0.88rem; font-weight: 800;
+            color: var(--red); text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 14px;
+            padding-left: 12px;
+            border-left: 4px solid var(--red);
+        }
+        .hist-row {
+            display: flex; align-items: flex-start;
+            gap: 12px; padding: 12px 0;
+            border-bottom: 1px solid var(--bg);
+        }
+        .hist-row:last-child { border-bottom: none; }
+        .hist-dot {
+            width: 11px; height: 11px; border-radius: 50%;
+            background: var(--red); flex-shrink: 0; margin-top: 3px;
+            box-shadow: 0 0 0 3px rgba(178,12,6,0.12);
+        }
+        .hist-dot.dot-novedad { background: #dc3545; box-shadow: 0 0 0 3px rgba(220,53,69,0.15); }
+        .hist-dot.dot-ok      { background: #0a3622; box-shadow: 0 0 0 3px rgba(10,54,34,0.12); }
+        .hist-body { flex: 1; }
+        .hist-fecha { font-weight: 700; font-size: 0.82rem; color: var(--black); }
+        .hist-desc  { font-size: 0.76rem; color: var(--slate); margin-top: 2px; }
+        .hist-desc .novedad-tag { color: var(--red); font-weight: 700; }
+        .hist-time  {
+            font-size: 0.72rem; font-weight: 700;
+            color: var(--slate); white-space: nowrap;
+            text-align: right; padding-top: 2px;
+        }
+        .hist-empty {
+            text-align: center; padding: 24px 0;
+            color: var(--slate-lt); font-size: 0.82rem;
+        }
+
+        /* ══ NO ENCONTRADO ══ */
+        .not-found {
+            background: var(--white); border-radius: 8px;
+            text-align: center; padding: 48px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        }
+        .not-found i { font-size: 2.2rem; color: var(--slate-lt); display: block; margin-bottom: 12px; }
+        .not-found h4 { font-weight: 800; color: var(--black); font-size: 0.95rem; text-transform: uppercase; margin-bottom: 6px; }
+        .not-found p  { font-size: 0.82rem; color: var(--slate); }
+
+        /* ══ BOTÓN WHATSAPP ══ */
+        .btn-whatsapp {
+            position: fixed; bottom: 24px; right: 24px;
+            width: 52px; height: 52px; background: #25D366;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(37,211,102,0.45);
+            text-decoration: none; z-index: 999;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-whatsapp:hover { transform: scale(1.1); box-shadow: 0 8px 24px rgba(37,211,102,0.55); }
+        .btn-whatsapp svg { width: 28px; height: 28px; fill: #fff; }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <div class="container">
-           <a class="navbar-brand fw-bold fs-3" href="/home_cliente" style="color: #ff8000;">
-    ENVI<span class="text-light">EXPRESS</span>
-</a>
-        <a href="/home_cliente" class="btn btn-outline-light btn-sm rounded-pill px-3">
-            <i class="bi bi-house-fill"></i> Inicio
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a class="navbar-brand" href="/home_cliente">ENVI<span>EXPRESS</span></a>
+        <a href="/home_cliente" class="btn-nav-home">
+            <i class="bi bi-house-fill me-1"></i> Inicio
         </a>
     </div>
 </nav>
 
-<div class="container">
-    <div class="search-container">
-        <h2 class="text-center fw-bold mb-4">RASTREA TU PEDIDO</h2>
+<div style="padding-top: 70px;">
+<div class="page-wrapper">
 
-        <form action="/seguimiento" method="get" class="search-box">
-    <input type="text" name="numero_guia" class="search-input" 
-           placeholder="Ingresa el número de guía" required
-           value="{{ numero_guia if numero_guia else '' }}">
-    <button type="submit" class="btn-search">BUSCAR</button>
-</form>
+    <!-- Encabezado -->
+    <div class="page-header">
+        <i class="bi bi-box-seam"></i>
+        <h1>Rastrear Envío</h1>
+    </div>
 
-        {% if encontrado %}
-        <div class="tracking-status">
-            {% set s = envio.estado %}
-            <div class="status-step {{ 'active' if s in ['Registrado','En_Bodega','En_Ruta','En_Destino','Entregado'] }}">
-                <div class="step-icon"><i class="bi bi-file-earmark-check"></i></div>
-                <div class="step-label">Guía<br>Creada</div>
+    <!-- Buscador -->
+    <form action="/seguimiento" method="get" class="search-bar">
+        <input type="text" name="numero_guia" class="search-input"
+               placeholder="Ingresa el número de guía — ej: ENV00014"
+               required value="{{ numero_guia if numero_guia else '' }}">
+        <button type="submit" class="btn-buscar">
+            <i class="bi bi-search me-1"></i> Buscar
+        </button>
+    </form>
+
+    {# ══════════════════════════════ RESULTADO ENCONTRADO ══════════════════════════════ #}
+    {% if encontrado %}
+
+    {% set s = envio.estado %}
+
+    {% set idx_map = {
+        'Registrado': 0, 'En_Bodega': 0,
+        'En_Ruta': 1,
+        'En_Destino': 2,
+        'Entregado': 3,
+        'Fallido': 3, 'Cancelado': 3,
+        'Devolucion': 3, 'Retorno': 3, 'Rechazado': 3
+    } %}
+    {% set idx = idx_map.get(s, 0) %}
+
+    {# ─── 2 TARJETAS CENTRADAS ─── #}
+    <div class="cards-row">
+
+        <div class="info-card">
+            <div class="card-label"><i class="bi bi-upc-scan me-1"></i> Número de guía</div>
+            <div class="guia-badge">{{ envio.numero_guia }}</div>
+            <div class="card-sub mt-2">
+                <strong>Creado:</strong>
+                {% if envio.fecha_creacion %}
+                    {{ envio.fecha_creacion.strftime('%d/%m/%Y %I:%M %p') }}
+                {% else %}—{% endif %}
             </div>
-            <div class="status-step {{ 'active' if s in ['En_Ruta','En_Destino','Entregado'] }}">
-                <div class="step-icon"><i class="bi bi-truck"></i></div>
-                <div class="step-label">En ruta de<br>entrega</div>
+            <div class="card-sub">
+                <strong>Origen:</strong>
+                {{ envio.lugar_recogida.direccion if envio.lugar_recogida else '—' }}
             </div>
-            <div class="status-step {{ 'active' if s == 'Entregado' }}">
-                <div class="step-icon"><i class="bi bi-check-circle-fill"></i></div>
-                <div class="step-label">Paquete<br>Entregado</div>
+            <div class="card-sub">
+                <strong>Destino:</strong>
+                {{ envio.lugar_entrega.direccion if envio.lugar_entrega else '—' }}
             </div>
         </div>
 
-        <div class="mb-4">
-            <p class="mb-1 opacity-75"><i class="bi bi-person-circle"></i> Conductor: <span class="text-white fw-bold">{{ envio.mensajero.nombre if envio.mensajero else 'Por asignar' }}</span></p>
-            <p class="mb-0 opacity-75"><i class="bi bi-geo-alt-fill text-orange"></i> Destino: <span class="text-white fw-bold">{{ envio.lugar_entrega.direccion }}</span></p>
+        <div class="info-card">
+            <div class="card-label"><i class="bi bi-activity me-1"></i> Estado actual</div>
+            <span class="badge-estado badge-{{ s }}">
+                {% if s == 'Registrado' %}Registrado
+                {% elif s == 'En_Bodega' %}En Bodega
+                {% elif s == 'En_Ruta' %}En Ruta
+                {% elif s == 'En_Destino' %}En Destino
+                {% elif s == 'Entregado' %}Entregado
+                {% elif s == 'Fallido' %}Fallido
+                {% elif s == 'Cancelado' %}Cancelado
+                {% elif s == 'Devolucion' %}Devolución
+                {% elif s == 'Retorno' %}Retorno
+                {% elif s == 'Rechazado' %}Rechazado
+                {% else %}{{ s }}{% endif %}
+            </span>
+            <div class="card-sub mt-2"><strong>Tipo de servicio:</strong> {{ envio.tipo_servicio }}</div>
+            <div class="card-sub"><strong>Peso:</strong> {{ envio.peso }} kg</div>
+            {% if envio.instrucciones %}
+            <div class="card-sub" style="font-style:italic; margin-top:5px;">"{{ envio.instrucciones }}"</div>
+            {% endif %}
         </div>
 
-        <h4 class="fw-bold mb-3" style="color:var(--accent-orange)">HISTORIAL DEL ENVÍO</h4>
+    </div>
 
-        <div class="history-card completed">
-            <h5>GUÍA CREADA</h5>
-            <div class="history-detail"><i class="bi bi-geo-alt"></i> {{ envio.lugar_recogida.direccion }}</div>
-            <div class="history-detail opacity-50"><i class="bi bi-calendar3"></i> {{ envio.fecha_creacion.strftime('%d de %B de %Y %I:%M %p') }}</div>
-        </div>
-
-        {% if s in ['En_Ruta', 'En_Destino', 'Entregado'] %}
-        <div class="history-card completed">
-            <h5>EN RUTA DE ENTREGA</h5>
-            <div class="history-detail"><i class="bi bi-truck"></i> El paquete ha salido hacia su destino</div>
-            <div class="history-detail"><i class="bi bi-geo-fill"></i> {{ envio.lugar_entrega.direccion }}</div>
-        </div>
-        {% endif %}
-
-        {% if s == 'Entregado' %}
-        <div class="history-card completed">
-            <h5>ENTREGADO</h5>
-            <div class="history-detail"><i class="bi bi-patch-check-fill text-success"></i> ¡Entrega exitosa!</div>
-            <div class="history-detail"><i class="bi bi-chat-left-text"></i> Notas: {{ envio.instrucciones }}</div>
-        </div>
-        {% endif %}
-
-        {% if s == 'Fallido' %}
-        <div class="history-card border-danger" style="background: rgba(220,53,69,0.1);">
-            <h5 class="text-danger">NOVEDAD EN LA ENTREGA</h5>
-            <div class="history-detail">Hubo un problema al intentar entregar el paquete.</div>
-        </div>
-        {% endif %}
-
-        {% endif %}
-
-        {% if encontrado is not none and not encontrado %}
-        <div class="text-center p-5 bg-black bg-opacity-25 rounded-4">
-            <i class="bi bi-search text-orange fs-1"></i>
-            <h4 class="mt-3 fw-bold">GUÍA NO ENCONTRADA</h4>
-            <p class="opacity-50">Por favor verifica el número e intenta nuevamente.</p>
-        </div>
+    {# ─── FOTO DE ENTREGA (solo cliente autenticado dueño del envío) ─── #}
+    {% if puede_ver_foto and envio.foto_entrega %}
+    <div class="foto-entrega">
+        <div class="foto-entrega-title"><i class="bi bi-camera-fill me-1"></i> Foto de entrega</div>
+        <img src="/static/fotos_entrega/{{ envio.foto_entrega }}"
+             alt="Foto de entrega {{ envio.numero_guia }}">
+        {% if envio.fecha_entrega %}
+        <p class="card-sub mt-2">
+            <strong>Entregado el:</strong> {{ envio.fecha_entrega.strftime('%d/%m/%Y %I:%M %p') }}
+        </p>
         {% endif %}
     </div>
+    {% endif %}
+
+    {# ─── TIMELINE COMPACTO ─── #}
+    <div class="timeline-panel">
+        <div class="section-label">Progreso del envío</div>
+        <div class="steps-row" id="stepsRow">
+            <div class="progress-fill" id="progressFill"></div>
+
+            {% set fecha_origen    = '' %}
+            {% set fecha_ruta      = '' %}
+            {% set fecha_destino   = '' %}
+            {% set fecha_entregado = '' %}
+            {% for seg in envio.seguimientos | sort(attribute='fecha') %}
+                {% if seg.estado.value in ['Registrado','En_Bodega'] and not fecha_origen %}
+                    {% set fecha_origen = seg.fecha.strftime('%d/%m %I:%M%p') %}
+                {% endif %}
+                {% if seg.estado.value == 'En_Ruta' and not fecha_ruta %}
+                    {% set fecha_ruta = seg.fecha.strftime('%d/%m %I:%M%p') %}
+                {% endif %}
+                {% if seg.estado.value == 'En_Destino' and not fecha_destino %}
+                    {% set fecha_destino = seg.fecha.strftime('%d/%m %I:%M%p') %}
+                {% endif %}
+                {% if seg.estado.value == 'Entregado' and not fecha_entregado %}
+                    {% set fecha_entregado = seg.fecha.strftime('%d/%m %I:%M%p') %}
+                {% endif %}
+            {% endfor %}
+
+            {# Paso 0 – Terminal origen #}
+            {% set c0 = 'done' if idx > 0 else ('current' if idx == 0 else 'pending') %}
+            <div class="step {{ c0 }}">
+                <div class="step-icon {{ c0 }}"><i class="bi bi-box"></i></div>
+                <div class="step-date">{{ fecha_origen if fecha_origen else '&nbsp;' }}</div>
+                <div class="step-lbl">Terminal<br>origen</div>
+            </div>
+
+            {# Paso 1 – En transporte #}
+            {% set c1 = 'done' if idx > 1 else ('current' if idx == 1 else 'pending') %}
+            <div class="step {{ c1 }}">
+                <div class="step-icon {{ c1 }}"><i class="bi bi-truck"></i></div>
+                <div class="step-date">{{ fecha_ruta if fecha_ruta else '&nbsp;' }}</div>
+                <div class="step-lbl">En<br>transporte</div>
+            </div>
+
+            {# Paso 2 – Terminal destino #}
+            {% set c2 = 'done' if idx > 2 else ('current' if idx == 2 else 'pending') %}
+            <div class="step {{ c2 }}">
+                <div class="step-icon {{ c2 }}"><i class="bi bi-building"></i></div>
+                <div class="step-date">{{ fecha_destino if fecha_destino else '&nbsp;' }}</div>
+                <div class="step-lbl">Terminal<br>destino</div>
+            </div>
+
+            {# Paso 3 – Entregado / Novedad #}
+            {% if s in ['Fallido','Cancelado','Devolucion','Retorno','Rechazado'] %}
+            <div class="step current">
+                <div class="step-icon current" style="background:#842029;">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div class="step-date">&nbsp;</div>
+                <div class="step-lbl" style="color:#842029;">{{ s }}</div>
+            </div>
+            {% else %}
+            {% set c3 = 'current' if idx == 3 else 'pending' %}
+            <div class="step {{ c3 }}">
+                <div class="step-icon {{ c3 }}"><i class="bi bi-patch-check"></i></div>
+                <div class="step-date">{{ fecha_entregado if fecha_entregado else '&nbsp;' }}</div>
+                <div class="step-lbl">Entregado</div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {# ─── HISTORIAL ─── #}
+    <div class="historial-panel">
+        <div class="historial-title">Historial</div>
+
+        {% set seguimientos_ordenados = envio.seguimientos | sort(attribute='fecha', reverse=True) %}
+
+        {% if seguimientos_ordenados %}
+            {% for seg in seguimientos_ordenados %}
+            {% set estado_val = seg.estado.value if seg.estado.value is defined else seg.estado %}
+
+            {% set dot_class = 'hist-dot' %}
+            {% if estado_val in ['Fallido','Cancelado','Devolucion','Retorno','Rechazado'] %}
+                {% set dot_class = 'hist-dot dot-novedad' %}
+            {% elif estado_val == 'Entregado' %}
+                {% set dot_class = 'hist-dot dot-ok' %}
+            {% endif %}
+
+            <div class="hist-row">
+                <div class="{{ dot_class }}"></div>
+                <div class="hist-body">
+                    <div class="hist-fecha">{{ seg.fecha.strftime('%Y/%m/%d') }}</div>
+                    <div class="hist-desc">
+                        {% if seg.descripcion %}
+                            {% if estado_val in ['Fallido','Cancelado','Devolucion','Retorno','Rechazado'] %}
+                                <span class="novedad-tag">Novedad:</span> {{ seg.descripcion }}
+                            {% else %}
+                                {{ seg.descripcion }}
+                            {% endif %}
+                        {% else %}
+                            {% if estado_val == 'Registrado' %}Tu envío ha sido registrado en la terminal de origen
+                            {% elif estado_val == 'En_Bodega' %}Tu envío se encuentra en bodega
+                            {% elif estado_val == 'En_Ruta' %}Tu envío se encuentra en transporte
+                            {% elif estado_val == 'En_Destino' %}Tu envío ha llegado a la terminal de destino
+                            {% elif estado_val == 'Entregado' %}Tu envío ha sido entregado exitosamente
+                            {% elif estado_val == 'Fallido' %}<span class="novedad-tag">Novedad:</span> Entrega fallida
+                            {% elif estado_val == 'Cancelado' %}<span class="novedad-tag">Novedad:</span> Envío cancelado
+                            {% elif estado_val == 'Devolucion' %}<span class="novedad-tag">Novedad:</span> Envío en devolución
+                            {% elif estado_val == 'Retorno' %}<span class="novedad-tag">Novedad:</span> Envío en retorno
+                            {% elif estado_val == 'Rechazado' %}<span class="novedad-tag">Novedad:</span> Envío rechazado
+                            {% else %}Estado actualizado: {{ estado_val }}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="hist-time">{{ seg.fecha.strftime('%I:%M %p') }}</div>
+            </div>
+            {% endfor %}
+
+        {% else %}
+            <div class="hist-empty">
+                <i class="bi bi-clock-history"></i><br>
+                No hay registros de historial aún.
+            </div>
+        {% endif %}
+
+    </div>
+
+    {# ══════════════════════════════ NO ENCONTRADO ══════════════════════════════ #}
+    {% elif encontrado is not none and not encontrado %}
+    <div class="not-found">
+        <i class="bi bi-search"></i>
+        <h4>Guía no encontrada</h4>
+        <p>Verifica el número e intenta nuevamente.</p>
+    </div>
+    {% endif %}
+
+</div>
 </div>
 
+{# ══ BOTÓN WHATSAPP FLOTANTE ══ #}
+<a href="https://wa.me/573203460836?text=Hola,%20necesito%20información%20sobre%20mi%20envío"
+   class="btn-whatsapp" target="_blank" title="Contáctanos por WhatsApp">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15
+                 -.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075
+                 -.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059
+                 -.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52
+                 .149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52
+                 -.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51
+                 -.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372
+                 -.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074
+                 .149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625
+                 .712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413
+                 .248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004
+                 a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374
+                 a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884
+                 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994
+                 c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297
+                 A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892
+                 c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654
+                 a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893
+                 a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+</a>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    const row  = document.getElementById('stepsRow');
+    const fill = document.getElementById('progressFill');
+    if (!row || !fill) return;
+
+    const steps     = row.querySelectorAll('.step');
+    const idxActual = {{ idx if encontrado else 0 }};
+    if (steps.length < 2 || idxActual === 0) return;
+
+    const rRect   = row.getBoundingClientRect();
+    // Usar el .step-icon para calcular correctamente el centro de cada paso
+    const firstIcon   = steps[0].querySelector('.step-icon').getBoundingClientRect();
+    const currentIcon = steps[idxActual].querySelector('.step-icon').getBoundingClientRect();
+
+    const startX = firstIcon.left   + firstIcon.width   / 2 - rRect.left;
+    const endX   = currentIcon.left + currentIcon.width  / 2 - rRect.left;
+
+    fill.style.left  = startX + 'px';
+    fill.style.width = (endX - startX) + 'px';
+});
+</script>
 </body>
 </html>

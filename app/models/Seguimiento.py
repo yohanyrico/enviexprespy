@@ -17,3 +17,4 @@ class Seguimiento(Base):
     estado = Column(Enum(EstadoEnvio), nullable=False)
     descripcion = Column(String(255))
     fecha = Column(DateTime, nullable=False)
+    foto = Column(String(255), nullable=True)

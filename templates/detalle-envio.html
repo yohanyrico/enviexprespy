@@ -23,138 +23,172 @@
             });
         })();
     </script>
+<style>
+    :root {
+        /* Paleta de colores ENVIEXPRESS memorizada */
+        --rojo-milan: #B20C06;
+        --rojo-hover: #8a0a05;
+        --negro-puro: #000000;
+        --blanco-puro: #ffffff;
+        --fondo-gris: #f4f4f4;
+        --card-bg: #ffffff; 
+        --input-bg: #fdfdfd;
+    }
 
-    <style>
-        :root {
-            --primary-dark: #00235a;
-            --primary-blue: #003a8c;
-            --accent-orange: #ff8c00;
-            --text-light: #ffffff;
-            --card-bg: rgba(255, 255, 255, 0.05);
-        }
+    body { 
+        background-color: var(--fondo-gris); /* Fondo general limpio */
+        color: var(--negro-puro); /* Texto principal legible en negro */
+        font-family: 'Segoe UI', Arial, sans-serif;
+        min-height: 100vh;
+        margin: 0;
+    }
 
-        body { 
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
-            color: var(--text-light);
-            font-family: 'Segoe UI', Arial, sans-serif;
-            min-height: 100vh;
-        }
+    .detalle-container { 
+        max-width: 1000px; 
+        margin: 40px auto; 
+        background: var(--card-bg); /* Tarjeta contenedora blanca */
+        border-radius: 24px; 
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.06); /* Sombra suave */
+        overflow: hidden; 
+    }
 
-        .detalle-container { 
-            max-width: 1000px; 
-            margin: 40px auto; 
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
-            border-radius: 24px; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4); 
-            overflow: hidden; 
-        }
+    .detalle-header { 
+        background: var(--negro-puro); /* Encabezado en negro puro para contraste */
+        padding: 35px; 
+        text-align: center;
+        border-bottom: 2px solid var(--rojo-milan);
+    }
 
-        .detalle-header { 
-            background: rgba(0, 0, 0, 0.3);
-            padding: 35px; 
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .detalle-header h2 { 
+        font-weight: 800; 
+        letter-spacing: 1px; 
+        color: var(--blanco-puro); 
+        text-transform: uppercase; 
+    }
+    
+    .detalle-header .guia-badge { 
+        background: var(--rojo-milan); 
+        color: var(--blanco-puro); 
+        padding: 5px 20px; 
+        border-radius: 50px; 
+        font-weight: 800;
+        display: inline-block;
+        margin-top: 10px;
+        border: 1px solid var(--blanco-puro);
+    }
 
-        .detalle-header h2 { font-weight: 800; letter-spacing: 1px; color: var(--text-light); text-transform: uppercase; }
-        .detalle-header .guia-badge { 
-            background: var(--accent-orange); 
-            color: white; 
-            padding: 5px 20px; 
-            border-radius: 50px; 
-            font-weight: 800;
-            display: inline-block;
-            margin-top: 10px;
-        }
+    /* --- CASILLA DEL PLAN ADQUIRIDO --- */
+    .plan-box {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 10px 30px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+    .plan-label { 
+        font-size: 0.65rem; 
+        font-weight: 800; 
+        text-transform: uppercase; 
+        color: #dfdfdf; /* Color claro para contrastar sobre el header negro */
+        display: block; 
+        margin-bottom: 2px; 
+        letter-spacing: 1px; 
+    }
+    .plan-name { font-size: 1.3rem; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-        /* --- CASILLA DEL PLAN ADQUIRIDO --- */
-        .plan-box {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 10px 30px;
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .plan-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--accent-orange); display: block; margin-bottom: 2px; letter-spacing: 1px; }
-        .plan-name { font-size: 1.3rem; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    /* Colores de Medallas dinámicas (Se mantienen independientes) */
+    .plan-bronce { border-color: #cd7f32 !important; color: #cd7f32 !important; }
+    .plan-plata { border-color: #c0c0c0 !important; color: #c0c0c0 !important; }
+    .plan-oro { border-color: #ffd700 !important; color: #ffd700 !important; }
+    .plan-diamante { border-color: #b9f2ff !important; color: #b9f2ff !important; text-shadow: 0 0 10px rgba(185,242,255,0.5); }
 
-        .plan-bronce { border-color: #cd7f32 !important; color: #cd7f32 !important; }
-        .plan-plata { border-color: #c0c0c0 !important; color: #c0c0c0 !important; }
-        .plan-oro { border-color: #ffd700 !important; color: #ffd700 !important; }
-        .plan-diamante { border-color: #b9f2ff !important; color: #b9f2ff !important; text-shadow: 0 0 10px rgba(185,242,255,0.5); }
+    .detalle-body { padding: 40px; }
 
-        .detalle-body { padding: 40px; }
+    .info-section { 
+        margin-bottom: 25px; 
+        padding: 25px;
+        background: var(--input-bg); /* Fondo gris claro interno */
+        border-radius: 18px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-left: 5px solid var(--rojo-milan); /* Acento izquierdo en Rojo Milán */
+    }
 
-        .info-section { 
-            margin-bottom: 25px; 
-            padding: 25px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 18px;
-            border-left: 5px solid var(--accent-orange);
-        }
+    .info-section h5 { 
+        color: var(--rojo-milan); /* Títulos de sección en Rojo Milán */
+        font-weight: bold; 
+        margin-bottom: 20px; 
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1.2px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-        .info-section h5 { 
-            color: var(--accent-orange); 
-            font-weight: bold; 
-            margin-bottom: 20px; 
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1.2px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .info-label { 
+        font-size: 0.75rem; 
+        color: #666666; /* Gris oscuro para etiquetas */
+        text-transform: uppercase; 
+        font-weight: 700; 
+        margin-bottom: 4px; 
+    }
+    .info-value { 
+        font-size: 1.05rem; 
+        color: var(--negro-puro); 
+        margin-bottom: 20px; 
+        font-weight: 500; 
+    }
+    
+    .badge-status {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
 
-        .info-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
-        .info-value { font-size: 1.05rem; color: var(--text-light); margin-bottom: 20px; font-weight: 500; }
-        
-        .badge-status {
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-        }
+    .btn-orange {
+        background-color: var(--rojo-milan); /* Botón principal cambiado a Rojo Milán */
+        color: var(--blanco-puro); 
+        border: 2px solid var(--blanco-puro); 
+        padding: 14px 30px;
+        font-weight: bold; 
+        text-transform: uppercase;
+        border-radius: 12px; 
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-        .btn-orange {
-            background-color: var(--accent-orange);
-            color: white; border: none; padding: 14px 30px;
-            font-weight: bold; text-transform: uppercase;
-            border-radius: 12px; transition: all 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .btn-orange:hover {
+        background-color: var(--rojo-hover);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(178, 12, 6, 0.3);
+        color: var(--blanco-puro);
+    }
 
-        .btn-orange:hover {
-            background-color: #e67e00;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255, 140, 0, 0.4);
-            color: white;
-        }
+    .costo-box {
+        background: rgba(76, 209, 55, 0.08); /* Verde sutil para el éxito/costos */
+        border: 2px solid #4cd137;
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .costo-valor { font-size: 1.8rem; color: #4cd137; font-weight: 800; }
 
-        .costo-box {
-            background: rgba(76, 209, 55, 0.1);
-            border: 1px solid #4cd137;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        
-        .costo-valor { font-size: 1.8rem; color: #4cd137; font-weight: 800; }
-
-        .address-box {
-            background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-    </style>
+    .address-box {
+        background: var(--blanco-puro);
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+</style>
 </head>
 <body>
 <div class="container py-5">

@@ -1,4 +1,4 @@
-{# templates/mapa_operativo.html #}
+{# templates/mapa-operaciones.html #}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,614 +7,901 @@
     <title>Planificación Operativa | EnviExpress</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
-    
+
     <script>
         (function () {
             history.pushState(null, null, window.location.href);
-            window.addEventListener("popstate", function () {
-                history.pushState(null, null, window.location.href);
-            });
-            window.addEventListener("pageshow", function (event) {
-                if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-                    window.location.reload();
-                }
+            window.addEventListener("popstate", function () { history.pushState(null, null, window.location.href); });
+            window.addEventListener("pageshow", function (e) {
+                if (e.persisted || (window.performance && window.performance.navigation.type === 2)) window.location.reload();
             });
         })();
     </script>
 
     <style>
         :root {
-            --azul-oscuro: #001a33;
-            --azul-navy: #002b5b;
-            --naranja: #ff8c00;
-            --blanco: #ffffff;
+            --rojo:        #B20C06;
+            --rojo-hover:  #8E0A05;
+            --azul-oscuro: #0b012e;
+            --gris:        #738589;
+            --blanco:      #FDFFFF;
+            --creada:      #6c757d;
+            --en-curso:    #ff8c00;
+            --finalizada:  #28a745;
         }
-
+        *, *::before, *::after { box-sizing: border-box; }
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: 'Montserrat', sans-serif; }
-
         .main-wrapper { display: flex; width: 100%; height: 100vh; }
 
-        /* PANEL LATERAL IZQUIERDO */
         #side-panel {
-            width: 300px;
-            min-width: 300px;
+            width: 270px; min-width: 270px;
             background: var(--blanco);
-            border-right: 3px solid var(--naranja);
-            display: flex;
-            flex-direction: column;
+            border-right: 3px solid var(--rojo);
+            display: flex; flex-direction: column;
             box-shadow: 4px 0 15px rgba(0,0,0,0.2);
-            z-index: 1001;
+            z-index: 1001; overflow: hidden;
         }
+        .panel-header { padding: 12px 16px; background: var(--azul-oscuro); color: white; text-align: center; border-bottom: 2px solid var(--rojo); flex-shrink: 0; }
+        .panel-header h5 { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.83rem; }
 
-        .panel-header {
-            padding: 18px 20px;
-            background: var(--azul-navy);
-            color: white;
-            text-align: center;
-            border-bottom: 2px solid var(--naranja);
+        .section-tabs { display: flex; flex-shrink: 0; border-bottom: 2px solid #e0e0e0; background: #f8f9fa; }
+        .s-tab { flex: 1; padding: 8px 4px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; text-align: center; cursor: pointer; border: none; background: transparent; transition: 0.2s; color: #888; border-bottom: 3px solid transparent; letter-spacing: 0.3px; }
+        .s-tab.active-creada     { color: var(--creada);    border-bottom-color: var(--creada); }
+        .s-tab.active-en-curso   { color: var(--en-curso);  border-bottom-color: var(--en-curso); }
+        .s-tab.active-finalizada { color: var(--finalizada);border-bottom-color: var(--finalizada); }
+        .s-tab .tab-badge { display: inline-block; min-width: 16px; height: 16px; border-radius: 8px; font-size: 0.6rem; font-weight: 900; padding: 0 4px; margin-left: 3px; line-height: 16px; background: #dee2e6; color: #555; }
+        .s-tab.active-creada .tab-badge     { background: var(--creada);    color: white; }
+        .s-tab.active-en-curso .tab-badge   { background: var(--en-curso);  color: white; }
+        .s-tab.active-finalizada .tab-badge { background: var(--finalizada);color: white; }
+
+        #panel-content { flex: 1; overflow-y: auto; }
+        #panel-content::-webkit-scrollbar { width: 4px; }
+        #panel-content::-webkit-scrollbar-thumb { background: var(--rojo); border-radius: 10px; }
+
+        .section-panel { display: none; padding: 10px; }
+        .section-panel.active { display: block; }
+
+        .ruta-card { background: white; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; animation: slideIn 0.35s ease; }
+        @keyframes slideIn { from{opacity:0;transform:translateX(-15px);} to{opacity:1;transform:translateX(0);} }
+        .ruta-card-header { padding: 9px 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .rc-creada     .ruta-card-header { border-left: 4px solid var(--creada); }
+        .rc-en-curso   .ruta-card-header { border-left: 4px solid var(--en-curso); }
+        .rc-finalizada .ruta-card-header { border-left: 4px solid var(--finalizada); }
+        .ruta-nombre { font-weight: 800; font-size: 0.8rem; color: var(--azul-oscuro); }
+        .ruta-mensajero { font-size: 0.7rem; color: #666; margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+        .estado-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .dot-creada     { background: var(--creada); }
+        .dot-en-curso   { background: var(--en-curso); animation: pulse 1.5s infinite; }
+        .dot-finalizada { background: var(--finalizada); }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        .ruta-actions { padding: 6px 12px 8px; display: flex; gap: 5px; flex-wrap: wrap; border-top: 1px solid #f0f0f0; background: #fafafa; }
+        .btn-accion { font-size: 0.65rem; font-weight: 700; padding: 4px 9px; border-radius: 6px; border: none; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: 0.2s; display: flex; align-items: center; gap: 4px; }
+        .btn-iniciar   { background: var(--en-curso);  color: white; }
+        .btn-finalizar { background: var(--finalizada); color: white; }
+        .btn-ver       { background: var(--azul-oscuro); color: white; }
+        .btn-reabrir   { background: var(--creada); color: white; }
+        .btn-accion:hover { filter: brightness(1.1); transform: scale(1.03); }
+        .envios-count { font-size: 0.65rem; color: #999; margin-left: auto; background: #f0f0f0; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
+        .empty-sec { text-align: center; padding: 25px 10px; color: #bbb; }
+        .empty-sec i { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+        .empty-sec p { font-size: 0.75rem; margin: 0; }
+
+        #leyenda {
+            flex-shrink: 0; padding: 8px 12px;
+            background: #f8f9fa; border-top: 2px solid #e0e0e0;
+            font-size: 0.62rem; font-weight: 700;
         }
-        .panel-header h5 { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; font-size: 0.95rem; }
-        .panel-header small { opacity: 0.7; font-size: 0.75rem; }
+        #leyenda .ley-title { color: var(--azul-oscuro); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .ley-row { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; color: #555; }
+        .ley-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
-        #lista-rutas { flex: 1; overflow-y: auto; padding: 12px; background: #f4f7f6; }
-        #lista-rutas::-webkit-scrollbar { width: 5px; }
-        #lista-rutas::-webkit-scrollbar-track { background: #e8edf2; }
-        #lista-rutas::-webkit-scrollbar-thumb { background: var(--naranja); border-radius: 10px; }
-
-        .ruta-card {
-            background: var(--blanco);
-            border-left: 5px solid var(--naranja);
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.06);
-            cursor: pointer;
-            transition: 0.25s;
-            animation: slideIn 0.4s ease;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-        .ruta-card:hover { transform: translateX(5px); box-shadow: 0 6px 14px rgba(0,0,0,0.12); }
-        .ruta-card .mensajero-nombre { color: var(--azul-navy); font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
-        .ruta-card .ruta-meta { font-size: 0.78rem; color: #555; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .ruta-card .badge-envios { background: var(--naranja); color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; }
-        .ruta-card .badge-estado { background: #28a745; color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 600; }
-
-        .empty-state { text-align: center; padding: 40px 20px; }
-        .empty-state i { font-size: 2.5rem; color: #ccc; }
-        .empty-state p { color: #999; margin-top: 10px; font-size: 0.85rem; }
-
-        /* MAPA */
-        #map { flex: 1; height: 100%; position: relative; }
+        #map { flex: 1; height: 100%; position: relative; overflow: hidden; }
         #gmap { width: 100%; height: 100%; }
 
-        /* TOOLBAR */
         .header-tool {
-            position: absolute; top: 15px; left: 20px; z-index: 1000;
-            background: var(--blanco); padding: 10px 20px; border-radius: 50px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.25); display: flex; gap: 12px; align-items: center; border: 1px solid #eee;
+            position: absolute; top: 12px; left: 15px; z-index: 1000;
+            background: var(--blanco); padding: 8px 16px; border-radius: 50px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            display: flex; gap: 10px; align-items: center; border: 1px solid #eee;
         }
-        .filter-btn {
-            background: #f8f9fa; border: 2px solid; padding: 7px 14px;
-            border-radius: 20px; cursor: pointer; font-weight: 800; transition: 0.3s; font-size: 0.78rem;
-        }
-        .btn-c { border-color: #FFD700; color: #b8860b; }
-        .btn-d { border-color: #007bff; color: #0056b3; }
+        .filter-btn { background: #f8f9fa; border: 2px solid; padding: 5px 11px; border-radius: 20px; cursor: pointer; font-weight: 800; transition: 0.3s; font-size: 0.73rem; }
+        .btn-c { border-color: #BEBEBE; color: #666; }
+        .btn-d { border-color: #1a73e8; color: #0056b3; }
         .btn-off { opacity: 0.3; background: #ddd !important; border-color: #999 !important; color: #666 !important; }
+        .calendar-box { display: flex; align-items: center; gap: 6px; background: #f1f3f5; padding: 4px 12px; border-radius: 25px; }
+        .date-input { border: none; background: transparent; font-weight: 700; font-size: 0.76rem; color: var(--azul-oscuro); outline: none; }
 
-        .calendar-box {
-            display: flex; align-items: center; gap: 8px;
-            background: #f1f3f5; padding: 5px 14px; border-radius: 25px;
+        #toolbar-vertical {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            z-index: 1000; display: flex; flex-direction: column; gap: 4px;
+            background: white; border-radius: 16px; padding: 10px 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25); border: 1px solid rgba(0,0,0,0.08);
         }
-        .date-input { border: none; background: transparent; font-weight: 700; font-size: 0.82rem; color: var(--azul-navy); outline: none; }
+        .tool-btn { width: 44px; height: 44px; border-radius: 10px; border: 2px solid transparent; background: #f8f9fa; color: var(--azul-oscuro); font-size: 1.15rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; position: relative; font-family: 'Montserrat', sans-serif; }
+        .tool-btn:hover { background: #f0f0f0; border-color: var(--gris); transform: scale(1.05); }
+        .tool-btn.active { background: var(--azul-oscuro); color: white; border-color: var(--rojo); box-shadow: 0 0 0 3px rgba(178,12,6,0.2); }
+        .tool-btn.has-items { background: var(--rojo); color: white; border-color: var(--rojo-hover); }
+        .tool-divider { width: 28px; height: 1px; background: #e0e0e0; margin: 3px auto; }
+        .tool-btn::after { content: attr(data-tip); position: absolute; right: calc(100% + 10px); background: var(--azul-oscuro); color: white; padding: 5px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
+        .tool-btn:hover::after { opacity: 1; }
+        .tool-badge { position: absolute; top: -6px; right: -6px; background: var(--rojo); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.62rem; font-weight: 900; display: none; align-items: center; justify-content: center; border: 2px solid white; }
+        .tool-badge.show { display: flex; }
 
-        /* PANEL ASIGNACIÓN */
-        .assignment-panel {
-            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; background: rgba(0, 43, 91, 0.95); padding: 16px 28px;
-            border-radius: 20px; border: 2px solid var(--naranja); color: white;
-            display: flex; gap: 16px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-        .assignment-panel .contador-label { font-size: 0.85rem; opacity: 0.8; }
-        .assignment-panel .contador-num { color: var(--naranja); font-size: 1.6rem; font-weight: 900; line-height: 1; }
-        .assignment-panel select { padding: 10px 14px; border-radius: 8px; font-weight: 600; border: none; min-width: 190px; font-family: 'Montserrat', sans-serif; }
-        .btn-asignar { background: var(--naranja); color: white; border: none; padding: 12px 22px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.3s; font-family: 'Montserrat', sans-serif; white-space: nowrap; }
-        .btn-asignar:hover { background: #e67e00; transform: scale(1.05); }
-        .btn-asignar:disabled { background: #999; cursor: not-allowed; transform: none; }
+        #popup-lista { position: absolute; right: 72px; top: 50%; transform: translateY(-50%); z-index: 1001; width: 260px; background: rgba(11,1,46,0.97); border: 2px solid var(--rojo); border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); display: none; flex-direction: column; max-height: 420px; }
+        #popup-lista.open { display: flex; }
+        .pl-header { padding: 12px 14px; background: var(--rojo); border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .pl-header span { font-weight: 800; font-size: 0.82rem; color: white; text-transform: uppercase; }
+        .pl-close { background: none; border: none; color: white; font-size: 1rem; cursor: pointer; }
+        .pl-count { padding: 8px 14px; background: rgba(255,255,255,0.06); color: white; font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .pl-count b { color: #FFD700; font-size: 1.1rem; }
+        .btn-clear { background: none; border: 1px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.6); border-radius: 6px; padding: 3px 9px; font-size: 0.7rem; cursor: pointer; font-family: 'Montserrat', sans-serif; }
+        .btn-clear:hover { background: rgba(255,255,255,0.1); color: white; }
+        .pl-items { flex: 1; overflow-y: auto; padding: 8px; }
+        .pl-items::-webkit-scrollbar { width: 3px; }
+        .pl-items::-webkit-scrollbar-thumb { background: var(--rojo); border-radius: 10px; }
+        .pl-item { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 7px 9px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .pl-item .guia { color: #FFD700; font-weight: 800; font-size: 0.76rem; }
+        .pl-item .dir  { color: rgba(255,255,255,0.55); font-size: 0.68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .tipo-badge { font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 8px; }
+        .tipo-c { background: #BEBEBE; color: #333; }
+        .tipo-d { background: #1a73e8; color: white; }
+        .btn-rm { background: none; border: none; color: rgba(255,255,255,0.35); cursor: pointer; padding: 0 0 0 5px; font-size: 0.8rem; }
+        .btn-rm:hover { color: var(--rojo); }
+        .pl-empty { text-align: center; padding: 25px 10px; color: rgba(255,255,255,0.3); font-size: 0.78rem; }
+        .pl-empty i { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+        .pl-footer { padding: 10px 12px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .btn-asignar-float { width: 100%; padding: 10px; background: var(--rojo); color: white; border: none; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; justify-content: center; gap: 7px; transition: 0.2s; }
+        .btn-asignar-float:hover { background: var(--rojo-hover); }
+        .btn-asignar-float:disabled { background: var(--gris); cursor: not-allowed; }
 
-        /* PANEL SELECCIÓN con lasso */
-        #selectionInfo {
-            position: absolute; top: 80px; right: 15px; z-index: 1000;
-            background: rgba(0,43,91,0.9); color: white; padding: 10px 16px;
-            border-radius: 12px; font-size: 0.8rem; font-weight: 700;
-            border: 1px solid var(--naranja); display: none;
-        }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: var(--azul-oscuro); color: white; border: 2px solid var(--rojo); border-radius: 18px; width: 90%; max-width: 460px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); animation: modalIn 0.3s ease; }
+        @keyframes modalIn { from{opacity:0;transform:scale(0.9);} to{opacity:1;transform:scale(1);} }
+        .modal-head { background: var(--rojo); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-head h5 { margin: 0; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; }
+        .modal-close { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+        .modal-body { padding: 20px; }
+        .modal-body label { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; margin-top: 12px; }
+        .modal-body label:first-child { margin-top: 0; }
+        .modal-input { width: 100%; padding: 9px 13px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.07); color: white; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; outline: none; transition: 0.2s; }
+        .modal-input:focus { border-color: var(--rojo); background: rgba(255,255,255,0.12); }
+        .modal-input option { background: var(--azul-oscuro); }
+        .modal-resumen { background: rgba(255,255,255,0.05); border-radius: 9px; padding: 9px 13px; margin-top: 12px; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.08); }
+        .modal-footer { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; gap: 8px; }
+        .btn-cancel { flex:1; padding:10px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.18); color:white; border-radius:8px; cursor:pointer; font-family:'Montserrat',sans-serif; font-weight:700; }
+        .btn-cancel:hover { background:rgba(255,255,255,0.14); }
+        .btn-confirm { flex:2; padding:10px; background:var(--rojo); border:none; color:white; border-radius:8px; cursor:pointer; font-family:'Montserrat',sans-serif; font-weight:800; font-size:0.88rem; display:flex; align-items:center; justify-content:center; gap:7px; }
+        .btn-confirm:hover { background:var(--rojo-hover); }
+        .btn-confirm:disabled { background:var(--gris); cursor:not-allowed; }
 
-        /* TOAST */
-        #toast {
-            position: fixed; top: 20px; right: 20px; z-index: 9999;
-            background: #28a745; color: white; padding: 14px 22px;
-            border-radius: 12px; font-weight: 700; font-size: 0.9rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            opacity: 0; transition: opacity 0.4s;
-            display: flex; align-items: center; gap: 10px;
-        }
-        #toast.show { opacity: 1; }
-        #toast.error { background: #dc3545; }
-
-        /* Etiquetas de marcadores personalizados */
-        .marker-label-c {
-            background: #FFD700;
-            color: #1a1a00;
-            font-weight: 900;
-            font-size: 13px;
-            width: 30px; height: 30px;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            border: 2px solid white;
-            box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .marker-label-d {
-            background: #007bff;
-            color: white;
-            font-weight: 900;
-            font-size: 13px;
-            width: 30px; height: 30px;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            border: 2px solid white;
-            box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .marker-inner { transform: rotate(45deg); }
+        #toast { position:fixed; top:18px; right:18px; z-index:9999; background:#28a745; color:white; padding:11px 18px; border-radius:12px; font-weight:700; font-size:0.85rem; box-shadow:0 6px 20px rgba(0,0,0,0.3); opacity:0; transition:opacity 0.4s; display:flex; align-items:center; gap:9px; }
+        #toast.show { opacity:1; }
+        #toast.error { background:var(--rojo); }
+        #toast.info  { background:var(--azul-oscuro); border:1px solid var(--rojo); }
     </style>
 </head>
 <body>
 
-<div id="toast"><i class="bi bi-check-circle-fill"></i> <span id="toastMsg"></span></div>
+<div id="toast"><i class="bi bi-check-circle-fill"></i><span id="toastMsg"></span></div>
 
 <div class="main-wrapper">
 
-    <!-- ══════════════ PANEL IZQUIERDO ══════════════ -->
     <div id="side-panel">
         <div class="panel-header">
-            <h5><i class="bi bi-bicycle"></i> Rutas en Curso</h5>
-            <small id="contadorRutas">
-                {% if rutas_activas %}{{ rutas_activas|length }} mensajero(s) activo(s){% else %}Sin rutas activas{% endif %}
-            </small>
+            <h5><i class="bi bi-bicycle me-1"></i> Gestión de Rutas</h5>
         </div>
 
-        <div id="lista-rutas">
-            {% for m in rutas_activas %}
-            <div class="ruta-card" onclick="window.location.href='/envios/ver-ruta/{{ m.id_usuario }}'">
-                <div class="mensajero-nombre">
-                    <i class="bi bi-person-badge-fill" style="color:var(--naranja);"></i>
-                    {{ m.nombre }} {{ m.apellido }}
-                </div>
-                <div class="ruta-meta">
-                    <span class="badge-estado">Activo</span>
-                    <span style="font-size:0.72rem; color:#888;">Ver detalle →</span>
-                </div>
-            </div>
-            {% else %}
-            <div class="empty-state" id="emptyState">
-                <i class="bi bi-map-fill"></i>
-                <p>No hay rutas activas hoy.<br>Asigna envíos para comenzar.</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- ══════════════ MAPA ══════════════ -->
-    <div id="map">
-
-        <!-- Google Maps container -->
-        <div id="gmap"></div>
-
-        <!-- Toolbar filtros -->
-        <div class="header-tool">
-            <a href="/envios" style="text-decoration:none; color:var(--azul-navy); display:flex; align-items:center; gap:8px;">
-                <i class="bi bi-arrow-left-circle-fill" style="font-size: 1.8rem;"></i>
-                <b style="letter-spacing: 1px;">SALIR</b>
-            </a>
-            <div style="width: 1px; height: 30px; background: #ddd;"></div>
-            <button class="filter-btn btn-c" id="btnC" onclick="toggleLayer('c')">ORIGEN (C)</button>
-            <button class="filter-btn btn-d" id="btnD" onclick="toggleLayer('d')">DESTINO (D)</button>
-            <div class="calendar-box">
-                <i class="bi bi-calendar-check" style="color: var(--naranja);"></i>
-                <input type="date" id="dateStart" class="date-input" title="Fecha inicio">
-                <i class="bi bi-arrow-right-short"></i>
-                <input type="date" id="dateEnd" class="date-input" title="Fecha fin">
-                <button onclick="aplicarFiltros()" style="background:var(--azul-navy); color:white; border:none; padding:6px 15px; border-radius:15px; cursor:pointer; font-weight:bold; margin-left:8px;">FILTRAR</button>
-            </div>
-        </div>
-
-        <!-- Info selección -->
-        <div id="selectionInfo">
-            <i class="bi bi-bounding-box"></i> <span id="selCount">0</span> envíos en área
-        </div>
-
-        <!-- Panel asignación inferior -->
-        <div class="assignment-panel">
-            <div>
-                <div class="contador-label">Pedidos Seleccionados</div>
-                <div class="contador-num" id="totalPuntos">0</div>
-            </div>
-            <select id="mensajeroSelect">
-                <option value="">-- Seleccionar Mensajero --</option>
-                {% for m in mensajeros %}
-                    <option value="{{ m.id_usuario }}" data-nombre="{{ m.nombre }} {{ m.apellido }}">
-                        {{ m.nombre }} {{ m.apellido }}
-                    </option>
-                {% endfor %}
-            </select>
-            <button class="btn-asignar" id="btnAsignar" onclick="confirmarRuta()">
-                <i class="bi bi-lightning-fill"></i> ASIGNAR AHORA
+        <div class="section-tabs">
+            <button class="s-tab active-creada" id="tab-creada" onclick="setTab('creada')">
+                Creadas <span class="tab-badge" id="badge-creada">{{ rutas_creadas|length }}</span>
+            </button>
+            <button class="s-tab" id="tab-en-curso" onclick="setTab('en-curso')">
+                Tránsito <span class="tab-badge" id="badge-en-curso">{{ rutas_en_curso|length }}</span>
+            </button>
+            <button class="s-tab" id="tab-finalizada" onclick="setTab('finalizada')">
+                Finaliz. <span class="tab-badge" id="badge-finalizada">{{ rutas_finalizadas|length }}</span>
             </button>
         </div>
 
-    </div><!-- fin #map -->
+        <div id="panel-content">
 
-</div><!-- fin .main-wrapper -->
+            <div class="section-panel active" id="sec-creada">
+                {% if rutas_creadas %}
+                    {% for r in rutas_creadas %}
+                    <div class="ruta-card rc-creada">
+                        <div class="ruta-card-header" onclick="toggleAcciones('acc-{{ r.ruta_id }}')">
+                            <div style="flex:1;min-width:0;">
+                                <div class="ruta-nombre">{{ r.nombre_sector or 'Sin nombre' }}</div>
+                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{{ r.mensajero.nombre ~ ' ' ~ r.mensajero.apellido if r.mensajero else 'Sin mensajero' }}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span class="envios-count">{{ r.envios|length }} env.</span>
+                                <span class="estado-dot dot-creada"></span>
+                            </div>
+                        </div>
+                        <div class="ruta-actions" id="acc-{{ r.ruta_id }}" style="display:none;">
+                            <button class="btn-accion btn-iniciar" onclick="cambiarEstado({{ r.ruta_id }}, 'En curso')"><i class="bi bi-play-fill"></i> Iniciar</button>
+                            <button class="btn-accion btn-ver" onclick="window.location.href='/envios/ver-ruta/{{ r.mensajero_id }}'"><i class="bi bi-eye-fill"></i> Ver</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-sec"><i class="bi bi-clipboard-plus"></i><p>No hay rutas creadas.</p></div>
+                {% endif %}
+            </div>
+
+            <div class="section-panel" id="sec-en-curso">
+                {% if rutas_en_curso %}
+                    {% for r in rutas_en_curso %}
+                    <div class="ruta-card rc-en-curso">
+                        <div class="ruta-card-header" onclick="toggleAcciones('acc2-{{ r.ruta_id }}')">
+                            <div style="flex:1;min-width:0;">
+                                <div class="ruta-nombre">{{ r.nombre_sector or 'Sin nombre' }}</div>
+                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{{ r.mensajero.nombre ~ ' ' ~ r.mensajero.apellido if r.mensajero else 'Sin mensajero' }}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span class="envios-count">{{ r.envios|length }} env.</span>
+                                <span class="estado-dot dot-en-curso"></span>
+                            </div>
+                        </div>
+                        <div class="ruta-actions" id="acc2-{{ r.ruta_id }}" style="display:none;">
+                            <button class="btn-accion btn-finalizar" onclick="cambiarEstado({{ r.ruta_id }}, 'Finalizada')"><i class="bi bi-check-circle-fill"></i> Finalizar</button>
+                            <button class="btn-accion btn-ver" onclick="window.location.href='/envios/ver-ruta/{{ r.mensajero_id }}'"><i class="bi bi-eye-fill"></i> Ver</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-sec"><i class="bi bi-truck"></i><p>No hay rutas en tránsito.</p></div>
+                {% endif %}
+            </div>
+
+            <div class="section-panel" id="sec-finalizada">
+                {% if rutas_finalizadas %}
+                    {% for r in rutas_finalizadas %}
+                    <div class="ruta-card rc-finalizada">
+                        <div class="ruta-card-header" onclick="toggleAcciones('acc3-{{ r.ruta_id }}')">
+                            <div style="flex:1;min-width:0;">
+                                <div class="ruta-nombre">{{ r.nombre_sector or 'Sin nombre' }}</div>
+                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{{ r.mensajero.nombre ~ ' ' ~ r.mensajero.apellido if r.mensajero else 'Sin mensajero' }}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span class="envios-count">{{ r.envios|length }} env.</span>
+                                <span class="estado-dot dot-finalizada"></span>
+                            </div>
+                        </div>
+                        <div class="ruta-actions" id="acc3-{{ r.ruta_id }}" style="display:none;">
+                            <button class="btn-accion btn-reabrir" onclick="cambiarEstado({{ r.ruta_id }}, 'En curso')"><i class="bi bi-arrow-counterclockwise"></i> Reabrir</button>
+                            <button class="btn-accion btn-ver" onclick="window.location.href='/envios/ver-ruta/{{ r.mensajero_id }}'"><i class="bi bi-eye-fill"></i> Ver</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-sec"><i class="bi bi-check2-all"></i><p>No hay rutas finalizadas.</p></div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <div id="leyenda">
+            <div class="ley-title">Leyenda de colores</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;">
+                <div class="ley-row"><div class="ley-dot" style="background:#BEBEBE;"></div> C · Sin asignar</div>
+                <div class="ley-row"><div class="ley-dot" style="background:#003580;"></div> D · Sin asignar</div>
+                <div class="ley-row"><div class="ley-dot" style="background:#FF6B35;"></div> C · Pend. Recoger</div>
+                <div class="ley-row"><div class="ley-dot" style="background:#9B59B6;"></div> D · Pend. Verificar</div>
+                <div class="ley-row"><div class="ley-dot" style="background:#7B2FBE;"></div> C/D · En ruta</div>
+                <div class="ley-row"><div class="ley-dot" style="background:#00BFFF;"></div> C · Colectado</div>
+                <div class="ley-row"><div class="ley-dot" style="background:#28a745;"></div> D · Entregado</div>
+                <div class="ley-row"><div class="ley-dot" style="background:#B20C06;"></div> Cancelado</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="map">
+        <div id="gmap"></div>
+
+        <div class="header-tool">
+            <a href="/envios" style="text-decoration:none;color:var(--azul-oscuro);display:flex;align-items:center;gap:6px;">
+                <i class="bi bi-arrow-left-circle-fill" style="font-size:1.5rem;color:var(--rojo);"></i>
+                <b style="letter-spacing:1px;font-size:0.85rem;">SALIR</b>
+            </a>
+            <div style="width:1px;height:26px;background:#ddd;"></div>
+            <button class="filter-btn btn-c" id="btnC" onclick="toggleLayer('c')">ORIGEN (C)</button>
+            <button class="filter-btn btn-d" id="btnD" onclick="toggleLayer('d')">DESTINO (D)</button>
+            <div class="calendar-box">
+                <i class="bi bi-calendar-check" style="color:var(--rojo);font-size:0.85rem;"></i>
+                <input type="date" id="dateStart" class="date-input">
+                <i class="bi bi-arrow-right-short"></i>
+                <input type="date" id="dateEnd" class="date-input">
+                <button onclick="aplicarFiltros()" style="background:var(--azul-oscuro);color:white;border:none;padding:5px 12px;border-radius:14px;cursor:pointer;font-weight:bold;font-size:0.75rem;margin-left:5px;">FILTRAR</button>
+            </div>
+        </div>
+
+        <div id="toolbar-vertical">
+            <button class="tool-btn" id="toolLinea" data-tip="Dibujar línea" onclick="setModo('linea')">
+                <i class="bi bi-slash-lg" style="transform:rotate(-45deg);font-size:1.3rem;"></i>
+            </button>
+            <div class="tool-divider"></div>
+            <button class="tool-btn" id="toolPoligono" data-tip="Dibujar polígono" onclick="setModo('poligono')">
+                <i class="bi bi-hexagon"></i>
+            </button>
+            <div class="tool-divider"></div>
+            <button class="tool-btn" id="toolEliminar" data-tip="Eliminar dibujo" onclick="eliminarDibujo()" style="color:#dc3545;">
+                <i class="bi bi-trash3-fill"></i>
+            </button>
+            <div class="tool-divider"></div>
+            <button class="tool-btn" id="toolLista" data-tip="Pedidos seleccionados" onclick="togglePopupLista()">
+                <i class="bi bi-list-check"></i>
+                <span class="tool-badge" id="toolBadge">0</span>
+            </button>
+        </div>
+
+        <div id="popup-lista">
+            <div class="pl-header">
+                <span><i class="bi bi-list-check me-1"></i> Pedidos Seleccionados</span>
+                <button class="pl-close" onclick="togglePopupLista()">&#x2715;</button>
+            </div>
+            <div class="pl-count">
+                <span><b id="pl-num">0</b> pedidos</span>
+                <button class="btn-clear" onclick="limpiarSeleccion()">Limpiar</button>
+            </div>
+            <div class="pl-items" id="pl-items">
+                <div class="pl-empty"><i class="bi bi-pentagon"></i>Dibuja sobre los pedidos para seleccionarlos</div>
+            </div>
+            <div class="pl-footer">
+                <button class="btn-asignar-float" id="btnAsignarFloat" onclick="abrirModal()" disabled>
+                    <i class="bi bi-lightning-fill"></i> ASIGNAR AHORA
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal-overlay" id="modalAsignacion">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h5><i class="bi bi-bicycle me-2"></i>Asignar a Mensajero</h5>
+            <button class="modal-close" onclick="cerrarModal()">&#x2715;</button>
+        </div>
+        <div class="modal-body">
+            <label>Nombre de la Ruta</label>
+            <input type="text" id="modalNombreRuta" class="modal-input" placeholder="Ej: Ruta Norte Mañana...">
+            <label>Mensajero</label>
+            <select id="modalMensajero" class="modal-input">
+                <option value="">-- Seleccionar Mensajero --</option>
+                {% for m in mensajeros %}
+                <option value="{{ m.id_usuario }}" data-nombre="{{ m.nombre }} {{ m.apellido }}">{{ m.nombre }} {{ m.apellido }}</option>
+                {% endfor %}
+            </select>
+            <label>Tipo de Puntos a Asignar</label>
+            <select id="modalTipo" class="modal-input">
+                <option value="c">Solo Origen — Recolector (C)</option>
+                <option value="d">Solo Destino — Entregador (D)</option>
+                <option value="all">Ambos (C y D al mismo mensajero)</option>
+            </select>
+            <div class="modal-resumen">
+                <i class="bi bi-info-circle me-1"></i>
+                <span id="resumenTexto">0 pedidos listos para asignar.</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn-confirm" id="btnConfirmar" onclick="confirmarAsignacion()">
+                <i class="bi bi-check-circle-fill"></i> Confirmar
+            </button>
+        </div>
+    </div>
+</div>
 
 <script>
-    // ════════════════════════════════════════════════════════════════════════
-    //  DATOS DE ENVÍOS inyectados desde Jinja2
-    // ════════════════════════════════════════════════════════════════════════
-    const enviosData = [
-        {% for e in envios %}
-        {% set f_iso = e.fecha_creacion.date().isoformat() if e.fecha_creacion else '' %}
-        {% if e.lugar_recogida and e.lugar_recogida.latitud %}
-        {
-            tipo: 'c',
-            lat: {{ e.lugar_recogida.latitud }},
-            lng: {{ e.lugar_recogida.longitud }},
-            envioId: {{ e.envio_id }},
-            fecha: "{{ f_iso }}",
-            guia: "{{ e.numero_guia }}",
-            direccion: "{{ e.lugar_recogida.direccion | replace('"', '\\"') }}"
-        },
+// ─────────────────────────────────────────────────────────────
+// ESTADO DE SELECCIÓN INDIVIDUAL POR URL — del archivo corregido
+// ─────────────────────────────────────────────────────────────
+let origenSeleccionadoId = new URLSearchParams(window.location.search).get('origen_id') || null;
+let destinoSeleccionadoId = new URLSearchParams(window.location.search).get('destino_id') || null;
+
+// ─────────────────────────────────────────────────────────────
+// COLORES POR ESTADO — alineado con el nuevo flujo de 6 estados
+// ─────────────────────────────────────────────────────────────
+function getColor(tipo, estado) {
+    if (['Cancelado', 'Rechazado', 'Devolucion', 'Retorno'].includes(estado)) return '#B20C06';
+
+    if (tipo === 'c') {
+        if (estado === 'Colectado' || estado === 'En_Bodega') return '#00BFFF';
+        if (estado === 'En_Ruta')                               return '#7B2FBE';
+        if (estado === 'Pendiente_Recoger')                  return '#FF6B35'; // Naranja asignado
+        return '#BEBEBE'; 
+    }
+
+    if (tipo === 'd') {
+        if (estado === 'Entregado')                           return '#28a745';
+        if (estado === 'En_Ruta')                               return '#7B2FBE'; // Se pinta morado si ya va en camino al destino
+        if (estado === 'Pendiente_Verificar')                 return '#9B59B6';
+        
+        // ¡ESTA LÍNEA DE ALIVIO!: Si el estado general es Pendiente_Recoger (porque se asignó la C)
+        // o sigue en Registrado, la D se sigue pintando en el mapa principal con el azul oscuro de entrega.
+        if (estado === 'Pendiente_Recoger' || estado === 'Registrado') return '#003580'; 
+    }
+    return '#003580';
+}
+
+function getTextColor(tipo, estado) {
+    if (tipo === 'c' && estado === 'Registrado') return '#333';
+    return '#ffffff';
+}
+
+// ─────────────────────────────────────────────────────────────
+// DATOS DEL MAPA DE OPERACIONES (GESTIÓN DE ENVÍOS)
+// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// ENVIOS DATA CORREGIDO — FUERZA A QUE LA D APAREZCA SI LA C ESTÁ EN RUTA
+// ─────────────────────────────────────────────────────────────
+const enviosData = [
+    {% for e in envios %}
+        
+        {# 🟢 MARCADOR C (ORIGEN / RECOGIDA) #}
+        {# Condición: Solo se muestra si el estado es exactamente 'Registrado' #}
+        {# Si ya pasó a 'Pendiente_Recoger', 'Colectado' o cualquier otro, se QUITA del mapa #}
+        {% if e.estado == 'Registrado' %}
+            {% if e.lugar_recogida and e.lugar_recogida.latitud %}
+            {
+                tipo: 'c', // Captura / Recogida
+                lat: {{ e.lugar_recogida.latitud }},
+                lng: {{ e.lugar_recogida.longitud }},
+                envioId: {{ e.envio_id }},
+                guia: "{{ e.numero_guia }}",
+                estado: "{{ e.estado }}",
+                direccion: "{{ e.lugar_recogida.direccion | replace('"', '\\"') }}"
+            },
+            {% endif %}
         {% endif %}
-        {% if e.lugar_entrega and e.lugar_entrega.latitud %}
+
+        {# 🔴 MARCADOR D (DESTINO / ENTREGA) #}
+        {# Condición: Se muestra SIEMPRE desde que se registra hasta antes de ser entregado/cancelado #}
+        {# No importa si la C ya se quitó, la D permanecerá sola en el mapa #}
+        {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado'] %}
         {
-            tipo: 'd',
+            tipo: 'd', // Destino / Entrega
             lat: {{ e.lugar_entrega.latitud }},
             lng: {{ e.lugar_entrega.longitud }},
             envioId: {{ e.envio_id }},
-            fecha: "{{ f_iso }}",
             guia: "{{ e.numero_guia }}",
+            estado: "{{ e.estado }}",
             direccion: "{{ e.lugar_entrega.direccion | replace('"', '\\"') }}"
         },
         {% endif %}
-        {% endfor %}
-    ];
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  VARIABLES GLOBALES
-    // ════════════════════════════════════════════════════════════════════════
-    let gmap = null;
-    let todosLosMarcadores = [];   // { marker, envioId, fecha, tipo }
-    let idsSeleccionados = new Set();
-    let showC = true, showD = true;
+    {% endfor %}
+];
 
-    // Para selección por rectángulo (drawing)
-    let drawingRect = false;
-    let rectStart = null;
-    let rectOverlay = null;
-    let selectionRect = null;  // google.maps.Rectangle
+let gmap = null, drawingManager = null;
+let todosLosMarcadores = [];
+let showC = true, showD = true;
+let modoActivo = null, popupAbierto = false;
+let formasActivas = [];
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  INICIALIZAR GOOGLE MAPS
-    // ════════════════════════════════════════════════════════════════════════
-    function onGoogleMapsReady() {
-        gmap = new google.maps.Map(document.getElementById('gmap'), {
-            center: { lat: 4.65, lng: -74.10 },
-            zoom: 12,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-            zoomControl: true,
-            zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM }
+function setTab(tab) {
+    ['creada','en-curso','finalizada'].forEach(t => {
+        document.getElementById(`tab-${t}`).className = 's-tab';
+        document.getElementById(`sec-${t}`).classList.remove('active');
+    });
+    document.getElementById(`tab-${tab}`).className = `s-tab active-${tab}`;
+    document.getElementById(`sec-${tab}`).classList.add('active');
+}
+
+function toggleAcciones(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+
+function cambiarEstado(rutaId, nuevoEstado) {
+    fetch('/rutas/cambiar-estado', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ruta_id: rutaId, estado: nuevoEstado })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') { mostrarToast(`✓ Ruta → ${nuevoEstado}`); setTimeout(() => location.reload(), 1200); }
+        else mostrarToast('Error al cambiar estado.', true);
+    })
+    .catch(() => mostrarToast('Error de conexión.', true));
+}
+
+function onGoogleMapsReady() {
+    gmap = new google.maps.Map(document.getElementById('gmap'), {
+        center: { lat: 4.65, lng: -74.10 }, zoom: 12,
+        mapTypeControl: false, streetViewControl: false,
+        fullscreenControl: false, zoomControl: true,
+        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM }
+    });
+
+    drawingManager = new google.maps.drawing.DrawingManager({
+        drawingMode: null, drawingControl: false,
+        polylineOptions: { strokeColor: '#B20C06', strokeWeight: 3, strokeOpacity: 0.9, editable: false },
+        polygonOptions: { fillColor: '#B20C06', fillOpacity: 0.15, strokeColor: '#B20C06', strokeWeight: 2, editable: false, clickable: false }
+    });
+    drawingManager.setMap(gmap);
+
+    google.maps.event.addListener(drawingManager, 'polylinecomplete', (pl) => {
+        formasActivas.push(pl); drawingManager.setDrawingMode(null); setModo(null);
+        seleccionarCercanosALinea(pl);
+    });
+    google.maps.event.addListener(drawingManager, 'polygoncomplete', (pg) => {
+        formasActivas.push(pg); drawingManager.setDrawingMode(null); setModo(null);
+        seleccionarDentroDePoligono(pg);
+    });
+
+    crearMarcadores();
+    aplicarFiltros();
+}
+
+function crearIconoSVG(letra, color, textColor, sel) {
+    const sw = sel ? 3 : 2;
+    const glow = sel ? `<circle cx="20" cy="20" r="17" fill="none" stroke="${color}" stroke-width="6" opacity="0.4"/>` : '';
+    const over = sel ? `<path d="M20 0 C8.95 0 0 8.95 0 20 C0 35 20 50 20 50 C20 50 40 35 40 20 C40 8.95 31.05 0 20 0Z" fill="rgba(255,255,255,0.2)"/>` : '';
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
+            ${glow}
+            <path d="M20 0 C8.95 0 0 8.95 0 20 C0 35 20 50 20 50 C20 50 40 35 40 20 C40 8.95 31.05 0 20 0Z"
+                  fill="${color}" stroke="white" stroke-width="${sw}"/>
+            ${over}
+            <text x="20" y="24" text-anchor="middle" dominant-baseline="middle"
+                  font-family="Montserrat,sans-serif" font-size="16" font-weight="900"
+                  fill="${textColor}">${letra}</text>
+        </svg>`);
+}
+
+function setIconMarcador(item) {
+    const color     = getColor(item.tipo, item.estado);
+    const textColor = getTextColor(item.tipo, item.estado);
+    const letra     = item.tipo === 'c' ? 'C' : 'D';
+    const sz = item.seleccionado ? 48 : 40;
+    item.marker.setIcon({
+        url: crearIconoSVG(letra, color, textColor, item.seleccionado),
+        scaledSize: new google.maps.Size(sz, sz * 1.25),
+        anchor: new google.maps.Point(sz / 2, sz * 1.25)
+    });
+    item.marker.setZIndex(item.seleccionado ? 999 : 1);
+}
+
+function crearMarcadores() {
+    enviosData.forEach(data => {
+        const color     = getColor(data.tipo, data.estado);
+        const textColor = getTextColor(data.tipo, data.estado);
+        const letra     = data.tipo === 'c' ? 'C' : 'D';
+        const label     = data.tipo === 'c' ? 'Origen' : 'Destino';
+
+        const marker = new google.maps.Marker({
+            position: { lat: data.lat, lng: data.lng }, map: null,
+            icon: { url: crearIconoSVG(letra, color, textColor, false), scaledSize: new google.maps.Size(40, 50), anchor: new google.maps.Point(20, 50) },
+            title: `${data.guia} | ${label} | ${data.estado}`
         });
 
-        // Cargar marcadores
-        crearMarcadores();
+        marker.addListener('click', () => { toggleItem(data.envioId, data.tipo); });
+        marker.addListener('dblclick', () => { if (contarSel() > 0) abrirModal(); });
 
-        // Habilitar selección con rectángulo al hacer Shift+Click+Drag
-        habilitarSeleccionRectangular();
-
-        aplicarFiltros();
-    }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  CREAR MARCADORES PERSONALIZADOS
-    // ════════════════════════════════════════════════════════════════════════
-    function crearIconoSVG(letra, color, textColor) {
-        // Pin SVG estilo gota
-        const svg = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="44" viewBox="0 0 36 44">
-                <path d="M18 0 C8.06 0 0 8.06 0 18 C0 31.5 18 44 18 44 C18 44 36 31.5 36 18 C36 8.06 27.94 0 18 0Z"
-                      fill="${color}" stroke="white" stroke-width="2"/>
-                <text x="18" y="22" text-anchor="middle" dominant-baseline="middle"
-                      font-family="Montserrat,sans-serif" font-size="15" font-weight="900"
-                      fill="${textColor}">${letra}</text>
-            </svg>`;
-        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
-    }
-
-    function crearMarcadores() {
-        enviosData.forEach(data => {
-            const esC = data.tipo === 'c';
-            const color     = esC ? '#FFD700' : '#1a73e8';
-            const textColor = esC ? '#1a1a00' : '#ffffff';
-            const letra     = esC ? 'C' : 'D';
-            const label     = esC ? 'Origen' : 'Destino';
-
-            const marker = new google.maps.Marker({
-                position: { lat: data.lat, lng: data.lng },
-                map: null,   // se asigna al mapa en aplicarFiltros()
-                icon: {
-                    url: crearIconoSVG(letra, color, textColor),
-                    scaledSize: new google.maps.Size(36, 44),
-                    anchor: new google.maps.Point(18, 44)
-                },
-                title: `Guía: ${data.guia} | ${label}: ${data.direccion}`
-            });
-
-            // InfoWindow al hacer clic
-            const infoWindow = new google.maps.InfoWindow({
-                content: `
-                    <div style="font-family:Montserrat,sans-serif; min-width:200px;">
-                        <b style="color:#002b5b;">Guía: ${data.guia}</b><br>
-                        <span style="color:${color === '#FFD700' ? '#b8860b' : '#1a73e8'}; font-weight:700;">
-                            ${label}
-                        </span><br>
-                        <small>${data.direccion}</small>
-                    </div>`
-            });
-
-            marker.addListener('click', () => {
-                infoWindow.open(gmap, marker);
-            });
-
-            todosLosMarcadores.push({
-                marker,
-                envioId: data.envioId,
-                fecha: data.fecha,
-                tipo: data.tipo
-            });
+        todosLosMarcadores.push({
+            marker, envioId: data.envioId, fecha: data.fecha,
+            tipo: data.tipo, guia: data.guia, direccion: data.direccion,
+            estado: data.estado, seleccionado: false
         });
+    });
+}
+
+function setModo(modo) {
+    modoActivo = modo;
+    ['toolLinea','toolPoligono'].forEach(id => document.getElementById(id).classList.remove('active'));
+    if (modo === 'linea') {
+        document.getElementById('toolLinea').classList.add('active');
+        drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+        mostrarToast('Click para dibujar línea. Doble click para terminar.', false, 'info');
+    } else if (modo === 'poligono') {
+        document.getElementById('toolPoligono').classList.add('active');
+        drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+        mostrarToast('Click para dibujar polígono. Cierra la figura.', false, 'info');
+    } else {
+        drawingManager.setDrawingMode(null);
     }
+}
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  FILTROS
-    // ════════════════════════════════════════════════════════════════════════
-    function aplicarFiltros() {
-        const start = document.getElementById('dateStart').value;
-        const end   = document.getElementById('dateEnd').value;
+function eliminarDibujo() { formasActivas.forEach(f => f.setMap(null)); formasActivas = []; mostrarToast('Dibujos eliminados.'); }
 
-        idsSeleccionados.clear();
-
-        todosLosMarcadores.forEach(item => {
-            const cumpleTipo  = (item.tipo === 'c' && showC) || (item.tipo === 'd' && showD);
-            let   cumpleFecha = true;
-            if (start && item.fecha < start) cumpleFecha = false;
-            if (end   && item.fecha > end)   cumpleFecha = false;
-
-            if (cumpleTipo && cumpleFecha) {
-                item.marker.setMap(gmap);
-                idsSeleccionados.add(item.envioId);
-            } else {
-                item.marker.setMap(null);
-            }
-        });
-
-        actualizarContador();
-    }
-
-    function toggleLayer(tipo) {
-        if (tipo === 'c') {
-            showC = !showC;
-            document.getElementById('btnC').classList.toggle('btn-off', !showC);
-        } else {
-            showD = !showD;
-            document.getElementById('btnD').classList.toggle('btn-off', !showD);
+function seleccionarCercanosALinea(polyline) {
+    const path = polyline.getPath().getArray(), umbral = 0.003;
+    let nuevos = 0;
+    todosLosMarcadores.forEach(item => {
+        if (!item.marker.getMap()) return;
+        const cumpleTipo = (item.tipo === 'c' && showC) || (item.tipo === 'd' && showD);
+        if (!cumpleTipo) return;
+        const pos = item.marker.getPosition();
+        let cerca = false;
+        for (let i = 0; i < path.length - 1; i++) {
+            if (distPuntoSegmento(pos, path[i], path[i+1]) < umbral) { cerca = true; break; }
         }
-        aplicarFiltros();
-    }
+        if (cerca && !item.seleccionado) { item.seleccionado = true; setIconMarcador(item); nuevos++; }
+    });
+    finalizarSeleccion(nuevos, 'línea');
+}
 
-    function actualizarContador() {
-        document.getElementById('totalPuntos').innerText = idsSeleccionados.size;
-    }
+function distPuntoSegmento(p, a, b) {
+    const dx = b.lng()-a.lng(), dy = b.lat()-a.lat(), len2 = dx*dx+dy*dy;
+    if (len2 === 0) return Math.hypot(p.lng()-a.lng(), p.lat()-a.lat());
+    let t = ((p.lng()-a.lng())*dx+(p.lat()-a.lat())*dy)/len2;
+    t = Math.max(0, Math.min(1, t));
+    return Math.hypot(p.lng()-(a.lng()+t*dx), p.lat()-(a.lat()+t*dy));
+}
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  SELECCIÓN POR RECTÁNGULO (reemplaza Leaflet.Draw)
-    //  Ctrl + arrastrar para seleccionar área
-    // ════════════════════════════════════════════════════════════════════════
-    function habilitarSeleccionRectangular() {
-        let isDrawing = false;
-        let startLatLng = null;
-
-        gmap.addListener('mousedown', (e) => {
-            if (!e.domEvent.ctrlKey && !e.domEvent.metaKey) return;
-            e.domEvent.preventDefault();
-            isDrawing = true;
-            startLatLng = e.latLng;
-
-            if (selectionRect) {
-                selectionRect.setMap(null);
-                selectionRect = null;
-            }
-
-            selectionRect = new google.maps.Rectangle({
-                map: gmap,
-                bounds: new google.maps.LatLngBounds(startLatLng, startLatLng),
-                fillColor: '#ff8c00',
-                fillOpacity: 0.15,
-                strokeColor: '#ff8c00',
-                strokeWeight: 2,
-                clickable: false
-            });
-
-            gmap.setOptions({ draggable: false });
-        });
-
-        gmap.addListener('mousemove', (e) => {
-            if (!isDrawing || !selectionRect) return;
-            const bounds = new google.maps.LatLngBounds(startLatLng, e.latLng);
-            selectionRect.setBounds(bounds);
-        });
-
-        gmap.addListener('mouseup', (e) => {
-            if (!isDrawing) return;
-            isDrawing = false;
-            gmap.setOptions({ draggable: true });
-
-            if (selectionRect) {
-                calcularSeleccionRectangulo(selectionRect.getBounds());
-            }
-        });
-    }
-
-    function calcularSeleccionRectangulo(bounds) {
-        idsSeleccionados.clear();
-
-        todosLosMarcadores.forEach(item => {
-            if (item.marker.getMap() && bounds.contains(item.marker.getPosition())) {
-                idsSeleccionados.add(item.envioId);
-            }
-        });
-
-        const count = idsSeleccionados.size;
-        const info = document.getElementById('selectionInfo');
-        document.getElementById('selCount').innerText = count;
-        info.style.display = count > 0 ? 'block' : 'none';
-
-        actualizarContador();
-    }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  TOAST
-    // ════════════════════════════════════════════════════════════════════════
-    function mostrarToast(msg, esError = false) {
-        const toast = document.getElementById('toast');
-        document.getElementById('toastMsg').innerText = msg;
-        toast.className = 'show' + (esError ? ' error' : '');
-        setTimeout(() => { toast.className = ''; }, 4000);
-    }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  AGREGAR RUTA AL PANEL DINÁMICAMENTE
-    // ════════════════════════════════════════════════════════════════════════
-    function agregarRutaAlPanel(nombreMensajero, cantidadEnvios, idMensajero) {
-        const empty = document.getElementById('emptyState');
-        if (empty) empty.style.display = 'none';
-
-        const existente = document.getElementById(`ruta-card-${idMensajero}`);
-        if (existente) {
-            const badge = existente.querySelector('.badge-envios');
-            if (badge) {
-                const actual = parseInt(badge.innerText) || 0;
-                badge.innerText = (actual + cantidadEnvios) + ' envíos';
-            }
-            existente.style.animation = 'none';
-            setTimeout(() => existente.style.animation = 'slideIn 0.4s ease', 10);
-            return;
+function seleccionarDentroDePoligono(polygon) {
+    let nuevos = 0;
+    todosLosMarcadores.forEach(item => {
+        if (!item.marker.getMap()) return;
+        const cumpleTipo = (item.tipo === 'c' && showC) || (item.tipo === 'd' && showD);
+        if (!cumpleTipo) return;
+        if (google.maps.geometry.poly.containsLocation(item.marker.getPosition(), polygon) && !item.seleccionado) {
+            item.seleccionado = true; setIconMarcador(item); nuevos++;
         }
+    });
+    finalizarSeleccion(nuevos, 'polígono');
+}
 
-        const card = document.createElement('div');
-        card.className = 'ruta-card';
-        card.id = `ruta-card-${idMensajero}`;
-        card.onclick = () => window.location.href = `/envios/ver-ruta/${idMensajero}`;
-        card.innerHTML = `
-            <div class="mensajero-nombre">
-                <i class="bi bi-person-badge-fill" style="color:var(--naranja);"></i>
-                ${nombreMensajero}
-            </div>
-            <div class="ruta-meta">
-                <span class="badge-estado">Activo</span>
-                <span class="badge-envios">${cantidadEnvios} envíos</span>
-            </div>
-            <div style="text-align:right; margin-top:6px;">
-                <small style="color:#007bff; font-size:0.72rem;">Ver detalle →</small>
-            </div>
-        `;
-        document.getElementById('lista-rutas').prepend(card);
+function finalizarSeleccion(nuevos, origen) {
+    actualizarUI();
+    if (nuevos > 0) { if (!popupAbierto) togglePopupLista(); mostrarToast(`✓ ${nuevos} pedido(s) seleccionado(s) desde ${origen}`); }
+    else mostrarToast(`No se encontraron pedidos en el ${origen}.`, true);
+}
 
-        const cards = document.querySelectorAll('#lista-rutas .ruta-card').length;
-        document.getElementById('contadorRutas').innerText = `${cards} mensajero(s) activo(s)`;
+function toggleItem(envioId, tipo) {
+    const item = todosLosMarcadores.find(i => i.envioId === envioId && i.tipo === tipo);
+    if (!item || !item.marker.getMap()) return;
+    item.seleccionado = !item.seleccionado;
+    setIconMarcador(item); actualizarUI();
+    if (item.seleccionado && !popupAbierto) togglePopupLista();
+}
+
+function contarSel() { return todosLosMarcadores.filter(i => i.seleccionado).length; }
+
+function limpiarSeleccion() {
+    todosLosMarcadores.forEach(i => { if (i.seleccionado) { i.seleccionado = false; setIconMarcador(i); } });
+    actualizarUI();
+}
+
+function togglePopupLista() {
+    popupAbierto = !popupAbierto;
+    document.getElementById('popup-lista').classList.toggle('open', popupAbierto);
+    document.getElementById('toolLista').classList.toggle('active', popupAbierto);
+}
+
+function actualizarUI() {
+    const sels = todosLosMarcadores.filter(i => i.seleccionado), count = sels.length;
+    const badge = document.getElementById('toolBadge');
+    badge.textContent = count; badge.classList.toggle('show', count > 0);
+    document.getElementById('toolLista').classList.toggle('has-items', count > 0);
+    document.getElementById('pl-num').textContent = count;
+    document.getElementById('btnAsignarFloat').disabled = count === 0;
+    const lista = document.getElementById('pl-items');
+    lista.innerHTML = '';
+    if (count === 0) {
+        lista.innerHTML = '<div class="pl-empty"><i class="bi bi-pentagon"></i>Dibuja sobre los pedidos para seleccionarlos</div>';
+        return;
+    }
+    sels.forEach(item => {
+        const div = document.createElement('div'); div.className = 'pl-item';
+        div.innerHTML = `
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
+                    <span class="guia">${item.guia}</span>
+                    <span class="tipo-badge ${item.tipo==='c'?'tipo-c':'tipo-d'}">${item.tipo.toUpperCase()}</span>
+                </div>
+                <div class="dir">${item.direccion}</div>
+            </div>
+            <button class="btn-rm" onclick="quitarItem(${item.envioId},'${item.tipo}')"><i class="bi bi-x-circle"></i></button>`;
+        lista.appendChild(div);
+    });
+}
+
+function quitarItem(envioId, tipo) {
+    const i = todosLosMarcadores.find(x => x.envioId === envioId && x.tipo === tipo);
+    if (i) { i.seleccionado = false; setIconMarcador(i); } actualizarUI();
+}
+
+function aplicarFiltros() {
+    const s = document.getElementById('dateStart').value;
+    const e = document.getElementById('dateEnd').value;
+    todosLosMarcadores.forEach(i => {
+        const ok = ((i.tipo==='c'&&showC)||(i.tipo==='d'&&showD)) && (!s||i.fecha>=s) && (!e||i.fecha<=e);
+        i.marker.setMap(ok ? gmap : null);
+        if (!ok && i.seleccionado) { i.seleccionado = false; setIconMarcador(i); }
+    });
+    actualizarUI();
+}
+
+function toggleLayer(tipo) {
+    if (tipo==='c') { showC=!showC; document.getElementById('btnC').classList.toggle('btn-off',!showC); }
+    else            { showD=!showD; document.getElementById('btnD').classList.toggle('btn-off',!showD); }
+    aplicarFiltros();
+}
+
+// ─────────────────────────────────────────────────────────────
+// MODAL DE ASIGNACIÓN — versión mejorada con detección de tipo
+// ─────────────────────────────────────────────────────────────
+function abrirModal() {
+    const count = contarSel();
+    if (count === 0) {
+        mostrarToast('No hay pedidos seleccionados.', true);
+        return;
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  CONFIRMAR Y ASIGNAR RUTA
-    // ════════════════════════════════════════════════════════════════════════
-    function confirmarRuta() {
-        const selectEl = document.getElementById('mensajeroSelect');
-        const mId     = selectEl.value;
-        const mNombre = selectEl.options[selectEl.selectedIndex]?.dataset?.nombre || 'Mensajero';
+    const itemsSel = todosLosMarcadores.filter(i => i.seleccionado);
+    const hayOrigenes = itemsSel.some(i => i.tipo === 'c');
+    const hayDestinos = itemsSel.some(i => i.tipo === 'd');
 
-        if (!mId) { mostrarToast('Por favor, selecciona un mensajero.', true); return; }
-        if (idsSeleccionados.size === 0) { mostrarToast('No hay pedidos seleccionados para asignar.', true); return; }
+    let tipoRecomendado = 'all';
+    if (hayOrigenes && !hayDestinos) tipoRecomendado = 'c';
+    if (!hayOrigenes && hayDestinos) tipoRecomendado = 'd';
 
-        const arrayIds = Array.from(idsSeleccionados);
-        if (!confirm(`¿Asignar ${arrayIds.length} envíos a ${mNombre}?`)) return;
+    document.getElementById('modalTipo').value = tipoRecomendado;
+    document.getElementById('resumenTexto').innerHTML = `<b style="color:#FFD700;">${count}</b> pedidos listos para asignar.`;
+    document.getElementById('modalAsignacion').classList.add('open');
+}
 
-        const btnAsignar = document.getElementById('btnAsignar');
-        btnAsignar.disabled = true;
-        btnAsignar.innerHTML = '<i class="bi bi-hourglass-split"></i> Asignando...';
+function cerrarModal() {
+    document.getElementById('modalAsignacion').classList.remove('open');
+    document.getElementById('modalNombreRuta').value = '';
+    document.getElementById('modalMensajero').value  = '';
+    document.getElementById('modalTipo').value       = 'c';
+}
 
-        fetch("/envios/asignar-mensajero-masivo", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ envio_ids: arrayIds, id_mensajero: mId })
+function confirmarAsignacion() {
+    const nombre   = document.getElementById('modalNombreRuta').value.trim();
+    const sel      = document.getElementById('modalMensajero');
+    const mId      = sel.value;
+    const mNombre  = sel.options[sel.selectedIndex]?.dataset?.nombre || '';
+    const tipoAsig = document.getElementById('modalTipo').value;
+
+    if (!nombre) { mostrarToast('Escribe el nombre de la ruta.', true); return; }
+    if (!mId)    { mostrarToast('Selecciona un mensajero.', true); return; }
+
+    let itemsSeleccionados = todosLosMarcadores.filter(i => i.seleccionado);
+
+    let itemsAAsignar = itemsSeleccionados;
+    if (tipoAsig !== 'all') {
+        itemsAAsignar = itemsSeleccionados.filter(i => i.tipo === tipoAsig);
+    }
+
+    if (itemsAAsignar.length === 0) {
+        mostrarToast(`No hay puntos tipo "${tipoAsig.toUpperCase()}" seleccionados.`, true);
+        return;
+    }
+
+    const idsAEnviar = [...new Set(itemsAAsignar.map(i => i.envioId))];
+
+    const btn = document.getElementById('btnConfirmar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Asignando...';
+
+    fetch('/envios/asignar-mensajero-masivo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            envio_ids:    idsAEnviar,
+            id_mensajero: mId,
+            nombre_ruta:  nombre,
+            tipo:         tipoAsig
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                agregarRutaAlPanel(mNombre, arrayIds.length, mId);
-
-                // Quitar marcadores asignados del mapa
-                todosLosMarcadores.forEach(item => {
-                    if (idsSeleccionados.has(item.envioId)) {
-                        item.marker.setMap(null);
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            
+            todosLosMarcadores.forEach(item => {
+                if (idsAEnviar.includes(item.envioId)) {
+                    
+                    if (tipoAsig === 'c') {
+                        if (item.tipo === 'c') {
+                            item.seleccionado = false;
+                            item.estado = 'Pendiente_Recoger';
+                        }
+                    } 
+                    else if (tipoAsig === 'd') {
+                        if (item.tipo === 'd') {
+                            item.seleccionado = false;
+                            item.estado = 'Pendiente_Verificar';
+                        }
+                    } 
+                    else if (tipoAsig === 'all') {
+                        item.seleccionado = false;
+                        if (item.tipo === 'c') item.estado = 'Pendiente_Recoger';
+                        if (item.tipo === 'd') item.estado = 'Pendiente_Verificar';
                     }
-                });
-                todosLosMarcadores = todosLosMarcadores.filter(
-                    item => !idsSeleccionados.has(item.envioId)
-                );
+                    
+                    if (typeof setIconMarcador === 'function') {
+                        setIconMarcador(item);
+                    }
+                }
+            });
 
-                // Limpiar rectángulo de selección
-                if (selectionRect) { selectionRect.setMap(null); selectionRect = null; }
-                document.getElementById('selectionInfo').style.display = 'none';
-                idsSeleccionados.clear();
-                actualizarContador();
+            let nuevosOrigenes = [];
+            let nuevosDestinos = [];
 
-                mostrarToast(`✓ ${arrayIds.length} envíos asignados a ${mNombre}`);
-                selectEl.value = '';
-            } else {
-                mostrarToast('Error al asignar la ruta. Intente nuevamente.', true);
+            if (tipoAsig === 'c' || tipoAsig === 'all') {
+                nuevosOrigenes = itemsAAsignar.filter(i => i.tipo === 'c').map(i => i.envioId);
             }
-        })
-        .catch(() => mostrarToast('Error de conexión con el servidor.', true))
-        .finally(() => {
-            btnAsignar.disabled = false;
-            btnAsignar.innerHTML = '<i class="bi bi-lightning-fill"></i> ASIGNAR AHORA';
-        });
-    }
-</script>
+            if (tipoAsig === 'd' || tipoAsig === 'all') {
+                nuevosDestinos = itemsAAsignar.filter(i => i.tipo === 'd').map(i => i.envioId);
+            }
 
-<!--
-    Google Maps API con callback onGoogleMapsReady
-    Reemplaza completamente Leaflet + Leaflet.Draw
--->
-<script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7jZIsSRbPml8l1CAypHNuTNDaQS8MyT0&language=es&callback=onGoogleMapsReady"
-    async defer>
-</script>
+            const params = new URLSearchParams();
+            if (origenSeleccionadoId && !nuevosOrigenes.includes(parseInt(origenSeleccionadoId))) {
+                params.set('origen_id', origenSeleccionadoId);
+            }
+            if (destinoSeleccionadoId && !nuevosDestinos.includes(parseInt(destinoSeleccionadoId))) {
+                params.set('destino_id', destinoSeleccionadoId);
+            }
 
+            const nuevaUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
+            history.pushState(null, null, nuevaUrl);
+
+            eliminarDibujo();
+            cerrarModal();
+            
+            if (typeof actualizarUI === 'function') {
+                actualizarUI();
+            }
+            
+            mostrarToast(`✓ ${idsAEnviar.length} pedidos (${tipoAsig.toUpperCase()}) → ${mNombre}`);
+
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            mostrarToast('Error al asignar.', true);
+        }
+    })
+    .catch(() => mostrarToast('Error de conexión.', true))
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Confirmar';
+    });
+}
+
+// ─────────────────────────────────────────────────────────────
+// SELECCIÓN INDIVIDUAL POR URL (P y D independientes)
+// ─────────────────────────────────────────────────────────────
+function seleccionarOrigen(envioId) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('origen_id', envioId);
+    window.location.search = params.toString();
+}
+
+function seleccionarDestino(envioId) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('destino_id', envioId);
+    window.location.search = params.toString();
+}
+
+function limpiarOrigen() {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('origen_id');
+    window.location.search = params.toString();
+}
+
+// Limpiar la selección de destino de la URL
+function limpiarDestino() {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('destino_id');
+    window.location.search = params.toString();
+}
+
+function mostrarToast(msg, esError=false, tipo='') {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    if (esError)           t.className = 'show error';
+    else if (tipo=='info') t.className = 'show info';
+    else                   t.className = 'show';
+    setTimeout(() => { t.className = ''; }, 4000);
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7jZIsSRbPml8l1CAypHNuTNDaQS8MyT0&libraries=drawing,geometry&language=es&callback=onGoogleMapsReady" async defer></script>
 </body>
 </html>

@@ -1,17 +1,19 @@
 # app/controllers/EnvioController.py
-from django import db
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, Form
+import os
+import shutil
+import io
+import time
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, Form, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse, StreamingResponse, JSONResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import text, distinct
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional
-import io
-import time
+
 import pandas as pd
 from fpdf import FPDF
-from app.models.Ruta import Ruta
 from geopy.geocoders import Nominatim
 
 from app.config.database import get_db
@@ -21,6 +23,7 @@ from app.models.Usuario import Usuario
 from app.models.Transaccion import Transaccion
 from app.models.Tarifa import Tarifa
 from app.models.Vehiculo import Vehiculo
+from app.models.Ruta import Ruta
 
 from app.security.SecurityConfig import get_current_user, require_admin, require_admin_or_mensajero
 import app.repositories.EnvioRepository as envio_repo
@@ -32,6 +35,7 @@ import app.repositories.LugarRepository as lugar_repo
 from app.config.templates import templates
 
 router = APIRouter(prefix="/envios", tags=["Envíos"])
+
 
 # --- CLASE PDF PROFESIONAL PARA REPORTES ---
 class PDF(FPDF):
@@ -68,11 +72,11 @@ def generar_nuevo_consecutivo(db: Session):
             nuevo_numero = res[0] + 1
             db.execute(text("UPDATE configuracion SET ultimo_consecutivo = :num WHERE id = 1"), {"num": nuevo_numero})
         db.commit()
-        return f"ENV-{nuevo_numero:05d}"
+        return f"ENV{nuevo_numero:05d}"
     except Exception as e:
         db.rollback()
         print(f"Error crítico en consecutivo: {e}")
-        return f"ENV-{datetime.now().strftime('%H%M%S')}"
+        return f"ENV{datetime.now().strftime('%H%M%S')}"
 
 
 # --- FUNCIÓN DE GEOLOCALIZACIÓN (fallback con Nominatim) ---
@@ -97,9 +101,6 @@ def _cargar_datos_formulario(db: Session):
     }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER: construye el mapa {cliente_id: nombre_tarifa} para el cotizador admin
-# ─────────────────────────────────────────────────────────────────────────────
 def _build_clientes_tarifas(clientes: list) -> dict:
     resultado = {}
     for c in clientes:
@@ -108,9 +109,6 @@ def _build_clientes_tarifas(clientes: list) -> dict:
     return resultado
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER: extrae ciudad y departamento del campo Lugar.ciudad
-# ─────────────────────────────────────────────────────────────────────────────
 def _extraer_ciudad_depto(lugar) -> tuple:
     if not lugar or not lugar.ciudad:
         return "", ""
@@ -125,9 +123,6 @@ def _extraer_ciudad_depto(lugar) -> tuple:
     return ciudad, depto
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER: extrae localidad y teléfono del campo Lugar.referencia
-# ─────────────────────────────────────────────────────────────────────────────
 def _extraer_localidad_telefono(lugar) -> tuple:
     if not lugar or not lugar.referencia:
         return "", ""
@@ -142,9 +137,6 @@ def _extraer_localidad_telefono(lugar) -> tuple:
     return localidad, telefono
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER: extrae descripción e instrucciones del campo Envio.instrucciones
-# ─────────────────────────────────────────────────────────────────────────────
 def _extraer_descripcion_obs(envio) -> tuple:
     if not envio or not envio.instrucciones:
         return "", ""
@@ -159,16 +151,13 @@ def _extraer_descripcion_obs(envio) -> tuple:
     return descripcion, observaciones
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HELPER: genera el dict de campos de edición vacíos (para nuevo envío)
-# ─────────────────────────────────────────────────────────────────────────────
 def _campos_edicion_vacios() -> dict:
     return {
         "edit_depto_rec":   "",
         "edit_ciudad_rec":  "",
         "edit_tel_rec":     "",
         "edit_loc_rec":     "",
-        "edit_dir_rec":     "",   # ← nueva
+        "edit_dir_rec":     "",
         "edit_depto_ent":   "",
         "edit_ciudad_ent":  "",
         "edit_tel_ent":     "",
@@ -176,6 +165,7 @@ def _campos_edicion_vacios() -> dict:
         "edit_descripcion": "",
         "edit_obs":         "",
     }
+
 
 # --- LISTADO PRINCIPAL PARA ADMINISTRADORES ---
 @router.get("/")
@@ -202,7 +192,6 @@ def listar(request: Request, db: Session = Depends(get_db)):
         "clientes": clientes_registrados,
         "rol": request.session.get("rol", "ADMIN")
     })
-
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     return response
@@ -241,7 +230,6 @@ def listar_mis_guias(request: Request, db: Session = Depends(get_db)):
         "current_user": usuario,
         "tarifas": todas_las_tarifas
     })
-
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     return response
 
@@ -269,8 +257,7 @@ def ver_detalle_envio(id: int, request: Request, db: Session = Depends(get_db)):
     })
 
 
-# --- RUTA PARA EL FORMULARIO DE NUEVO ENVÍO ---
-# --- RUTA PARA EL FORMULARIO DE NUEVO ENVÍO ---
+# --- NUEVO ENVÍO ---
 @router.get("/nuevo")
 def nuevo(request: Request, db: Session = Depends(get_db)):
     try:
@@ -309,9 +296,9 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
             clientes_tarifas = {}
             saldo = float(usuario_actual.saldo_plan)
         else:
-            saldo = None  # Admin no tiene restricción de saldo
+            saldo = None
 
-        return templates.TemplateResponse("form-envio.html", {   # ← UN SOLO return al final
+        return templates.TemplateResponse("form-envio.html", {
             "request": request,
             "envio": None,
             "rol": usuario_actual.rol,
@@ -326,7 +313,8 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
         print(f"Error renderizando formulario: {e}")
         raise HTTPException(status_code=500, detail="Error interno del servidor")
 
-# --- PROCESO PRINCIPAL DE GUARDADO ---
+
+# --- GUARDAR ENVÍO ---
 @router.post("/guardar")
 async def guardar(request: Request, db: Session = Depends(get_db)):
     rol = request.session.get("rol", "CLIENTE")
@@ -337,8 +325,6 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
         envio_id = form.get("envio_id")
         es_nuevo = not (envio_id and envio_id.strip())
 
-        # Si es ADMIN usa el cliente seleccionado en el formulario.
-        # Si es CLIENTE usa su propio usuario de sesión.
         if rol == "ADMIN":
             cliente_id = form.get("usuario_cliente_id")
             if not cliente_id:
@@ -371,7 +357,6 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 tarifa_db  = db.query(Tarifa).filter(
                     Tarifa.nombre.ilike("%Nacional%") | Tarifa.nombre.ilike("%Raíces%")
                 ).first()
-                # ✅ Corrección
                 costo_base = tarifa_db.precio_plan if tarifa_db else Decimal("17990")
                 tar_id     = tarifa_db.id if tarifa_db else None
             else:
@@ -424,21 +409,14 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
             envio.valor_a_cobrar = valor_a_cobrar
             envio.peso           = Decimal(form.get("peso", "1.0"))
 
-        # ─────────────────────────────────────────────────────────────────────
-        # ✅ PROCESAMIENTO DE LUGARES CON COORDENADAS DE GOOGLE MAPS
-        #    Prioridad: coordenadas del formulario (Google Maps)
-        #    Fallback:  Nominatim si no hay coordenadas en el formulario
-        # ─────────────────────────────────────────────────────────────────────
         for tipo in ["recogida", "entrega"]:
             ciudad    = form.get(f"ciudad_{tipo}", "")
             depto     = form.get(f"depto_{tipo}", "")
             direccion = form.get(f"direccion_{tipo}", "").strip()
             telefono  = form.get(f"telefono_{tipo}", "").strip()
             localidad = form.get(f"localidad_{tipo}", "").strip()
-
-            # ✅ Leer coordenadas enviadas por Google Maps desde el formulario
-            lat_form = form.get(f"lat_{tipo}", "").strip()
-            lon_form = form.get(f"lon_{tipo}", "").strip()
+            lat_form  = form.get(f"lat_{tipo}", "").strip()
+            lon_form  = form.get(f"lon_{tipo}", "").strip()
 
             if direccion:
                 if tipo == "entrega":
@@ -447,18 +425,13 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 else:
                     referencia_final = f"Localidad: {localidad} | Tel: {telefono}" if localidad else f"Tel: {telefono}"
 
-                # ✅ Usar coordenadas de Google Maps si el usuario las seleccionó
                 if lat_form and lon_form:
                     try:
                         lat = float(lat_form)
                         lng = float(lon_form)
-                        print(f"✅ Coordenadas Google Maps para {tipo}: lat={lat}, lng={lng}")
                     except ValueError:
-                        print(f"⚠️ Error parseando coordenadas de formulario para {tipo}, usando Nominatim")
                         lat, lng = obtener_coordenadas(direccion, ciudad)
                 else:
-                    # Fallback a Nominatim si no hay coordenadas del mapa
-                    print(f"⚠️ Sin coordenadas en formulario para {tipo}, usando Nominatim")
                     lat, lng = obtener_coordenadas(direccion, ciudad)
 
                 lugar = Lugar(
@@ -533,7 +506,8 @@ def imprimir_guia(id: int, request: Request, db: Session = Depends(get_db)):
         "envio": envio,
         "fecha_actual": datetime.now().strftime("%d/%m/%Y %H:%M")
     })
-    
+
+
 @router.get("/imprimir-masivo")
 def imprimir_masivo(request: Request, ids: str, db: Session = Depends(get_db)):
     lista_ids = [int(i) for i in ids.split(",")]
@@ -642,11 +616,9 @@ def editar(id: int, request: Request, db: Session = Depends(get_db)):
 
     ciudad_rec, depto_rec = _extraer_ciudad_depto(envio.lugar_recogida)
     loc_rec,    tel_rec   = _extraer_localidad_telefono(envio.lugar_recogida)
-
     ciudad_ent, depto_ent = _extraer_ciudad_depto(envio.lugar_entrega)
     loc_ent,    tel_ent   = _extraer_localidad_telefono(envio.lugar_entrega)
-
-    descripcion, obs = _extraer_descripcion_obs(envio)
+    descripcion, obs      = _extraer_descripcion_obs(envio)
 
     return templates.TemplateResponse("form-envio.html", {
         "request": request,
@@ -741,71 +713,162 @@ def obtener_puntos_mapa(db: Session = Depends(get_db)):
     } for e in envios]
 
 
-# --- VER RUTA EN TIEMPO REAL DE UN MENSAJERO ---
-@router.get("/ver-ruta/{id_mensajero}")
-def ver_ruta_mensajero(id_mensajero: int, request: Request, db: Session = Depends(get_db)):
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return RedirectResponse(url="/login")
+# --- VER RUTA DE UN MENSAJERO ---
+@router.get("/ver-ruta/{mensajero_id}", response_class=HTMLResponse)
+async def ver_ruta(request: Request, mensajero_id: int, db: Session = Depends(get_db)):
 
-    mensajero = db.query(Usuario).filter(
-        Usuario.id_usuario == id_mensajero,
-        Usuario.rol == "MENSAJERO"
-    ).first()
+    mensajero = db.query(Usuario).filter(Usuario.id_usuario == mensajero_id).first()
     if not mensajero:
-        raise HTTPException(status_code=404, detail="El mensajero no existe o no tiene una ruta asignada")
+        raise HTTPException(status_code=404, detail="Mensajero no encontrado")
 
-    envios = db.query(Envio).options(
-        joinedload(Envio.lugar_entrega),
-        joinedload(Envio.cliente)
-    ).filter(
-        Envio.usuario_mensajero_id == id_mensajero,
-        Envio.estado == "En_Ruta"
+    # Buscar la ruta activa del mensajero
+    ruta = db.query(Ruta).filter(
+        Ruta.mensajero_id == mensajero_id,
+        Ruta.estado.in_(["Creada", "En curso"])
+    ).order_by(Ruta.ruta_id.desc()).first()
+
+    # Envíos donde es RECOLECTOR (C) — mostrar solo si estado_recogida activo
+    envios_c = db.query(Envio).filter(
+        Envio.usuario_mensajero_id == mensajero_id,
+        Envio.estado_recogida.in_(["En_Ruta", "Pendiente"]),
+        Envio.estado.in_(["Pendiente_Recoger", "En_Ruta"])
+    ).options(
+        joinedload(Envio.lugar_recogida),
+        joinedload(Envio.lugar_entrega)
     ).all()
 
+    # Envíos donde es ENTREGADOR (D) — mostrar solo si estado_entrega activo
+    envios_d = db.query(Envio).filter(
+        Envio.usuario_mensajero_entrega_id == mensajero_id,
+        Envio.estado_entrega.in_(["En_Ruta", "En_Destino"]),
+        Envio.estado.in_(["Pendiente_Verificar", "En_Ruta"])
+    ).options(
+        joinedload(Envio.lugar_recogida),
+        joinedload(Envio.lugar_entrega)
+    ).all()
+
+    # Unir ambas listas sin duplicados
+    ids_vistos = set()
+    envios = []
+    for e in envios_c + envios_d:
+        if e.envio_id not in ids_vistos:
+            ids_vistos.add(e.envio_id)
+            envios.append(e)
+
     return templates.TemplateResponse("ver_ruta.html", {
-        "request": request,
+        "request":   request,
         "mensajero": mensajero,
-        "envios": envios,
-        "rol": request.session.get("rol", "ADMIN")
+        "ruta":      ruta,
+        "envios":    envios,
     })
 
-
-# --- ASIGNACIÓN MASIVA DE ENVÍOS A MENSAJERO ---
+# ─────────────────────────────────────────────
+# ASIGNACIÓN MASIVA
+# ─────────────────────────────────────────────
 @router.post("/asignar-mensajero-masivo")
 async def asignar_masivo(request: Request, db: Session = Depends(get_db)):
     try:
         data         = await request.json()
         ids_envios   = data.get("envio_ids")
         id_mensajero = data.get("id_mensajero")
+        nombre_ruta  = data.get("nombre_ruta", "").strip()
+        tipo         = data.get("tipo", "all")
 
         if not ids_envios or not id_mensajero:
             raise HTTPException(status_code=400, detail="Parámetros de asignación incompletos")
 
         mensajero = db.query(Usuario).filter(Usuario.id_usuario == int(id_mensajero)).first()
+        if not mensajero:
+            raise HTTPException(status_code=404, detail="Mensajero no encontrado")
+
+        if not nombre_ruta:
+            nombre_ruta = f"Ruta Express - {mensajero.nombre} {datetime.now().strftime('%H:%M')}"
 
         nueva_ruta = Ruta(
-            nombre_sector=f"Ruta Express - {mensajero.nombre} {datetime.now().strftime('%H:%M')}",
+            nombre_sector=nombre_ruta,
             ciudad="Bogotá",
-            mensajero_id=int(id_mensajero)
+            mensajero_id=int(id_mensajero),
+            estado="Creada"
         )
         db.add(nueva_ruta)
         db.flush()
 
         for envio_id in ids_envios:
             envio = db.query(Envio).filter(Envio.envio_id == int(envio_id)).first()
-            if envio:
+            if not envio:
+                continue
+
+            if tipo == "c":
+                # Solo recolector — no tocar estado_entrega ni mensajero_entrega
                 envio.usuario_mensajero_id = int(id_mensajero)
                 envio.ruta_id              = nueva_ruta.ruta_id
-                envio.estado               = "En_Ruta"
+                envio.estado_recogida      = "En_Ruta"
+                envio.estado               = "Pendiente_Recoger"
+
+            elif tipo == "d":
+                # Solo entregador — la recogida ya fue hecha antes
+                envio.usuario_mensajero_entrega_id = int(id_mensajero)
+                envio.ruta_id                      = nueva_ruta.ruta_id
+                envio.estado_entrega               = "En_Ruta"
+                envio.estado                       = "Pendiente_Verificar"
+
+            else:
+                # "all" — mismo mensajero hace recogida y entrega
+                envio.usuario_mensajero_id         = int(id_mensajero)
+                envio.usuario_mensajero_entrega_id = int(id_mensajero)
+                envio.ruta_id                      = nueva_ruta.ruta_id
+                envio.estado_recogida              = "En_Ruta"
+                envio.estado_entrega               = "En_Ruta"
+                envio.estado                       = "En_Ruta"
 
         db.commit()
         return {"status": "success", "ruta_id": nueva_ruta.ruta_id, "total": len(ids_envios)}
+
     except Exception as e:
         db.rollback()
         import traceback
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"detail": f"Error en asignación: {str(e)}"})
+
+
+# --- QUITAR UN SOLO PEDIDO DE LA RUTA ---
+@router.get("/quitar-de-ruta/{envio_id}")
+async def quitar_de_ruta(envio_id: int, db: Session = Depends(get_db)):
+    try:
+        envio = db.query(Envio).filter(Envio.envio_id == envio_id).first()
+        if not envio:
+            return {"status": "error", "message": "Envío no encontrado"}
+
+        envio.usuario_mensajero_id = None
+        envio.estado               = "Registrado"
+        envio.ruta_id              = None
+        db.commit()
+        return RedirectResponse(url="/envios", status_code=303)
+
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "message": str(e)}
+
+
+# --- QUITAR DE RUTA MASIVO ---
+@router.post("/quitar-de-ruta-masivo")
+async def quitar_de_ruta_masivo(request: Request, db: Session = Depends(get_db)):
+    try:
+        data = await request.json()
+        envio_ids = data.get("envio_ids", [])
+        if not envio_ids:
+            return {"status": "error", "message": "No hay envíos seleccionados"}
+
+        db.query(Envio).filter(Envio.envio_id.in_(envio_ids)).update(
+            {"usuario_mensajero_id": None, "estado": "Registrado", "ruta_id": None},
+            synchronize_session=False
+        )
+        db.commit()
+        return {"status": "success", "message": "Pedidos liberados correctamente."}
+
+    except Exception as e:
+        db.rollback()
+        return {"status": "error", "message": str(e)}
 
 
 # --- RECARGA ACUMULATIVA DE BILLETERA ---
@@ -850,7 +913,8 @@ def gestionar_envio_erp(id: int, request: Request, db: Session = Depends(get_db)
         joinedload(Envio.mensajero),
         joinedload(Envio.tarifa),
         joinedload(Envio.lugar_recogida),
-        joinedload(Envio.lugar_entrega)
+        joinedload(Envio.lugar_entrega),
+        joinedload(Envio.seguimientos)
     ).filter(Envio.envio_id == id).first()
 
     if not envio:
@@ -858,18 +922,22 @@ def gestionar_envio_erp(id: int, request: Request, db: Session = Depends(get_db)
 
     ciudad_rec, depto_rec = _extraer_ciudad_depto(envio.lugar_recogida)
     ciudad_ent, depto_ent = _extraer_ciudad_depto(envio.lugar_entrega)
-    descripcion, obs = _extraer_descripcion_obs(envio)
+    descripcion, obs      = _extraer_descripcion_obs(envio)
+    tel_rec = _extraer_localidad_telefono(envio.lugar_recogida)[1]
+    tel_ent = _extraer_localidad_telefono(envio.lugar_entrega)[1]
 
     return templates.TemplateResponse("gestionar_detalle.html", {
-        "request": request,
-        "envio": envio,
-        "ciudad_rec": ciudad_rec,
-        "depto_rec": depto_rec,
-        "ciudad_ent": ciudad_ent,
-        "depto_ent": depto_ent,
-        "descripcion": descripcion,
+        "request":      request,
+        "envio":        envio,
+        "ciudad_rec":   ciudad_rec,
+        "depto_rec":    depto_rec,
+        "ciudad_ent":   ciudad_ent,
+        "depto_ent":    depto_ent,
+        "tel_rec":      tel_rec,
+        "tel_ent":      tel_ent,
+        "descripcion":  descripcion,
         "observaciones": obs,
-        "rol": request.session.get("rol", "ADMIN")
+        "rol":          request.session.get("rol", "ADMIN")
     })
 
 
@@ -877,7 +945,7 @@ def gestionar_envio_erp(id: int, request: Request, db: Session = Depends(get_db)
 @router.post("/actualizar-gestion/{id}")
 async def actualizar_gestion_envio(id: int, request: Request, db: Session = Depends(get_db)):
     try:
-        form = await request.form()
+        form  = await request.form()
         envio = db.query(Envio).filter(Envio.envio_id == id).first()
 
         if not envio:
@@ -908,5 +976,48 @@ async def actualizar_gestion_envio(id: int, request: Request, db: Session = Depe
         db.rollback()
         print(f"Error al actualizar gestión: {e}")
         return RedirectResponse(url=f"/envios/gestion/{id}?error=true", status_code=303)
+
+
+# ─────────────────────────────────────────────
+# SUBIR FOTO DE ENTREGA — mensajero desde app Flutter
+# Usa get_current_user que soporta Bearer JWT + sesión web
+# ─────────────────────────────────────────────
+@router.post("/{envio_id}/foto-entrega")
+async def subir_foto_entrega(
+    envio_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)   # ← JWT o sesión
+):
+    # Solo mensajeros pueden subir fotos
+    if current_user.rol != "MENSAJERO":
+        raise HTTPException(status_code=403, detail="Solo mensajeros pueden subir fotos")
+
+    envio = db.query(Envio).filter(Envio.envio_id == envio_id).first()
+    if not envio:
+        raise HTTPException(status_code=404, detail="Envío no encontrado")
+
+    if envio.usuario_mensajero_id != current_user.id_usuario:
+        raise HTTPException(status_code=403, detail="No tienes permiso sobre este envío")
+
+    # Crear carpeta si no existe
+    carpeta = "app/static/fotos_entrega"
+    os.makedirs(carpeta, exist_ok=True)
+
+    extension = file.filename.rsplit(".", 1)[-1].lower() if file.filename else "jpg"
+    if extension not in ["jpg", "jpeg", "png", "webp"]:
+        extension = "jpg"
+
+    nombre_archivo = f"{envio.numero_guia}.{extension}"
+    ruta_disco = f"{carpeta}/{nombre_archivo}"
+
+    with open(ruta_disco, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    envio.foto_entrega = nombre_archivo
+    db.commit()
+
+    return JSONResponse({"ok": True, "foto": nombre_archivo})
+
 
 # --- FIN DEL CONTROLADOR DE ENVÍOS ---
