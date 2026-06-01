@@ -5,17 +5,16 @@ load_dotenv()
 
 print("------------------------------------------")
 print(f"VALOR DE WOMPI_KEY: {os.getenv('WOMPI_PUBLIC_KEY')}")
-print("------------------------------------------") # ✅ DEBE IR ANTES DE TODO
+print("------------------------------------------") 
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from sqlalchemy.orm import Session
-from sqlalchemy import text  # ✅ Agregado para poder ejecutar la consulta SQL nativa del mapa
+from sqlalchemy import text  
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 # Importar configuración de DB
-# 🛠️ CORRECCIÓN: Se unificó get_db en una sola línea para evitar importaciones repetidas
 from app.config.database import engine, Base, SessionLocal, get_db
 from app.config.data_initializer import init_database
 from app.config.templates import templates 
@@ -23,8 +22,8 @@ from app.security.SecurityConfig import hash_password
 
 # Importar modelos
 from app.models.Usuario import Usuario 
-
-# Importar los routers
+from app.models.UbicacionMensajero import UbicacionMensajero
+# Importar los routers correctamente
 from app.controllers.LandingController import router as landing_router
 from app.controllers.HomeController import router as home_router
 from app.controllers.UsuarioController import router as usuario_router
@@ -36,7 +35,7 @@ from app.controllers.RutaController import router as ruta_router
 from app.controllers.AppMensajeroController import router as app_mensajero_router
 from app.controllers.FinanzasController import router as finanzas_router
 from app.controllers.PlanController import router as plan_router
-import app.controllers.UsuarioController as UsuarioController
+from app.controllers.BodegaController import router as bodega_router
 
 # Importar servicios
 from app.services.email_service import enviar_email_recuperacion
@@ -72,7 +71,7 @@ if not os.path.exists("app/static"):
     os.makedirs("app/static")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-# --- Inclusión de Routers ---
+# --- Inclusión de Routers (Corregido: Se eliminó la duplicación de AppMensajero) ---
 app.include_router(landing_router)
 app.include_router(home_router)
 app.include_router(usuario_router)
@@ -84,10 +83,12 @@ app.include_router(ruta_router)
 app.include_router(app_mensajero_router)
 app.include_router(finanzas_router)
 app.include_router(plan_router)
+app.include_router(bodega_router)
 
-# --- NUEVO ENDPOINT GLOBAL PARA EL MAPA DEL ADMINISTRADOR ---
-# 🚀 Esto responde a tu necesidad de ver al mensajero en el mapa APENAS inicie sesión, con o sin pedidos.
+# --- 💻 ENDPOINT GLOBAL PARA EL MAPA DEL ADMINISTRADOR (DOBLE RUTA) ---
+# Se le asignan múltiples decoradores para que responda tanto al frontend JS como a la ruta admin
 @app.get("/api/admin/ubicaciones-mensajeros")
+@app.get("/api/ubicaciones-mensajeros")
 def obtener_ubicaciones_actuales(db: Session = Depends(get_db)):
     """
     Busca el último registro de coordenadas reportado por cada usuario en el sistema.

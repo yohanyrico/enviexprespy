@@ -10,34 +10,83 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <style>
+<style>
       :root {
-        --azul-profundo: #002b5b; --azul-medio: #004085; --azul-oscuro: #001a33;
-        --naranja: #ff8c00; --naranja-hover: #e67e00; --blanco: #ffffff;
-        --transparencia-blanca: rgba(255, 255, 255, 0.08);
-        --btn-editar: #0d6efd; --btn-eliminar: #dc3545;
+        /* Paleta Minimalista de Alto Contraste */
+        --milano-red:      #B20C06;
+        --milano-hover:    #8E0A05;
+        --chinese-black:   #0b012e;
+        --slate-gray:      #738589;
+        --white-bg:        #FDFFFF;
+        --text-dark:       #0b012e;
+        --text-light:      #ffffff;
+        
+        /* Utilidades */
+        --border-light:    rgba(11, 1, 46, 0.1);
+        --btn-editar:      #0d6efd;
+        --btn-eliminar:    #dc3545;
       }
       
       body {
-        background: linear-gradient(135deg, var(--azul-profundo), var(--azul-medio), var(--azul-oscuro));
-        min-height: 100vh; color: var(--blanco); font-family: 'Montserrat', sans-serif;
-        padding-top: 80px; margin: 0;
+        /* ⚪ Fondo blanco dominante */
+        background: var(--white-bg);
+        min-height: 100vh; 
+        color: var(--text-dark); /* 🖤 Letras en negro */
+        font-family: 'Montserrat', sans-serif;
+        padding-top: 80px; 
+        margin: 0;
       }
       
-      .navbar { backdrop-filter: blur(12px); background: rgba(0, 26, 51, 0.4); border-bottom: 2px solid var(--naranja); }
-      .title-glow { font-size: 2.5rem; font-weight: 800; color: var(--blanco); margin-bottom: 30px; text-align: center; text-transform: uppercase; }
+      /* Navbar clara con el borde distintivo en rojo */
+      .navbar { 
+        backdrop-filter: blur(12px); 
+        background: rgba(253, 255, 255, 0.95); 
+        border-bottom: 2px solid var(--milano-red);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
       
+      .title-glow { 
+        font-size: 2.5rem; 
+        font-weight: 800; 
+        color: var(--text-dark); /* Letras en negro */
+        margin-bottom: 30px; 
+        text-align: center; 
+        text-transform: uppercase; 
+      }
+      
+      /* 🔴 Botones en rojo */
       .btn-naranja {
-        background: var(--naranja); border: none; padding: 10px 20px; color: white !important;
-        font-weight: 700; border-radius: 10px; transition: 0.3s; text-decoration: none;
-        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--milano-red); 
+        border: none; 
+        padding: 10px 20px; 
+        color: var(--text-light) !important; /* Texto del botón blanco para contraste */
+        font-weight: 700; 
+        border-radius: 10px; 
+        transition: 0.3s; 
+        text-decoration: none;
+        display: inline-flex; 
+        align-items: center; 
+        gap: 8px;
+        box-shadow: 0 4px 6px rgba(178, 12, 6, 0.2);
       }
-      .btn-naranja:hover { transform: scale(1.05); background: var(--naranja-hover); box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4); }
+      .btn-naranja:hover { 
+        transform: scale(1.05); 
+        background: var(--milano-hover); 
+        box-shadow: 0 5px 15px rgba(142, 10, 5, 0.4); 
+      }
       
       .actions-bar {
-        background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 15px; padding: 15px 25px; margin-bottom: 25px;
-        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+        background: #ffffff; 
+        border: 1px solid var(--border-light);
+        border-radius: 15px; 
+        padding: 15px 25px; 
+        margin-bottom: 25px;
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        flex-wrap: wrap; 
+        gap: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
       }
       
       .planes-grid {
@@ -48,45 +97,120 @@
       }
 
       .plan-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: #ffffff;
+        border: 1px solid var(--border-light);
         border-radius: 20px;
         padding: 30px;
         text-align: center;
         transition: 0.4s;
-        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
       }
 
+      /* Hover de tarjetas resalta con el botón rojo */
       .plan-card:hover {
         transform: translateY(-10px);
-        border-color: var(--naranja);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        border-color: var(--milano-red);
+        box-shadow: 0 15px 35px rgba(11, 1, 46, 0.08);
       }
 
+      /* Bordes de los planes se mantienen */
       .plan-bronce { border-top: 5px solid #cd7f32; }
       .plan-plata { border-top: 5px solid #c0c0c0; }
       .plan-oro { border-top: 5px solid #ffd700; }
-      .plan-diamante { border-top: 5px solid #b9f2ff; box-shadow: 0 0 15px rgba(185, 242, 255, 0.1); }
+      .plan-diamante { border-top: 5px solid #7dd3fc; box-shadow: 0 5px 15px rgba(125, 211, 252, 0.15); }
       .plan-nacional { border-top: 5px solid #4caf50; }
 
-      .plan-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; color: var(--blanco); }
-      .plan-desc { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 20px; min-height: 45px; line-height: 1.4; }
-      .plan-price { font-size: 2.2rem; font-weight: 800; color: var(--naranja); margin-bottom: 15px; }
-      .plan-features { list-style: none; padding: 0; text-align: left; margin-bottom: 25px; font-size: 0.85rem; }
-      .plan-features li { margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-      .plan-features i { color: #4ade80; }
+      .plan-title { 
+        font-size: 1.6rem; 
+        font-weight: 800; 
+        margin-bottom: 10px; 
+        text-transform: uppercase; 
+        color: var(--text-dark); 
+      }
+      
+      .plan-desc { 
+        font-size: 0.85rem; 
+        color: var(--slate-gray); /* Gris para texto secundario */
+        margin-bottom: 20px; 
+        min-height: 45px; 
+        line-height: 1.4; 
+      }
+      
+      /* Precios en Rojo */
+      .plan-price { 
+        font-size: 2.2rem; 
+        font-weight: 800; 
+        color: var(--milano-red); 
+        margin-bottom: 15px; 
+      }
+      
+      .plan-features { 
+        list-style: none; 
+        padding: 0; 
+        text-align: left; 
+        margin-bottom: 25px; 
+        font-size: 0.85rem; 
+        color: var(--text-dark);
+      }
+      .plan-features li { 
+        margin-bottom: 10px; 
+        display: flex; 
+        align-items: center; 
+        gap: 8px; 
+      }
+      .plan-features i { 
+        color: #2563eb; /* Checkmarks en azul para que resalten en fondo claro */
+      }
 
-      .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 9999; align-items: center; justify-content: center; }
-      .modal-overlay.open { display: flex; }
-      .modal-card { background: #0f172a; border: 1px solid var(--naranja); border-radius: 18px; padding: 30px; width: 90%; max-width: 450px; position: relative; }
-      .reporte-opcion { display: flex; align-items: center; gap: 15px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
-      .reporte-opcion:hover { border-color: var(--naranja); background: rgba(255, 140, 0, 0.1); transform: translateX(5px); }
+      /* Modales adaptados a la nueva interfaz limpia */
+      .modal-overlay { 
+        display: none; 
+        position: fixed; 
+        inset: 0; 
+        background: rgba(11, 1, 46, 0.5); /* Sombra oscura transparente */
+        backdrop-filter: blur(4px);
+        z-index: 9999; 
+        align-items: center; 
+        justify-content: center; 
+      }
+      .modal-overlay.open { 
+        display: flex; 
+      }
+      .modal-card { 
+        background: #ffffff; 
+        border: 2px solid var(--milano-red); 
+        border-radius: 18px; 
+        padding: 30px; 
+        width: 90%; 
+        max-width: 450px; 
+        position: relative; 
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        color: var(--text-dark);
+      }
+      
+      .reporte-opcion { 
+        display: flex; 
+        align-items: center; 
+        gap: 15px; 
+        background: #f8fafc; 
+        border: 1px solid var(--border-light); 
+        border-radius: 12px; 
+        padding: 15px; 
+        cursor: pointer; 
+        transition: 0.3s; 
+        margin-bottom: 10px; 
+      }
+      .reporte-opcion:hover { 
+        border-color: var(--milano-red); 
+        background: rgba(178, 12, 6, 0.05); 
+        transform: translateX(5px); 
+      }
     </style>
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
       <div class="container">
-          <a class="navbar-brand fw-bold fs-3" href="/home" style="color: var(--naranja);">ENVI<span style="color: var(--blanco);">EXPRESS</span></a>
+          <a class="navbar-brand fw-bold" href="/home/" style="color: #0b012e; text-transform: uppercase;"> <span style="color: #B20C06;">ENVI</span>EXPRESS</a>
         <div class="ms-auto d-flex gap-2">
           <a href="/home" class="btn btn-outline-light btn-sm"><i class="bi bi-house-fill"></i></a>
         </div>

@@ -8,19 +8,27 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
+<style>
         :root {
-            --primary-dark: #00235a;
-            --primary-blue: #003a8c;
-            --accent-orange: #ff8c00;
-            --text-light: #ffffff;
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --input-bg: rgba(255, 255, 255, 0.1);
+            /* Paleta de alto contraste definitiva */
+            --milano-red:      #B20C06;
+            --milano-hover:    #8E0A05;
+            --chinese-black:   #0b012e;
+            --slate-gray:      #738589;
+            --white-bg:        #FDFFFF;
+            --text-dark:       #0b012e;
+            --text-light:      #ffffff;
+            
+            /* Inputs y contenedores claros */
+            --card-bg:         #ffffff;
+            --input-bg:        #f8fafc;
+            --border-light:    rgba(11, 1, 46, 0.15);
         }
         body { 
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+            /* ⚪ Fondo blanco dominante */
+            background: var(--white-bg);
             min-height: 100vh; 
-            color: var(--text-light); 
+            color: var(--text-dark); /* 🖤 Letras en negro */
             font-family: 'Montserrat', sans-serif; 
             display: flex; 
             align-items: center; 
@@ -32,24 +40,26 @@
             max-width: 600px;
             width: 100%; 
             background: var(--card-bg); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border: 1px solid var(--border-light); 
             border-radius: 20px; 
             padding: 40px; 
-            backdrop-filter: blur(15px); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            /* Sombras suaves para dar profundidad sobre el fondo blanco */
+            box-shadow: 0 10px 30px rgba(11, 1, 46, 0.06);
         }
         .title-glow { 
             text-align: center; 
             font-size: 1.8rem; 
             font-weight: 800; 
-            color: var(--text-light); 
+            color: var(--text-dark); /* Título en negro */
             margin-bottom: 30px; 
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .text-orange { color: var(--accent-orange) !important; }
+        /* Destacados del texto pasan a Rojo Milano */
+        .text-orange { color: var(--milano-red) !important; }
+        
         .form-label { 
-            color: var(--accent-orange); 
+            color: var(--milano-red); /* Etiquetas en rojo */
             font-weight: 600; 
             margin-bottom: 8px; 
             font-size: 0.85rem;
@@ -57,62 +67,66 @@
         }
         .form-control { 
             background: var(--input-bg); 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border: 1px solid var(--border-light); 
             border-radius: 10px; 
             padding: 12px; 
-            color: white; 
+            color: var(--text-dark); /* Texto digitado en negro */
             transition: 0.3s; 
         }
         .form-control:focus { 
-            background: rgba(255, 255, 255, 0.15); 
-            border-color: var(--accent-orange); 
-            box-shadow: 0 0 15px rgba(255, 140, 0, 0.2); 
-            color: white; 
+            background: #ffffff; 
+            border-color: var(--milano-red); /* Foco del input en rojo */
+            box-shadow: 0 0 10px rgba(178, 12, 6, 0.15); 
+            color: var(--text-dark); 
+            outline: none;
         }
         textarea.form-control {
             min-height: 80px;
             resize: none;
         }
+        /* 🔴 Botón guardar en rojo milano */
         .btn-save { 
             width: 100%; 
             padding: 15px; 
-            background: var(--accent-orange); 
+            background: var(--milano-red); 
             border: none; 
             border-radius: 12px; 
-            color: white; 
+            color: var(--text-light); /* Letras del botón en blanco */
             font-weight: 700; 
             font-size: 1rem; 
             transition: 0.3s; 
             margin-top: 20px; 
             text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(178, 12, 6, 0.2);
+            cursor: pointer;
         }
         .btn-save:hover { 
-            background: #e67e00; 
+            background: var(--milano-hover); 
             transform: translateY(-2px); 
-            box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
-            color: white;
+            box-shadow: 0 6px 15px rgba(142, 10, 5, 0.35);
+            color: var(--text-light);
         }
+        /* Botón secundario/cancelar adaptado */
         .btn-cancel { 
             width: 100%; 
             padding: 12px; 
             background: transparent; 
-            border: 1px solid rgba(255, 255, 255, 0.3); 
+            border: 1px solid var(--border-light); 
             border-radius: 10px; 
-            color: white; 
+            color: var(--slate-gray); /* Letras grises para menor peso visual */
             font-weight: 600; 
             transition: 0.3s; 
             margin-top: 15px; 
             text-decoration: none; 
             display: block; 
             text-align: center; 
-            opacity: 0.8;
             font-size: 0.9rem;
+            cursor: pointer;
         }
         .btn-cancel:hover { 
-            background: rgba(255, 255, 255, 0.1); 
-            color: white; 
-            border-color: var(--accent-orange);
-            opacity: 1;
+            background: var(--input-bg); 
+            color: var(--text-dark); /* Pasa a negro en hover */
+            border-color: var(--milano-red);
         }
     </style>
 </head>

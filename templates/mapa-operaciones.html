@@ -436,7 +436,6 @@ function getTextColor(tipo, estado) {
 // ─────────────────────────────────────────────────────────────
 // DATOS DEL MAPA DE OPERACIONES (GESTIÓN DE ENVÍOS)
 // ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
 // ENVIOS DATA CORREGIDO — FUERZA A QUE LA D APAREZCA SI LA C ESTÁ EN RUTA
 // ─────────────────────────────────────────────────────────────
 const enviosData = [
@@ -482,6 +481,10 @@ let todosLosMarcadores = [];
 let showC = true, showD = true;
 let modoActivo = null, popupAbierto = false;
 let formasActivas = [];
+
+// 🌐 VARIABLES GLOBALES AÑADIDAS PARA RASTREO EN TIEMPO REAL 🌐
+let marcadoresMensajeros = {}; // Almacena las motos activas en mapa { id_mensajero: google.maps.Marker }
+const URL_API_MENSAJEROS = "/api/mensajero/ubicaciones-activas";// Cambia por tu endpoint real del Backend
 
 function setTab(tab) {
     ['creada','en-curso','finalizada'].forEach(t => {
@@ -536,6 +539,64 @@ function onGoogleMapsReady() {
 
     crearMarcadores();
     aplicarFiltros();
+
+    // 🔥 INICIALIZACIÓN DEL SISTEMA DE RASTREO DE MOTOS EN VIVO 🔥
+    consultarUbicacionesMensajeros(); // Primera carga inmediata
+    setInterval(consultarUbicacionesMensajeros, 5000); // Consulta recursiva automática cada 5 segundos
+}
+
+// 🛵 FUNCIÓN CREADA PARA TRAER LAS MOTOS DE TU BD EN TIEMPO REAL 🛵
+async function consultarUbicacionesMensajeros() {
+    try {
+        const response = await fetch(URL_API_MENSAJEROS);
+        if (!response.ok) return;
+        
+        const mensajeros = await response.json(); // Se espera una lista: [{id, nombre, lat, lng}]
+
+        mensajeros.forEach(m => {
+            const pos = new google.maps.LatLng(parseFloat(m.lat), parseFloat(m.lng));
+            
+            // Si el mensajero ya está pintado en el mapa, solo movemos su moto de forma fluida
+            if (marcadoresMensajeros[m.id]) {
+                marcadoresMensajeros[m.id].setPosition(pos);
+            } else {
+                // Si es un mensajero nuevo que se acaba de conectar, creamos su marcador SVG corporativo
+                const marker = new google.maps.Marker({
+                    position: pos,
+                    map: gmap,
+                    title: `Mensajero: ${m.nombre}`,
+                    optimized: false,
+                    zIndex: 1000, // Siempre por encima de los paquetes C y D
+                    icon: {
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="65" viewBox="0 0 50 65">
+                                <circle cx="25" cy="25" r="22" fill="#810202" stroke="white" stroke-width="3"/>
+                                <path d="M12 28 h26 l-4 -10 h-18 z M16 28 c-1.5 0 -3 1.5 -3 3 v4 h26 v-4 c0 -1.5 -1.5 -3 -3 -3 z" fill="white"/>
+                                <circle cx="18" cy="38" r="4" fill="white"/>
+                                <circle cx="32" cy="38" r="4" fill="white"/>
+                                <path d="M25 48 L25 65 M18 55 L25 65 L32 55" stroke="#810202" stroke-width="3" fill="none"/>
+                                <text x="25" y="-5" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="black" stroke="white" stroke-width="2" paint-order="stroke">${m.nombre}</text>
+                            </svg>`),
+                        scaledSize: new google.maps.Size(42, 55),
+                        anchor: new google.maps.Point(21, 55)
+                    }
+                });
+
+                // Crear un popup informativo si se hace click sobre el mensajero en el mapa web
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<div style="color:black;padding:5px;"><b>🛵 Mensajero:</b> ${m.nombre}<br><b>📍 Estado:</b> En ruta activa</div>`
+                });
+
+                marker.addListener('click', () => {
+                    infoWindow.open(gmap, marker);
+                });
+
+                marcadoresMensajeros[m.id] = marker; // Guardamos la referencia para el próximo refresco
+            }
+        });
+    } catch (error) {
+        console.error("Error en el stream del mapa de operaciones:", error);
+    }
 }
 
 function crearIconoSVG(letra, color, textColor, sel) {

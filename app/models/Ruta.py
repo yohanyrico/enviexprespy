@@ -10,11 +10,11 @@ class Ruta(Base):
     nombre_sector = Column(String(150))
     ciudad = Column(String(100))
     estado = Column(String(50), default="En curso")
+    tipo_ruta = Column(String(20), default="RECOLECCION")  # ← NUEVO: RECOLECCION | ENTREGA
     mensajero_id = Column(BigInteger, ForeignKey("usuario.id_usuario"), nullable=True)
 
     # Relación con el Mensajero asignado a la ruta
     mensajero = relationship("Usuario", foreign_keys=[mensajero_id])
-    
-    # 🏁 RELACIÓN CORRECTA Y UNIFICADA: 
-    # Mapea de forma perfecta todos los envíos asociados a esta ruta logística mediante 'ruta_id'
+
+    # Mapea todos los envíos asociados a esta ruta logística
     envios = relationship("Envio", back_populates="ruta", foreign_keys="[Envio.ruta_id]")

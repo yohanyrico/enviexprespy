@@ -1,0 +1,770 @@
+{# templates/bodega.html #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Bodega — EnviExpress</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+    :root {
+        --milano-red:    #B20C06;
+        --milano-hover:  #8E0A05;
+        --chinese-black: #101010;
+        --white:         #ffffff;
+        --bg-page:       #f4f4f4;
+        --border:        #ddd;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        background-color: var(--bg-page);
+        font-family: 'Montserrat', sans-serif;
+        color: var(--chinese-black);
+        font-size: 0.88rem;
+        margin: 0;
+    }
+
+    /* ── HEADER ── */
+    .erp-header {
+        background-color: var(--chinese-black);
+        color: var(--white);
+        padding: 14px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 4px solid var(--milano-red);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+    .erp-header .brand { font-weight: 800; font-size: 1rem; letter-spacing: 1px; }
+    .erp-header .brand span { color: var(--milano-red); }
+
+    /* ── BOTONES ── */
+    .btn-milano {
+        background-color: var(--milano-red);
+        color: var(--white) !important;
+        border: none;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        border-radius: 4px;
+        transition: 0.2s;
+        cursor: pointer;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.8rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-milano:hover { background-color: var(--milano-hover); }
+    .btn-milano.btn-dark { background-color: #333; }
+    .btn-milano.btn-dark:hover { background-color: #111; }
+    .btn-milano.btn-success-custom { background-color: #0a6e35; }
+    .btn-milano.btn-success-custom:hover { background-color: #084f26; }
+
+    /* ── TARJETAS DE RESUMEN ── */
+    .resumen-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        padding: 20px 24px 0;
+    }
+    .resumen-card {
+        background: var(--white);
+        border: 2px solid var(--chinese-black);
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: 0.2s;
+    }
+    .resumen-card:hover { border-color: var(--milano-red); }
+    .resumen-card .icon {
+        width: 46px; height: 46px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; flex-shrink: 0;
+    }
+    .resumen-card .numero { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+    .resumen-card .label  { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #666; margin-top: 2px; }
+
+    .icon-colectado  { background: #cff4fc; color: #055160; }
+    .icon-bodega     { background: #ede9fe; color: #5b21b6; }
+    .icon-pendiente  { background: #fef3c7; color: #92400e; }
+    .icon-ruta       { background: #d1e7dd; color: #0a3622; }
+
+    /* ── PANEL PRINCIPAL ── */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 20px;
+        padding: 20px 24px;
+    }
+
+    /* ── SECCIÓN ── */
+    .section-card {
+        background: var(--white);
+        border: 2px solid var(--chinese-black);
+    }
+    .section-header {
+        background: var(--chinese-black);
+        color: var(--white);
+        padding: 10px 16px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* ── SCANNER PANEL ── */
+    .scanner-panel { padding: 20px; }
+    .scanner-input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .scanner-input {
+        flex: 1;
+        border: 2px solid var(--chinese-black);
+        border-radius: 0;
+        padding: 10px 14px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 700;
+        outline: none;
+        transition: 0.2s;
+        text-transform: uppercase;
+    }
+    .scanner-input:focus { border-color: var(--milano-red); }
+    .scanner-input::placeholder { font-weight: 400; text-transform: none; color: #aaa; }
+
+    /* Lista de guías escaneadas */
+    .guias-lote {
+        min-height: 80px;
+        max-height: 220px;
+        overflow-y: auto;
+        border: 2px dashed var(--border);
+        padding: 10px;
+        margin-bottom: 14px;
+        background: #fafafa;
+    }
+    .guia-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--chinese-black);
+        color: var(--white);
+        padding: 4px 10px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin: 3px;
+    }
+    .guia-tag .remove {
+        cursor: pointer;
+        opacity: 0.6;
+        transition: 0.15s;
+    }
+    .guia-tag .remove:hover { opacity: 1; color: var(--milano-red); }
+    .guias-empty {
+        color: #bbb;
+        font-size: 0.8rem;
+        text-align: center;
+        padding: 20px 0;
+    }
+
+    /* ── TABLA BODEGA ── */
+    .table-bodega { width: 100%; border-collapse: collapse; }
+    .table-bodega thead { background: var(--chinese-black); color: var(--white); }
+    .table-bodega th {
+        padding: 10px 12px;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        border: 1px solid var(--chinese-black);
+        white-space: nowrap;
+    }
+    .table-bodega td {
+        padding: 9px 12px;
+        border: 1px solid #e5e5e5;
+        font-size: 0.8rem;
+        vertical-align: middle;
+    }
+    .table-bodega tbody tr:hover td { background: #f9f4f4; }
+    .table-bodega tbody tr:nth-child(even) td { background: #fafafa; }
+
+    .badge-estado {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 3px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .badge-bodega    { background: #ede9fe; color: #5b21b6; }
+    .badge-colectado { background: #cff4fc; color: #055160; }
+    .badge-ruta      { background: #d1e7dd; color: #0a3622; }
+
+    .check-col { width: 36px; text-align: center; }
+    input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--milano-red); }
+
+    /* ── ACCIONES PANEL ── */
+    .acciones-panel { padding: 16px 20px; }
+    .accion-btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+
+    /* ── TABS ── */
+    .tabs-nav {
+        display: flex;
+        border-bottom: 2px solid var(--chinese-black);
+        background: var(--white);
+    }
+    .tab-btn {
+        padding: 10px 18px;
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        font-family: 'Montserrat', sans-serif;
+        color: #888;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: 0.2s;
+    }
+    .tab-btn:hover { color: var(--chinese-black); }
+    .tab-btn.active { color: var(--milano-red); border-bottom-color: var(--milano-red); }
+    .tab-content-panel { display: none; }
+    .tab-content-panel.active { display: block; }
+
+    /* ── TOAST ── */
+    .toast-container {
+        position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+        display: flex; flex-direction: column; gap: 8px;
+    }
+    .toast-msg {
+        padding: 12px 18px; border-radius: 4px; font-size: 0.82rem;
+        font-weight: 700; color: white; min-width: 260px;
+        animation: slideIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .toast-msg.success { background: #0a6e35; }
+    .toast-msg.error   { background: var(--milano-red); }
+    .toast-msg.info    { background: #0056b3; }
+    @keyframes slideIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 992px) {
+        .resumen-grid { grid-template-columns: repeat(2, 1fr); }
+        .main-grid { grid-template-columns: 1fr; }
+    }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="erp-header">
+    <div class="brand">ENVI<span>EXPRESS</span> — Centro de Bodega</div>
+    <div class="d-flex gap-2">
+        <a href="/envios" class="btn-milano btn-dark"><i class="bi bi-arrow-left"></i> Volver</a>
+    </div>
+</div>
+
+<!-- TARJETAS RESUMEN -->
+<div class="resumen-grid" id="resumenGrid">
+    <div class="resumen-card">
+        <div class="icon icon-colectado"><i class="bi bi-box-seam-fill"></i></div>
+        <div>
+            <div class="numero" id="cnt-colectado">—</div>
+            <div class="label">C-Colectado<br>En camino</div>
+        </div>
+    </div>
+    <div class="resumen-card">
+        <div class="icon icon-bodega"><i class="bi bi-building-fill"></i></div>
+        <div>
+            <div class="numero" id="cnt-bodega">—</div>
+            <div class="label">En Bodega<br>Recibidos</div>
+        </div>
+    </div>
+    <div class="resumen-card">
+        <div class="icon icon-pendiente"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+            <div class="numero" id="cnt-pendiente">—</div>
+            <div class="label">Pend. Verificar<br>Por despachar</div>
+        </div>
+    </div>
+    <div class="resumen-card">
+        <div class="icon icon-ruta"><i class="bi bi-bicycle"></i></div>
+        <div>
+            <div class="numero" id="cnt-ruta">—</div>
+            <div class="label">En Ruta<br>Despachados</div>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="main-grid">
+
+    <!-- COLUMNA IZQUIERDA: TABLA DE PEDIDOS EN BODEGA -->
+    <div>
+        <!-- TABS -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="cambiarTab('bodega', this)">
+                <i class="bi bi-building me-1"></i> En Bodega
+            </button>
+            <button class="tab-btn" onclick="cambiarTab('colectados', this)">
+                <i class="bi bi-box-seam me-1"></i> C-Colectados
+            </button>
+            <button class="tab-btn" onclick="cambiarTab('en-ruta', this)">
+                <i class="bi bi-bicycle me-1"></i> En Ruta
+            </button>
+        </div>
+
+        <!-- TAB: EN BODEGA -->
+        <div class="tab-content-panel active" id="tab-bodega">
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="bi bi-building-fill me-2"></i>Pedidos en Bodega</span>
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="text" id="buscar-bodega" placeholder="Buscar guía..."
+                               oninput="filtrarTabla('tabla-bodega', this.value)"
+                               style="padding:5px 10px;border:1px solid #555;background:#222;color:#fff;border-radius:3px;font-family:'Montserrat',sans-serif;font-size:0.75rem;width:160px;">
+                        <button class="btn-milano" onclick="seleccionarTodos('tabla-bodega')" style="padding:5px 12px;font-size:0.72rem;">
+                            <i class="bi bi-check-all"></i> Todos
+                        </button>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="table-bodega" id="tabla-bodega">
+                        <thead>
+                            <tr>
+                                <th class="check-col"><input type="checkbox" id="check-all-bodega" onchange="toggleAll('tabla-bodega', this)"></th>
+                                <th>Guía</th>
+                                <th>Cliente</th>
+                                <th>Destino</th>
+                                <th>Peso</th>
+                                <th>Servicio</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-bodega">
+                            <tr><td colspan="8" class="text-center text-muted p-4">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: C-COLECTADOS -->
+        <div class="tab-content-panel" id="tab-colectados">
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="bi bi-box-seam me-2"></i>Pedidos C-Colectados (en camino a bodega)</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="table-bodega" id="tabla-colectados">
+                        <thead>
+                            <tr>
+                                <th>Guía</th>
+                                <th>Cliente</th>
+                                <th>Destino</th>
+                                <th>Peso</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-colectados">
+                            <tr><td colspan="5" class="text-center text-muted p-4">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: EN RUTA -->
+        <div class="tab-content-panel" id="tab-en-ruta">
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="bi bi-bicycle me-2"></i>Pedidos En Ruta</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="table-bodega" id="tabla-en-ruta">
+                        <thead>
+                            <tr>
+                                <th>Guía</th>
+                                <th>Cliente</th>
+                                <th>Destino</th>
+                                <th>Mensajero Entregador</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-en-ruta">
+                            <tr><td colspan="5" class="text-center text-muted p-4">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: ESCÁNER + ACCIONES -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- PANEL RECIBIR EN BODEGA -->
+        <div class="section-card">
+            <div class="section-header">
+                <span><i class="bi bi-qr-code-scan me-2"></i>Recibir en Bodega</span>
+                <span class="badge bg-light text-dark" id="cnt-lote-recibir">0 guías</span>
+            </div>
+            <div class="scanner-panel">
+                <p style="font-size:0.75rem;color:#666;margin-bottom:12px;">
+                    Escanea o escribe las guías que el mensajero recolector trajo. Estado cambia a <strong>En_Bodega</strong>.
+                </p>
+                <div class="scanner-input-group">
+                    <input type="text" id="input-recibir" class="scanner-input"
+                           placeholder="Escanea o escribe guía (ENV00001)..."
+                           onkeydown="if(event.key==='Enter') agregarGuiaLote('recibir')">
+                    <button class="btn-milano" onclick="agregarGuiaLote('recibir')">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+                <div class="guias-lote" id="lote-recibir">
+                    <div class="guias-empty" id="empty-recibir">
+                        <i class="bi bi-inbox" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>
+                        Ninguna guía escaneada
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-milano btn-success-custom w-100"
+                            onclick="procesarLote('recibir')">
+                        <i class="bi bi-building-fill me-1"></i> RECIBIR EN BODEGA
+                    </button>
+                    <button class="btn-milano btn-dark" onclick="limpiarLote('recibir')" title="Limpiar">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL DESPACHAR DE BODEGA -->
+        <div class="section-card">
+            <div class="section-header">
+                <span><i class="bi bi-send-fill me-2"></i>Despachar a Ruta</span>
+                <span class="badge bg-light text-dark" id="cnt-lote-despachar">0 guías</span>
+            </div>
+            <div class="scanner-panel">
+                <p style="font-size:0.75rem;color:#666;margin-bottom:12px;">
+                    Mensajero escanea los pedidos antes de salir. Estado cambia a <strong>En_Ruta</strong>.
+                </p>
+                <div class="scanner-input-group">
+                    <input type="text" id="input-despachar" class="scanner-input"
+                           placeholder="Escanea o escribe guía (ENV00001)..."
+                           onkeydown="if(event.key==='Enter') agregarGuiaLote('despachar')">
+                    <button class="btn-milano" onclick="agregarGuiaLote('despachar')">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                </div>
+                <div class="guias-lote" id="lote-despachar">
+                    <div class="guias-empty" id="empty-despachar">
+                        <i class="bi bi-inbox" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>
+                        Ninguna guía escaneada
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-milano w-100"
+                            onclick="procesarLote('despachar')">
+                        <i class="bi bi-bicycle me-1"></i> DESPACHAR A EN RUTA
+                    </button>
+                    <button class="btn-milano btn-dark" onclick="limpiarLote('despachar')" title="Limpiar">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── CONFIG ───────────────────────────────────────────────────
+const TOKEN = "{{ token }}";  // Jinja2 inyecta el token de sesión
+const BASE  = "/api/bodega";
+
+const lotes = { recibir: new Set(), despachar: new Set() };
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    cargarResumen();
+    cargarPedidosBodega();
+    cargarColectados();
+    cargarEnRuta();
+    // Auto-focus en el primer scanner
+    document.getElementById('input-recibir').focus();
+});
+
+// ── RESUMEN ───────────────────────────────────────────────────
+async function cargarResumen() {
+    try {
+        const r = await fetch(`${BASE}/resumen`, {
+            headers: { 'Authorization': `Bearer ${TOKEN}`, 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (!r.ok) return;
+        const d = await r.json();
+        document.getElementById('cnt-colectado').textContent = d.c_colectado ?? 0;
+        document.getElementById('cnt-bodega').textContent    = d.en_bodega ?? 0;
+        document.getElementById('cnt-pendiente').textContent = d.pendiente_verificar ?? 0;
+        document.getElementById('cnt-ruta').textContent      = d.en_ruta ?? 0;
+    } catch(e) { console.error('Error resumen:', e); }
+}
+
+// ── CARGAR PEDIDOS EN BODEGA ──────────────────────────────────
+async function cargarPedidosBodega() {
+    const tbody = document.getElementById('tbody-bodega');
+    try {
+        const r = await fetch(`${BASE}/pendientes`, {
+            headers: { 'Authorization': `Bearer ${TOKEN}`, 'ngrok-skip-browser-warning': 'true' }
+        });
+        const pedidos = await r.json();
+        if (!pedidos.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted p-4"><i class="bi bi-inbox me-2"></i>No hay pedidos en bodega</td></tr>';
+            return;
+        }
+        tbody.innerHTML = pedidos.map(p => `
+            <tr>
+                <td class="check-col"><input type="checkbox" class="check-pedido" data-guia="${p.guia}"></td>
+                <td><strong style="color:var(--milano-red);">${p.guia}</strong></td>
+                <td>${p.cliente}</td>
+                <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p.direccion_entrega}">${p.ciudad_destino || p.direccion_entrega}</td>
+                <td>${p.peso} kg</td>
+                <td><span style="font-size:0.7rem;font-weight:700;">${p.tipo_servicio}</span></td>
+                <td><span class="badge-estado badge-bodega">En Bodega</span></td>
+                <td>
+                    <button class="btn-milano" style="padding:4px 10px;font-size:0.7rem;"
+                            onclick="despacharUno('${p.guia}')">
+                        <i class="bi bi-send"></i> Despachar
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger p-4">Error cargando datos</td></tr>';
+    }
+}
+
+// ── CARGAR C-COLECTADOS ───────────────────────────────────────
+async function cargarColectados() {
+    const tbody = document.getElementById('tbody-colectados');
+    try {
+        const r = await fetch('/api/envios/por-estado?estado=C-Colectado', {
+            headers: { 'Authorization': `Bearer ${TOKEN}`, 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (!r.ok) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4">Sin datos</td></tr>'; return; }
+        const pedidos = await r.json();
+        if (!pedidos.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4"><i class="bi bi-inbox me-2"></i>No hay pedidos C-Colectados</td></tr>';
+            return;
+        }
+        tbody.innerHTML = pedidos.map(p => `
+            <tr>
+                <td><strong style="color:var(--milano-red);">${p.guia}</strong></td>
+                <td>${p.cliente}</td>
+                <td>${p.ciudad_destino || '—'}</td>
+                <td>${p.peso} kg</td>
+                <td><span class="badge-estado badge-colectado">C-Colectado</span></td>
+            </tr>
+        `).join('');
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4">Sin datos disponibles</td></tr>';
+    }
+}
+
+// ── CARGAR EN RUTA ────────────────────────────────────────────
+async function cargarEnRuta() {
+    const tbody = document.getElementById('tbody-en-ruta');
+    try {
+        const r = await fetch('/api/envios/por-estado?estado=En_Ruta', {
+            headers: { 'Authorization': `Bearer ${TOKEN}`, 'ngrok-skip-browser-warning': 'true' }
+        });
+        if (!r.ok) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4">Sin datos</td></tr>'; return; }
+        const pedidos = await r.json();
+        if (!pedidos.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4"><i class="bi bi-inbox me-2"></i>No hay pedidos en ruta</td></tr>';
+            return;
+        }
+        tbody.innerHTML = pedidos.map(p => `
+            <tr>
+                <td><strong style="color:var(--milano-red);">${p.guia}</strong></td>
+                <td>${p.cliente}</td>
+                <td>${p.ciudad_destino || '—'}</td>
+                <td>${p.mensajero_entrega || '— Sin asignar —'}</td>
+                <td><span class="badge-estado badge-ruta">En Ruta</span></td>
+            </tr>
+        `).join('');
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4">Sin datos disponibles</td></tr>';
+    }
+}
+
+// ── LOTE SCANNER ─────────────────────────────────────────────
+function agregarGuiaLote(tipo) {
+    const input = document.getElementById(`input-${tipo}`);
+    const guia  = input.value.trim().toUpperCase();
+    if (!guia) return;
+    if (lotes[tipo].has(guia)) {
+        mostrarToast(`La guía ${guia} ya está en el lote`, 'info');
+        input.value = '';
+        return;
+    }
+    lotes[tipo].add(guia);
+    renderLote(tipo);
+    input.value = '';
+    input.focus();
+}
+
+function renderLote(tipo) {
+    const container = document.getElementById(`lote-${tipo}`);
+    const empty     = document.getElementById(`empty-${tipo}`);
+    const cnt       = document.getElementById(`cnt-lote-${tipo}`);
+
+    cnt.textContent = `${lotes[tipo].size} guía${lotes[tipo].size !== 1 ? 's' : ''}`;
+
+    if (!lotes[tipo].size) {
+        container.innerHTML = '';
+        container.appendChild(empty);
+        return;
+    }
+
+    container.innerHTML = [...lotes[tipo]].map(g => `
+        <span class="guia-tag">
+            <i class="bi bi-qr-code"></i> ${g}
+            <span class="remove" onclick="quitarGuia('${tipo}','${g}')">✕</span>
+        </span>
+    `).join('');
+}
+
+function quitarGuia(tipo, guia) {
+    lotes[tipo].delete(guia);
+    renderLote(tipo);
+}
+
+function limpiarLote(tipo) {
+    lotes[tipo].clear();
+    renderLote(tipo);
+}
+
+// ── PROCESAR LOTE ─────────────────────────────────────────────
+async function procesarLote(tipo) {
+    if (!lotes[tipo].size) {
+        mostrarToast('Agrega al menos una guía antes de procesar', 'error');
+        return;
+    }
+
+    const endpoint = tipo === 'recibir' ? `${BASE}/recibir` : `${BASE}/despachar`;
+    const campo    = tipo === 'recibir' ? 'guias' : 'guias';
+
+    try {
+        const r = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}`,
+                'ngrok-skip-browser-warning': 'true'
+            },
+            body: JSON.stringify({ guias: [...lotes[tipo]] })
+        });
+
+        const data = await r.json();
+
+        if (r.ok && data.ok) {
+            const accion = tipo === 'recibir' ? 'recibidos en bodega' : 'despachados a En Ruta';
+            mostrarToast(`✅ ${data.recibidos?.length || data.despachados?.length || 0} pedido(s) ${accion}`, 'success');
+            limpiarLote(tipo);
+            // Recargar datos
+            setTimeout(() => {
+                cargarResumen();
+                cargarPedidosBodega();
+                cargarColectados();
+                cargarEnRuta();
+            }, 600);
+        } else {
+            mostrarToast(data.detail || 'Error al procesar', 'error');
+        }
+    } catch(e) {
+        mostrarToast('Error de conexión con el servidor', 'error');
+    }
+}
+
+// ── DESPACHAR UNO DESDE LA TABLA ─────────────────────────────
+async function despacharUno(guia) {
+    try {
+        const r = await fetch(`${BASE}/despachar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}`,
+                'ngrok-skip-browser-warning': 'true'
+            },
+            body: JSON.stringify({ guias: [guia] })
+        });
+        const data = await r.json();
+        if (r.ok && data.ok) {
+            mostrarToast(`✅ ${guia} despachado a En Ruta`, 'success');
+            setTimeout(() => { cargarResumen(); cargarPedidosBodega(); cargarEnRuta(); }, 600);
+        } else {
+            mostrarToast(data.detail || 'Error al despachar', 'error');
+        }
+    } catch(e) {
+        mostrarToast('Error de conexión', 'error');
+    }
+}
+
+// ── TABS ──────────────────────────────────────────────────────
+function cambiarTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+// ── HELPERS TABLA ─────────────────────────────────────────────
+function toggleAll(tablaId, checkbox) {
+    document.querySelectorAll(`#${tablaId} .check-pedido`).forEach(c => c.checked = checkbox.checked);
+}
+
+function seleccionarTodos(tablaId) {
+    const checks = document.querySelectorAll(`#${tablaId} .check-pedido`);
+    const allChecked = [...checks].every(c => c.checked);
+    checks.forEach(c => c.checked = !allChecked);
+}
+
+function filtrarTabla(tablaId, texto) {
+    const rows = document.querySelectorAll(`#${tablaId} tbody tr`);
+    const q = texto.toLowerCase();
+    rows.forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function mostrarToast(msg, tipo = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast-msg ${tipo}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+</script>
+</body>
+</html>

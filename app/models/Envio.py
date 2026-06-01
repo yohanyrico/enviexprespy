@@ -44,20 +44,20 @@ class Envio(Base):
     # Estado principal del envío — flujo completo
     estado = Column(
         Enum(
-            "Registrado",          # Cliente crea el pedido
-            "Pendiente_Recoger",   # Admin asigna mensajero recolector
-            "Colectado",           # Mensajero recoge y toma foto
-            "Pendiente_Verificar", # Admin asigna mensajero entregador
-            "En_Ruta",             # Mensajero escanea guía → en camino
-            "En_Destino",          # Mensajero marca "Llegué"
-            "Entregado",           # Mensajero entrega y toma foto
-            "Cancelado",
-            "Devolucion",
-            "Retorno",
-            "Rechazado",
-            "Fallido",
-            name="estadoenvio", native_enum=False
-        ),
+    "Registrado",
+    "Pendiente_Recoger",
+    "C-Colectado",         # ← agregar aquí
+    "Pendiente_Verificar",
+    "En_Ruta",
+    "En_Destino",
+    "Entregado",
+    "Cancelado",
+    "Devolucion",
+    "Retorno",
+    "Rechazado",
+    "Fallido",
+    name="estadoenvio", native_enum=False
+),
         nullable=False, default="Registrado"
     )
 
