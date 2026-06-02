@@ -13,10 +13,10 @@ class Vehiculo(Base):
     
     # Valores exactos como están en la BD (formato Java original)
     tipo = Column(
-        Enum("Moto", "Carro", "Camioneta", "Camión", "Van",
-            name="tipo", native_enum=False),
-        nullable=False
-    )
+    Enum("Moto", "Carro", "Camioneta", "Camión", "Van",
+         name="tipovehiculo", native_enum=False),
+    nullable=False
+)
     capacidad_kg = Column(Float, nullable=False)
 
     # Relación inversa con Envio
