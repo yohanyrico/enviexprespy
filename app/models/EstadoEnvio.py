@@ -12,4 +12,4 @@ class EstadoEnvio(Enum):
     FALLIDO = "Fallido"
 
     def get_display_name(self):
-        return self.value
+        return self.value  # ← faltaba espacio antes del return

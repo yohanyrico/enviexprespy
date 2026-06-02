@@ -14,7 +14,7 @@ class Seguimiento(Base):
     envio_id = Column(BigInteger, ForeignKey("envios.envio_id"), nullable=False)
     envio = relationship("Envio", back_populates="seguimientos")
 
-    estado = Column(Enum(EstadoEnvio), nullable=False)
+    estado = Column(Enum(EstadoEnvio, name="estadoenvio"), nullable=False)
     descripcion = Column(String(255))
     fecha = Column(DateTime, nullable=False)
     foto = Column(String(255), nullable=True)
