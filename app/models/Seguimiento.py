@@ -3,7 +3,6 @@
 from sqlalchemy import Column, BigInteger, String, DateTime, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from app.config.database import Base
-from app.models.EstadoEnvio import EstadoEnvio
 
 
 class Seguimiento(Base):
@@ -14,7 +13,11 @@ class Seguimiento(Base):
     envio_id = Column(BigInteger, ForeignKey("envios.envio_id"), nullable=False)
     envio = relationship("Envio", back_populates="seguimientos")
 
-    estado = Column(Enum(EstadoEnvio, name="estadoenvio"), nullable=False)
+    estado = Column(
+        Enum("Registrado", "En_Bodega", "En_Ruta", "En_Destino", "Entregado", "Fallido",
+             name="estadoseguimiento", native_enum=False),
+        nullable=False, default="Registrado"
+    )
     descripcion = Column(String(255))
     fecha = Column(DateTime, nullable=False)
     foto = Column(String(255), nullable=True)
