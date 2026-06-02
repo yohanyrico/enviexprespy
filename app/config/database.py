@@ -1,23 +1,21 @@
 # app/config/database.py
 
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 
-# Equivalente a spring.datasource.url
-DATABASE_URL = "mysql+pymysql://root:@localhost:3306/enviexpress_bogota"
+load_dotenv()
 
-# Equivalente a spring.jpa.show-sql=true
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 engine = create_engine(DATABASE_URL, echo=True)
 
-# Equivalente a SessionFactory de Hibernate
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base para todos los modelos (usado en cada model con class X(Base))
 Base = declarative_base()
 
-
-# Dependency para FastAPI (equivalente a @Autowired en controllers)
 def get_db():
     db = SessionLocal()
     try:
