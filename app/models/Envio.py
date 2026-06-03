@@ -43,24 +43,25 @@ class Envio(Base):
 
     # Estado principal del envío — flujo completo
     estado = Column(
-        Enum(
-    "Registrado",
-    "Pendiente_Recoger",
-    "C-Colectado",         # ← agregar aquí
-    "Pendiente_Verificar",
-    "En_Ruta",
-    "En_Destino",
-    "Entregado",
-    "Cancelado",
-    "Devolucion",
-    "Retorno",
-    "Rechazado",
-    "Fallido",
-    name="estadoenvio", native_enum=False
-),
-        nullable=False, default="Registrado"
-    )
-
+    Enum(
+        "Registrado",
+        "Pendiente_Recoger",
+        "Colectado",           # ← ya existe pero falta aquí
+        "C-Colectado",
+        "Pendiente_Verificar",
+        "En_Bodega",           # ← también agrégalo por si acaso
+        "En_Ruta",
+        "En_Destino",
+        "Entregado",
+        "Cancelado",
+        "Devolucion",
+        "Retorno",
+        "Rechazado",
+        "Fallido",
+        name="estadoenvio", native_enum=False
+    ),
+    nullable=False, default="Registrado"
+)
     # Estados independientes por punto (recogida y entrega)
     estado_recogida = Column(
         Enum("Pendiente", "En_Ruta", "Colectado", "Cancelado",
