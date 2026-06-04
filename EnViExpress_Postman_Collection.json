@@ -1,0 +1,373 @@
+{
+  "info": {
+    "name": "EnViExpress - Pruebas de Integración",
+    "description": "Colección de pruebas de integración para el sistema EnViExpress. Cubre autenticación, gestión de usuarios, envíos y rutas protegidas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "description": "URL base del servidor. Cambiar a URL de Render para pruebas en producción."
+    },
+    {
+      "key": "token_admin",
+      "value": "",
+      "description": "Token JWT del admin (se llena automáticamente al hacer login)"
+    },
+    {
+      "key": "token_cliente",
+      "value": "",
+      "description": "Token JWT del cliente (se llena automáticamente)"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticación",
+      "item": [
+        {
+          "name": "Login CEO - Exitoso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Login exitoso', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta contiene access_token', function() {",
+                  "    var data = pm.response.json();",
+                  "    pm.expect(data).to.have.property('access_token');",
+                  "    pm.collectionVariables.set('token_admin', data.access_token);",
+                  "});",
+                  "pm.test('Token type es bearer', function() {",
+                  "    var data = pm.response.json();",
+                  "    pm.expect(data.token_type).to.eql('bearer');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_name\": \"admin\",\n  \"password\": \"123\"\n}"
+            },
+            "url": "{{base_url}}/api/login"
+          }
+        },
+        {
+          "name": "Login - Contraseña incorrecta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 - Credenciales inválidas', function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('Mensaje de error presente', function() {",
+                  "    var data = pm.response.json();",
+                  "    pm.expect(data).to.have.property('detail');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_name\": \"admin\",\n  \"password\": \"clave_incorrecta\"\n}"
+            },
+            "url": "{{base_url}}/api/login"
+          }
+        },
+        {
+          "name": "Login - Usuario inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 - Usuario no existe', function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_name\": \"usuario_fantasma_999\",\n  \"password\": \"cualquier\"\n}"
+            },
+            "url": "{{base_url}}/api/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Páginas Públicas",
+      "item": [
+        {
+          "name": "Landing Page",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Landing carga', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta es HTML', function() {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/"
+          }
+        },
+        {
+          "name": "Página de Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Formulario login carga', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/login"
+          }
+        },
+        {
+          "name": "Página de Recuperación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Recuperación carga', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/recuperar"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Rutas Protegidas — Sin Token",
+      "item": [
+        {
+          "name": "Usuarios sin autenticar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Redirige o rechaza sin token', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([302, 303, 401]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/usuarios"
+          }
+        },
+        {
+          "name": "Envíos sin autenticar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Redirige o rechaza sin token', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([302, 303, 401]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/envios"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Gestión de Usuarios (Admin)",
+      "item": [
+        {
+          "name": "Listar Usuarios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Lista de usuarios', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Tiempo de respuesta < 2000ms', function() {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": "{{base_url}}/usuarios"
+          }
+        },
+        {
+          "name": "Formulario Nuevo Usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Formulario carga', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": "{{base_url}}/usuarios/nuevo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Gestión de Envíos",
+      "item": [
+        {
+          "name": "Listar Envíos (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Lista de envíos', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Tiempo de respuesta < 3000ms', function() {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": "{{base_url}}/envios"
+          }
+        },
+        {
+          "name": "Formulario Nuevo Envío",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 o redirección', function() {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 302, 303]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": "{{base_url}}/envios/nuevo"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. API Endpoints",
+      "item": [
+        {
+          "name": "API - Ubicaciones Mensajeros",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - API responde', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Respuesta es JSON', function() {",
+                  "    pm.response.to.be.json;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": "{{base_url}}/api/admin/ubicaciones-mensajeros"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Perfil de Usuario",
+      "item": [
+        {
+          "name": "Ver Perfil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Perfil carga', function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token_admin}}"}],
+            "url": "{{base_url}}/perfil"
+          }
+        }
+      ]
+    }
+  ]
+}
