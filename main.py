@@ -164,8 +164,10 @@ async def vista_recuperar(request: Request):
     return templates.TemplateResponse("recuperar.html", {"request": request})
 
 # --- Ejecución ---
+# --- Ejecución ---
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
+    # Removido reload=True para que Render no choque en producción
+    uvicorn.run("main:app", host="0.0.0.0", port=8080)
     
     #uvicorn main:app --reload --port 8080
     #https://matcher-zoom-deploy.ngrok-free.dev/planes/pago/oro
