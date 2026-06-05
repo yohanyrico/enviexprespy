@@ -36,6 +36,7 @@ from app.controllers.AppMensajeroController import router as app_mensajero_route
 from app.controllers.FinanzasController import router as finanzas_router
 from app.controllers.PlanController import router as plan_router
 from app.controllers.BodegaController import router as bodega_router
+from app.controllers import inventario_controller
 
 # Importar servicios
 from app.services.email_service import enviar_email_recuperacion
@@ -84,6 +85,7 @@ app.include_router(app_mensajero_router)
 app.include_router(finanzas_router)
 app.include_router(plan_router)
 app.include_router(bodega_router)
+app.include_router(inventario_controller.router)
 
 # --- 💻 ENDPOINT GLOBAL PARA EL MAPA DEL ADMINISTRADOR (DOBLE RUTA) ---
 # Se le asignan múltiples decoradores para que responda tanto al frontend JS como a la ruta admin
