@@ -124,7 +124,6 @@
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── BASE PLAN CARD ── */
     .plan-card {
         background: var(--white);
         border: 1.5px solid #ddd;
@@ -142,7 +141,7 @@
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 4px;
-        background: var(--milano-red); /* fallback, se sobreescribe por plan */
+        background: var(--milano-red);
     }
     .plan-card:hover {
         box-shadow: 0 8px 24px rgba(0,0,0,0.15);
@@ -168,7 +167,6 @@
         margin-bottom: 16px;
     }
 
-    /* ── BRONCE ── */
     .plan-card.bronce::before          { background: #cd7f32; }
     .plan-card.bronce                  { border-color: #e8c49a; }
     .plan-card.bronce .plan-nombre     { color: #8B5A1A; }
@@ -177,7 +175,6 @@
     .plan-card.bronce .btn-plan        { background-color: #cd7f32 !important; color: #fff !important; }
     .plan-card.bronce .btn-plan:hover  { background-color: #a0622a !important; }
 
-    /* ── PLATA ── */
     .plan-card.plata::before           { background: #9e9e9e; }
     .plan-card.plata                   { border-color: #d0d0d0; }
     .plan-card.plata .plan-nombre      { color: #555; }
@@ -186,7 +183,6 @@
     .plan-card.plata .btn-plan         { background-color: #9e9e9e !important; color: #fff !important; }
     .plan-card.plata .btn-plan:hover   { background-color: #757575 !important; }
 
-    /* ── ORO ── */
     .plan-card.oro::before             { background: #FFD700; }
     .plan-card.oro                     { border-color: #ffe66a; }
     .plan-card.oro .plan-nombre        { color: #997a00; }
@@ -195,7 +191,6 @@
     .plan-card.oro .btn-plan           { background-color: #FFD700 !important; color: #000 !important; }
     .plan-card.oro .btn-plan:hover     { background-color: #c9a800 !important; }
 
-    /* ── DIAMANTE ── */
     .plan-card.diamante::before        { background: linear-gradient(90deg,#00bcd4,#7c4dff); }
     .plan-card.diamante                { border-color: #b2ebf2; }
     .plan-card.diamante .plan-nombre   { color: #006064; }
@@ -204,7 +199,6 @@
     .plan-card.diamante .btn-plan      { background: linear-gradient(90deg,#00bcd4,#7c4dff) !important; color: #fff !important; }
     .plan-card.diamante .btn-plan:hover{ opacity: 0.88; }
 
-    /* btn-plan base */
     .btn-plan {
         border: none; font-weight: 700;
         font-family: 'Montserrat', sans-serif;
@@ -322,10 +316,8 @@
                 <div class="row g-3">
                     {% if tarifas %}
                         {% for t in tarifas %}
-                        {# Ocultar plan nacionales #}
                         {% set nombre_lower = t.nombre.lower() %}
                         {% if 'nacional' not in nombre_lower %}
-                        {# Determinar clase CSS según nombre #}
                         {% if 'bronce' in nombre_lower %}
                             {% set clase_plan = 'bronce' %}
                         {% elif 'plata' in nombre_lower %}
@@ -366,6 +358,7 @@
 <section class="container py-4">
     <h2 class="mb-4 fw-bold section-title"><i class="bi bi-lightning-fill"></i> Acceso Rápido</h2>
     <div class="row g-4">
+
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-geo-alt fs-1"></i>
@@ -373,6 +366,7 @@
                 <a href="/seguimiento" class="btn btn-orange w-100 text-white">Ir ahora</a>
             </div>
         </div>
+
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-plus-square fs-1"></i>
@@ -380,6 +374,7 @@
                 <a href="/envios/nuevo" class="btn btn-orange w-100 text-white">Crear</a>
             </div>
         </div>
+
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-collection fs-1"></i>
@@ -387,22 +382,28 @@
                 <a href="/envios/mis-guias" class="btn btn-orange w-100 text-white">Ver todas</a>
             </div>
         </div>
-        <div class="col-md-3 mb-3"> <div class="card text-center h-100 shadow-sm border-0 class-tarjeta">
-        <div class="card-body d-flex flex-column justify-content-between p-4" style="background-color: #f8f9fa; border-radius: 15px;">
-            <div>
-                <div class="mb-3 text-danger">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
-                        <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.722V6.822L1 4.218v7.904zm-5.961-9.3L8 3.038l5.461 2.184L8 7.404z"/>
-                    </svg>
+
+        {# INVENTARIO — solo si el CEO lo activó para este cliente #}
+        {% if usuario.maneja_inventario %}
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100 shadow-sm border-0">
+                <div class="card-body d-flex flex-column justify-content-between p-4" style="background-color: #f8f9fa; border-radius: 15px;">
+                    <div>
+                        <div class="mb-3 text-danger">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                                <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.722V6.822L1 4.218v7.904zm-5.961-9.3L8 3.038l5.461 2.184L8 7.404z"/>
+                            </svg>
+                        </div>
+                        <h4 class="fw-bold text-uppercase" style="color: #212529; font-size: 1.1rem; letter-spacing: 1px;">Mi Inventario</h4>
+                    </div>
+                    <div class="mt-4">
+                        <a href="/inventario/web" class="btn w-100 fw-bold" style="background-color: #b30000; color: white; border-radius: 8px; padding: 10px;">Ver Stock</a>
+                    </div>
                 </div>
-                <h4 class="fw-bold text-uppercase" style="color: #212529; font-size: 1.1rem; letter-spacing: 1px;">Mi Inventario</h4>
-            </div>
-            <div class="mt-4">
-                <a href="/inventario/web" class="btn w-100 fw-bold" style="background-color: #b30000; color: white; border-radius: 8px; padding: 10px;">Ver Stock</a>
             </div>
         </div>
-    </div>
-</div>
+        {% endif %}
+
         <div class="col-md-3">
             <div class="quick-card">
                 <i class="bi bi-gear fs-1"></i>
@@ -410,6 +411,7 @@
                 <a href="/perfil" class="btn btn-orange w-100 text-white">Gestionar</a>
             </div>
         </div>
+
     </div>
 </section>
 

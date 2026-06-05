@@ -8,19 +8,17 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
     :root {
-        /* Nuevos colores integrados */
         --rojo-milan: #B20C06;
         --rojo-hover: #8a0a05;
         --negro-puro: #000000;
         --blanco-puro: #ffffff;
         --fondo-gris: #f4f4f4;
-        /* Ajuste de variables anteriores */
-        --card-bg: #ffffff; /* Contenedor blanco para resaltar sobre el gris */
+        --card-bg: #ffffff;
         --input-bg: #fdfdfd;
     }
 
     body {
-        background: var(--fondo-gris); /* Fondo general gris */
+        background: var(--fondo-gris);
         color: var(--negro-puro);
         font-family: 'Segoe UI', Arial, sans-serif;
         min-height: 100vh;
@@ -40,7 +38,6 @@
         box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     }
 
-    /* Títulos en negro puro */
     h2 {
         color: var(--negro-puro);
         text-align: center;
@@ -51,14 +48,13 @@
     }
 
     .form-label {
-        color: var(--negro-puro); /* Etiquetas en negro */
+        color: var(--negro-puro);
         font-size: 0.85rem;
         font-weight: 700;
         text-transform: uppercase;
         margin-bottom: 8px;
     }
 
-    /* Inputs con bordes y texto negro */
     .form-control, .form-select {
         background-color: var(--input-bg);
         border: 2px solid #e1e8ef;
@@ -70,7 +66,7 @@
 
     .form-control:focus, .form-select:focus {
         background-color: var(--blanco-puro);
-        border-color: var(--rojo-milan); /* Acento en rojo al enfocar */
+        border-color: var(--rojo-milan);
         color: var(--negro-puro);
         box-shadow: 0 0 12px rgba(178, 12, 6, 0.15);
         outline: none;
@@ -80,7 +76,6 @@
 
     option { background-color: var(--blanco-puro); color: var(--negro-puro); }
 
-    /* Botón Rojo Milán con borde blanco */
     .btn-orange {
         background-color: var(--rojo-milan);
         color: var(--blanco-puro);
@@ -124,7 +119,6 @@
         margin: 24px 0 20px;
     }
 
-    /* Etiquetas de sección en Rojo Milán */
     .section-label {
         font-size: 0.75rem;
         font-weight: 700;
@@ -134,6 +128,41 @@
         margin-bottom: 16px;
         border-left: 3px solid var(--rojo-milan);
         padding-left: 10px;
+    }
+
+    /* Toggle switch inventario */
+    .toggle-inventario {
+        background: #f8f9fa;
+        border: 2px solid #e1e8ef;
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        transition: border-color 0.3s;
+    }
+    .toggle-inventario:has(input:checked) {
+        border-color: var(--rojo-milan);
+        background: rgba(178,12,6,0.04);
+    }
+    .toggle-inventario .toggle-info h6 {
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 2px;
+        color: var(--negro-puro);
+    }
+    .toggle-inventario .toggle-info small {
+        color: #666;
+        font-size: 0.78rem;
+    }
+    .form-check-input:checked {
+        background-color: var(--rojo-milan);
+        border-color: var(--rojo-milan);
+    }
+    .form-check-input:focus {
+        box-shadow: 0 0 0 0.2rem rgba(178,12,6,0.25);
+        border-color: var(--rojo-milan);
     }
 </style>
 </head>
@@ -242,7 +271,6 @@
                     <select class="form-select" name="ciudad" id="select_ciudad_form">
                         <option value="">Ciudad de residencia</option>
                     </select>
-                    {# Campo oculto para guardar el valor compuesto Ciudad (DEPTO) #}
                     <input type="hidden" name="ciudad_raw" id="ciudad_raw_input"
                            value="{{ usuario.ciudad if usuario and usuario.ciudad else '' }}" />
                 </div>
@@ -267,7 +295,7 @@
 
             <hr class="section-divider">
 
-            {# ── CONFIGURACIÓN DE CUENTA (Apartado de Rol Actualizado) ─────────────────── #}
+            {# ── CONFIGURACIÓN DE CUENTA ───────────────────────────────── #}
             <p class="section-label"><i class="bi bi-gear"></i> Configuración de cuenta</p>
 
             <div class="mb-3">
@@ -291,7 +319,7 @@
                     <label class="form-label">
                         <i class="bi bi-shield-lock-fill"></i> Rol de Sistema*
                     </label>
-                    <select class="form-select" name="rol" required>
+                    <select class="form-select" name="rol" id="select_rol" required onchange="toggleInventarioVisibility()">
                         <option value="">Seleccionar...</option>
                         <option value="CEO"
                                 {{ 'selected' if usuario and usuario.rol == 'CEO' else '' }}>
@@ -327,6 +355,28 @@
                     </select>
                 </div>
             </div>
+
+            {# ── TOGGLE INVENTARIO — solo visible si rol es CLIENTE ────── #}
+            <div class="mb-3" id="inventario_section"
+                 style="{{ '' if (usuario and usuario.rol == 'CLIENTE') else 'display:none' }}">
+                <label class="form-label">
+                    <i class="bi bi-archive"></i> Módulo de Inventario
+                </label>
+                <div class="toggle-inventario">
+                    <div class="toggle-info">
+                        <h6><i class="bi bi-box-seam me-2" style="color:#B20C06"></i>Activar Inventario</h6>
+                        <small>El cliente podrá gestionar su stock de productos en bodega</small>
+                    </div>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               name="maneja_inventario" id="toggle_inventario"
+                               value="true"
+                               {{ 'checked' if usuario and usuario.maneja_inventario else '' }}
+                               style="width: 3em; height: 1.5em; cursor: pointer;">
+                    </div>
+                </div>
+            </div>
+
             {% else %}
             <input type="hidden" name="rol"    value="{{ usuario.rol if usuario else 'CLIENTE' }}" />
             <input type="hidden" name="activo" value="{{ 'true' if not usuario or usuario.activo else 'false' }}" />
@@ -349,6 +399,17 @@
 </div>
 
 <script>
+function toggleInventarioVisibility() {
+    const rol = document.getElementById('select_rol')?.value;
+    const section = document.getElementById('inventario_section');
+    if (section) {
+        section.style.display = rol === 'CLIENTE' ? '' : 'none';
+        if (rol !== 'CLIENTE') {
+            document.getElementById('toggle_inventario').checked = false;
+        }
+    }
+}
+
 // ── DATOS DE CIUDADES POR DEPARTAMENTO ────────────────────────────────────
 const ciudadesPorDepto = {
     "AMAZONAS": ["Leticia","Puerto Nariño"],
@@ -385,12 +446,9 @@ const ciudadesPorDepto = {
     "VICHADA": ["Puerto Carreño"]
 };
 
-// Selector de departamento (generado dinámicamente)
 const selectCiudad   = document.getElementById('select_ciudad_form');
 const ciudadRawInput = document.getElementById('ciudad_raw_input');
-const localidadWrap  = document.getElementById('localidad_wrap');
 
-// Construir select de departamento dinámicamente
 function buildDeptoSelect() {
     const wrapper = document.createElement('div');
     wrapper.className = 'mb-3';
@@ -420,12 +478,10 @@ function poblarCiudades(depto, savedCity) {
         if (savedCity === c) opt.selected = true;
         selectCiudad.appendChild(opt);
     });
-    // Mostrar/ocultar localidad solo para Bogotá
     const locCol = document.getElementById('select_localidad_form').closest('.col-md-6');
     locCol.style.display = depto === 'BOGOTÁ, D.C.' ? '' : 'none';
 }
 
-// Al cambiar ciudad, actualizar el campo hidden con formato "Ciudad (DEPTO)"
 selectCiudad.addEventListener('change', function() {
     const depto = document.getElementById('select_depto_form')?.value || '';
     const ciudad = this.value;
@@ -436,7 +492,6 @@ selectCiudad.addEventListener('change', function() {
     }
 });
 
-// Al cambiar departamento
 document.addEventListener('change', function(e) {
     if (e.target.id === 'select_depto_form') {
         poblarCiudades(e.target.value, null);
@@ -444,12 +499,11 @@ document.addEventListener('change', function(e) {
     }
 });
 
-// ── INICIALIZACIÓN: restaurar ciudad/depto guardados ─────────────────────
 document.addEventListener('DOMContentLoaded', function() {
     buildDeptoSelect();
 
     const selectDepto = document.getElementById('select_depto_form');
-    const rawVal = ciudadRawInput.value; // ej: "Suba (BOGOTÁ, D.C.)"
+    const rawVal = ciudadRawInput.value;
 
     if (rawVal) {
         let savedDepto = '', savedCity = '';
@@ -461,13 +515,11 @@ document.addEventListener('DOMContentLoaded', function() {
             savedCity  = rawVal.trim();
             savedDepto = rawVal.trim();
         }
-        // Seleccionar departamento
         if (selectDepto) {
             selectDepto.value = savedDepto;
             poblarCiudades(savedDepto, savedCity);
         }
     } else {
-        // Sin valor guardado: ocultar localidad por defecto
         const locCol = document.getElementById('select_localidad_form').closest('.col-md-6');
         locCol.style.display = 'none';
     }

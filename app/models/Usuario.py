@@ -21,9 +21,9 @@ class Usuario(Base):
     ciudad    = Column(String(150), nullable=True)
     localidad = Column(String(100), nullable=True)
 
-    # Billetera
     saldo_plan = Column(Numeric(12, 2), nullable=False, default=0.00)
     cuota_fija = Column(Numeric(12, 2), nullable=False, default=0.00)
+    maneja_inventario = Column(Boolean, nullable=False, default=False)
 
     # Ubicación en tiempo real (mensajeros)
     latitud           = Column(Numeric(10, 7), nullable=True, default=None)

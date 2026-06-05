@@ -242,6 +242,9 @@ async def guardar(request: Request, db: Session = Depends(get_db), current_user=
     usuario.ciudad    = form.get("ciudad_raw", "").strip() or None
     usuario.localidad = form.get("localidad", "").strip() or None
 
+    # ── INVENTARIO: solo aplica a clientes ──────────────────────
+    usuario.maneja_inventario = form.get("maneja_inventario") == "true"
+
     tarifa_id = form.get("tarifa_id")
     usuario.tarifa_id = int(tarifa_id) if tarifa_id and tarifa_id.strip() else None
 
@@ -348,12 +351,10 @@ async def guardar_perfil(request: Request, db: Session = Depends(get_db), curren
     if form.get("apellido"):  actual.apellido  = form.get("apellido")
     if form.get("correo"):    actual.correo    = form.get("correo")
 
-    # ── CAMPOS QUE FALTABAN ──────────────────────────────────────
     actual.telefono  = form.get("telefono",   "").strip() or None
     actual.direccion = form.get("direccion",  "").strip() or None
     actual.ciudad    = form.get("ciudad_raw", "").strip() or None
     actual.localidad = form.get("localidad",  "").strip() or None
-    # ─────────────────────────────────────────────────────────────
 
     # Actualizar sesión si cambió el username
     request.session["username"] = actual.user_name
