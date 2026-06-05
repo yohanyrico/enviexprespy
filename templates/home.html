@@ -52,7 +52,6 @@
         .navbar-brand { font-size: 1.8rem; font-weight: 800; color: var(--milano-red) !important; }
         .navbar-brand span { color: var(--text-light); }
 
-        /* Badge de rol en navbar */
         .rol-badge {
             font-size: 0.75rem;
             font-weight: 700;
@@ -126,7 +125,6 @@
         .btn-outline-success:hover { background: var(--milano-red); color: var(--text-light); }
         .alert-success { background: rgba(178,12,6,0.1); border: 1px solid var(--milano-red); color: var(--milano-red); }
 
-        /* Tarjeta bloqueada para ADMINISTRATIVO */
         .card-locked {
             opacity: 0.4;
             pointer-events: none;
@@ -162,7 +160,6 @@
                         <i class="bi bi-person-badge"></i>
                         {{ usuario.nombre }}
                     </span>
-                    {# Badge de color distinto por rol #}
                     {% if rol == 'CEO' %}
                         <span class="rol-badge rol-CEO"><i class="bi bi-star-fill"></i> CEO</span>
                     {% elif rol == 'FACTURACION' %}
@@ -211,7 +208,7 @@
     <h2 class="mb-4 fw-bold section-title text-center">Gestión del Sistema</h2>
     <div class="row g-4 justify-content-center">
 
-        <!-- Usuarios — todos los roles operativos -->
+        <!-- Usuarios -->
         <div class="col-md-2">
             <div class="quick-card">
                 <i class="bi bi-people-fill card-icon"></i>
@@ -223,7 +220,7 @@
             </div>
         </div>
 
-        <!-- Vehículos — todos los roles operativos -->
+        <!-- Vehículos -->
         <div class="col-md-2">
             <div class="quick-card">
                 <i class="bi bi-truck card-icon"></i>
@@ -235,7 +232,7 @@
             </div>
         </div>
 
-        <!-- Envíos — todos los roles operativos -->
+        <!-- Envíos -->
         <div class="col-md-2">
             <div class="quick-card">
                 <i class="bi bi-box-seam card-icon"></i>
@@ -247,7 +244,7 @@
             </div>
         </div>
 
-        <!-- Tarifas — todos los roles operativos -->
+        <!-- Tarifas -->
         <div class="col-md-2">
             <div class="quick-card">
                 <i class="bi bi-currency-dollar card-icon"></i>
@@ -255,6 +252,18 @@
                 <p class="small">Configura precios y tipos de servicio</p>
                 <a href="/tarifas" class="btn btn-green mt-2">
                     <i class="bi bi-arrow-right-circle"></i> Configurar
+                </a>
+            </div>
+        </div>
+
+        <!-- Inventario — CEO y ADMINISTRATIVO -->
+        <div class="col-md-2">
+            <div class="quick-card">
+                <i class="bi bi-archive card-icon"></i>
+                <h5 class="mt-2">Inventario</h5>
+                <p class="small">Gestiona el stock de productos por cliente</p>
+                <a href="/inventario/admin" class="btn btn-green mt-2">
+                    <i class="bi bi-arrow-right-circle"></i> Ver Stock
                 </a>
             </div>
         </div>
@@ -299,7 +308,6 @@
             </div>
         </div>
 
-        <!-- Tarjeta Finanzas en Vista Rápida — SOLO CEO y FACTURACION -->
         {% if puede_ver_finanzas %}
         <div class="col-md-4">
             <div class="quick-card">
@@ -310,7 +318,6 @@
             </div>
         </div>
         {% else %}
-        <!-- ADMINISTRATIVO ve la tarjeta pero bloqueada -->
         <div class="col-md-4">
             <div class="quick-card card-locked">
                 <i class="bi bi-lock-fill fs-1 text-muted"></i>
@@ -335,6 +342,9 @@
         </a>
         <a href="/envios/nuevo" class="btn btn-success">
             <i class="bi bi-box-seam"></i> Nuevo Envío
+        </a>
+        <a href="/inventario/admin" class="btn btn-success">
+            <i class="bi bi-archive"></i> Inventario
         </a>
         {% if puede_ver_finanzas %}
         <a href="/admin/finanzas" class="btn btn-success">

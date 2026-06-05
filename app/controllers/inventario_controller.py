@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.config.database import get_db # Ajustado a tu config
 from app.repositories.inventario_repository import InventarioRepository
 from app.models.inventario import InventarioProducto
+from app.models.Usuario import Usuario
 
 router = APIRouter(prefix="/inventario", tags=["Inventario"])
 
@@ -69,3 +70,26 @@ def ver_inventario_web(request: Request, db: Session = Depends(get_db)):
             "cliente_id": cliente_id_simulado
         }
     )
+@router.get("/admin", response_class=HTMLResponse)
+def inventario_admin(
+    request: Request,
+    cliente_id: int = None,
+    db: Session = Depends(get_db)
+):
+    clientes = db.query(Usuario).filter(Usuario.rol == "CLIENTE", Usuario.activo == True).all()
+    
+    cliente_seleccionado = None
+    productos = []
+    
+    if cliente_id:
+        cliente_seleccionado = db.query(Usuario).filter(Usuario.id_usuario == cliente_id).first()
+        if cliente_seleccionado:
+            repo = InventarioRepository(db)
+            productos = repo.obtener_por_cliente(cliente_id)
+    
+    return templates.TemplateResponse("inventario_admin.html", {
+        "request": request,
+        "clientes": clientes,
+        "cliente_seleccionado": cliente_seleccionado,
+        "productos": productos
+    })
