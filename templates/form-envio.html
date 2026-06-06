@@ -344,14 +344,15 @@
                                     {% endfor %}
                                 </select>
                             </div>
-{# ── NOMBRE DEL DESTINATARIO (nuevo campo) ── #}
+
+                            {# ── NOMBRE DEL DESTINATARIO ── #}
                             <input type="text"
                                    class="form-control mb-2"
                                    name="nombre_destinatario"
                                    placeholder="Nombre del destinatario"
                                    value="{{ edit_nombre_dest|default('') }}"
                                    required>
-                                   
+
                             <div class="autocomplete-wrapper mb-2">
                                 <input type="text"
                                        class="form-control dir-input"
@@ -369,8 +370,6 @@
                                        required>
                             </div>
 
-                            
-
                             <input type="tel"
                                    class="form-control"
                                    name="telefono_entrega"
@@ -385,23 +384,7 @@
                         </div>
                     </div>
                 </div>
-                    {# ── PRODUCTOS DE INVENTARIO (solo si el cliente maneja inventario) ── #}
-                    {% if current_user.maneja_inventario %}
-                    <div id="seccion_inventario" class="mt-4">
-                        <div class="section-title">
-                            <i class="bi bi-box-seam me-1"></i> Productos del Pedido
-                        </div>
-                        <div style="background:#f8f9fa; border:1px solid #dee2e6; border-radius:14px; padding:20px;">
-                            <div id="lista_productos" class="row g-2 mb-3"></div>
-                            <div id="productos_seleccionados" class="mt-3"></div>
-                            <input type="hidden" name="productos_inventario" id="productos_inventario" value="[]">
-                            <p class="text-muted small mt-2 mb-0">
-                                <i class="bi bi-info-circle me-1"></i>
-                                Selecciona los productos y cantidades que va en este envío. El stock se descontará automáticamente.
-                            </p>
-                        </div>
-                    </div>
-                    {% endif %}
+
                 {# ── DESCRIPCIÓN, PESO E INSTRUCCIONES ────────────────────────── #}
                 <div class="row mt-4 g-3">
                     <div class="col-md-5">
@@ -478,7 +461,7 @@
                         <p class="small text-muted mb-3">
                             Selecciona los productos y las cantidades que deseas incluir en este envío. El stock se actualizará automáticamente al generar la guía.
                         </p>
-                        
+
                         <div id="lista_productos" class="row g-3 mb-4">
                             <div class="col-12 text-center py-3">
                                 <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
@@ -822,12 +805,11 @@
                 setPin('map_entrega', p.lat, p.lon, 'Entrega', 'lat_entrega', 'lon_entrega');
             }
         }
-        
-        // ── INVENTARIO (CON DEFENSA CONTRA ID CORRUPTO "9:1") ─────────────
+
+        // ── INVENTARIO ─────────────────────────────────────────────────────
         {% if current_user.maneja_inventario %}
-        // Limpiamos el ID del usuario quitándole los dos puntos si vienen integrados desde el back
         const clienteIdRaw = "{{ current_user.id_usuario }}";
-        const clienteIdInv = clienteIdRaw.split(':')[0]; 
+        const clienteIdInv = clienteIdRaw.split(':')[0];
         let productosSeleccionados = [];
 
         async function cargarProductosInventario() {
@@ -835,13 +817,12 @@
             if (!cont) return;
 
             try {
-                // Generamos un fetch limpio apuntando directamente al número entero (ej: /inventario/api/productos/9)
                 const res = await fetch(`/inventario/api/productos/${clienteIdInv}`);
-                
+
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
-                
+
                 const data = await res.json();
                 console.log("Datos limpios mapeados desde inventario_productos:", data);
 
@@ -855,13 +836,12 @@
                     return;
                 }
 
-                // Generar tarjetas dinámicamente con los campos limpios de tu BD
                 cont.innerHTML = data.map(p => {
-                    const stock = p.stock_disponible !== undefined ? p.stock_disponible : 0;
+                    const stock  = p.stock_disponible !== undefined ? p.stock_disponible : 0;
                     const minimo = p.stock_minimo !== undefined ? p.stock_minimo : 2;
-                    const sku = p.sku || 'S/N';
+                    const sku    = p.sku || 'S/N';
                     const nombre = p.nombre || 'Producto sin nombre';
-                    const id = p.id;
+                    const id     = p.id;
 
                     return `
                         <div class="col-md-4">
@@ -883,7 +863,7 @@
                                         <input type="number" class="form-control text-center" id="qty_${id}"
                                                min="1" max="${stock}" value="1"
                                                style="max-width:65px; font-size:0.8rem;">
-                                        <button class="btn btn-sm d-flex align-items-center justify-content-center" 
+                                        <button class="btn btn-sm d-flex align-items-center justify-content-center"
                                                 type="button"
                                                 onclick="agregarProducto(${id}, '${nombre.replace(/'/g, "\\'")}', '${sku}')"
                                                 style="background:#B20C06; color:white; font-size:0.75rem; font-weight:500;">
@@ -896,8 +876,8 @@
                     `;
                 }).join('');
 
-            } catch(e) { 
-                console.error('Error crítico consultando la tabla inventario_productos:', e); 
+            } catch(e) {
+                console.error('Error crítico consultando la tabla inventario_productos:', e);
                 cont.innerHTML = `
                     <div class="col-12 text-center py-2">
                         <p class="text-danger small mb-0">
@@ -910,10 +890,10 @@
         function agregarProducto(id, nombre, sku) {
             const qtyInput = document.getElementById(`qty_${id}`);
             if (!qtyInput) return;
-            
+
             const cantidad = parseInt(qtyInput.value);
             const maxStock = parseInt(qtyInput.getAttribute('max')) || 0;
-            
+
             if (!cantidad || cantidad < 1) {
                 alert("La cantidad debe ser mayor o igual a 1.");
                 return;
@@ -938,7 +918,7 @@
         }
 
         function actualizarResumenProductos() {
-            const cont = document.getElementById('productos_seleccionados');
+            const cont   = document.getElementById('productos_seleccionados');
             const hidden = document.getElementById('productos_inventario');
 
             if (!productosSeleccionados.length) {
@@ -956,7 +936,7 @@
                         ${productosSeleccionados.map(p => `
                             <div class="d-flex justify-content-between align-items-center bg-white p-2 border rounded" style="border-radius:6px;">
                                 <span class="small text-dark">
-                                    <strong class="text-danger">${p.cantidad}x</strong> ${p.nombre} 
+                                    <strong class="text-danger">${p.cantidad}x</strong> ${p.nombre}
                                     <span class="text-muted font-monospace" style="font-size:0.75rem;">(${p.sku})</span>
                                 </span>
                                 <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2 lh-1"
@@ -966,7 +946,7 @@
                             </div>
                         `).join('')}
                     </div>
-                </div>`;    
+                </div>`;
 
             hidden.value = JSON.stringify(productosSeleccionados.map(p => ({
                 producto_id: p.producto_id,
