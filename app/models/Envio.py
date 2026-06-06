@@ -88,7 +88,11 @@ class Envio(Base):
         back_populates="envio",
         cascade="all, delete-orphan"
     )
-
+    items_inventario = relationship(
+    "EnvioItemInventario",
+    back_populates="envio",
+    cascade="all, delete-orphan"
+)
     @classmethod
     def generar_numero_guia(cls, db: Session) -> str:
         ultima_guia = (

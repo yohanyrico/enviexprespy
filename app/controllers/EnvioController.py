@@ -3,6 +3,7 @@ import os
 import shutil
 import io
 import time
+import json
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, Form, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse, StreamingResponse, JSONResponse
@@ -24,6 +25,7 @@ from app.models.Transaccion import Transaccion
 from app.models.Tarifa import Tarifa
 from app.models.Vehiculo import Vehiculo
 from app.models.Ruta import Ruta
+from app.models.EnvioItemInventario import EnvioItemInventario   # ← NUEVO
 
 from app.security.SecurityConfig import get_current_user, require_admin, require_admin_or_mensajero
 import app.repositories.EnvioRepository as envio_repo
@@ -352,6 +354,14 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
         contenido   = form.get("descripcion", "").strip()
         instrucciones_finales = f"CONTENIDO: {contenido} | OBS: {obs_cliente}"
 
+        # ── PARSEAR PRODUCTOS UNA SOLA VEZ ──────────────────────────────
+        productos_json = form.get("productos_inventario", "[]")
+        try:
+            productos_seleccionados = json.loads(productos_json)
+        except Exception:
+            productos_seleccionados = []
+        # ────────────────────────────────────────────────────────────────
+
         if es_nuevo:
             if not es_bogota:
                 tarifa_db  = db.query(Tarifa).filter(
@@ -400,16 +410,24 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 fecha_creacion=datetime.now()
             ))
 
-            # ── DESCUENTO DE INVENTARIO ──────────────────────────────────
-            productos_json = form.get("productos_inventario", "[]")
-            try:
-                import json
-                from app.controllers.inventario_controller import descontar_stock_envio
-                productos_seleccionados = json.loads(productos_json)
-                if productos_seleccionados and getattr(cliente, 'maneja_inventario', False):
+            # ── GUARDAR ITEMS DE INVENTARIO EN LA TABLA ─────────────────
+            if productos_seleccionados and getattr(cliente, 'maneja_inventario', False):
+                for item in productos_seleccionados:
+                    pid = item.get("producto_id")
+                    qty = item.get("cantidad", 1)
+                    if pid and qty:
+                        db.add(EnvioItemInventario(
+                            envio_id=envio.envio_id,
+                            producto_id=int(pid),
+                            cantidad=int(qty)
+                        ))
+
+                # Descontar stock
+                try:
+                    from app.controllers.inventario_controller import descontar_stock_envio
                     descontar_stock_envio(db, cliente.id_usuario, productos_seleccionados, envio.numero_guia)
-            except Exception as e_inv:
-                print(f"Error descontando inventario: {e_inv}")
+                except Exception as e_inv:
+                    print(f"Error descontando inventario: {e_inv}")
             # ────────────────────────────────────────────────────────────
 
         else:
@@ -421,6 +439,24 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
             envio.es_cod         = es_cod
             envio.valor_a_cobrar = valor_a_cobrar
             envio.peso           = Decimal(form.get("peso", "1.0"))
+
+            # ── ACTUALIZAR ITEMS DE INVENTARIO AL EDITAR ────────────────
+            if productos_seleccionados and getattr(cliente, 'maneja_inventario', False):
+                # Borrar los anteriores y reemplazar
+                db.query(EnvioItemInventario).filter(
+                    EnvioItemInventario.envio_id == envio.envio_id
+                ).delete(synchronize_session=False)
+
+                for item in productos_seleccionados:
+                    pid = item.get("producto_id")
+                    qty = item.get("cantidad", 1)
+                    if pid and qty:
+                        db.add(EnvioItemInventario(
+                            envio_id=envio.envio_id,
+                            producto_id=int(pid),
+                            cantidad=int(qty)
+                        ))
+            # ────────────────────────────────────────────────────────────
 
         for tipo in ["recogida", "entrega"]:
             ciudad    = form.get(f"ciudad_{tipo}", "")
@@ -502,13 +538,14 @@ def eliminar(id: int, request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url=f"{destino_ok}?error=delete_fail")
 
 
-# --- VISTA DE IMPRESIÓN ---
+# --- VISTA DE IMPRESIÓN ─── CARGA items_inventario ──────────────────────────
 @router.get("/imprimir/{id}")
 def imprimir_guia(id: int, request: Request, db: Session = Depends(get_db)):
     envio = db.query(Envio).options(
         joinedload(Envio.lugar_recogida),
         joinedload(Envio.lugar_entrega),
-        joinedload(Envio.cliente)
+        joinedload(Envio.cliente),
+        joinedload(Envio.items_inventario)          # ← NUEVO
     ).filter(Envio.envio_id == id).first()
 
     if not envio:
@@ -527,7 +564,8 @@ def imprimir_masivo(request: Request, ids: str, db: Session = Depends(get_db)):
     envios = db.query(Envio).options(
         joinedload(Envio.lugar_recogida),
         joinedload(Envio.lugar_entrega),
-        joinedload(Envio.cliente)
+        joinedload(Envio.cliente),
+        joinedload(Envio.items_inventario)          # ← NUEVO
     ).filter(Envio.envio_id.in_(lista_ids)).all()
     return templates.TemplateResponse("imprimir_masivo.html", {
         "request": request,
@@ -633,6 +671,12 @@ def editar(id: int, request: Request, db: Session = Depends(get_db)):
     loc_ent,    tel_ent   = _extraer_localidad_telefono(envio.lugar_entrega)
     descripcion, obs      = _extraer_descripcion_obs(envio)
 
+    # Extraer nombre destinatario desde referencia
+    ref_ent = envio.lugar_entrega.referencia if envio.lugar_entrega and envio.lugar_entrega.referencia else ""
+    nombre_dest = ""
+    if "Nombre:" in ref_ent:
+        nombre_dest = ref_ent.split("Nombre:")[1].split("|")[0].strip()
+
     return templates.TemplateResponse("form-envio.html", {
         "request": request,
         "envio": envio,
@@ -649,6 +693,7 @@ def editar(id: int, request: Request, db: Session = Depends(get_db)):
         "edit_loc_ent":     loc_ent,
         "edit_descripcion": descripcion,
         "edit_obs":         obs,
+        "edit_nombre_dest": nombre_dest,
         **datos
     })
 
@@ -734,13 +779,11 @@ async def ver_ruta(request: Request, mensajero_id: int, db: Session = Depends(ge
     if not mensajero:
         raise HTTPException(status_code=404, detail="Mensajero no encontrado")
 
-    # Buscar la ruta activa del mensajero
     ruta = db.query(Ruta).filter(
         Ruta.mensajero_id == mensajero_id,
         Ruta.estado.in_(["Creada", "En curso"])
     ).order_by(Ruta.ruta_id.desc()).first()
 
-    # Envíos donde es RECOLECTOR (C) — mostrar solo si estado_recogida activo
     envios_c = db.query(Envio).filter(
         Envio.usuario_mensajero_id == mensajero_id,
         Envio.estado_recogida.in_(["En_Ruta", "Pendiente"]),
@@ -750,7 +793,6 @@ async def ver_ruta(request: Request, mensajero_id: int, db: Session = Depends(ge
         joinedload(Envio.lugar_entrega)
     ).all()
 
-    # Envíos donde es ENTREGADOR (D) — mostrar solo si estado_entrega activo
     envios_d = db.query(Envio).filter(
         Envio.usuario_mensajero_entrega_id == mensajero_id,
         Envio.estado_entrega.in_(["En_Ruta", "En_Destino"]),
@@ -760,7 +802,6 @@ async def ver_ruta(request: Request, mensajero_id: int, db: Session = Depends(ge
         joinedload(Envio.lugar_entrega)
     ).all()
 
-    # Unir ambas listas sin duplicados
     ids_vistos = set()
     envios = []
     for e in envios_c + envios_d:
@@ -774,6 +815,7 @@ async def ver_ruta(request: Request, mensajero_id: int, db: Session = Depends(ge
         "ruta":      ruta,
         "envios":    envios,
     })
+
 
 # ─────────────────────────────────────────────
 # ASIGNACIÓN MASIVA
@@ -812,21 +854,16 @@ async def asignar_masivo(request: Request, db: Session = Depends(get_db)):
                 continue
 
             if tipo == "c":
-                # Solo recolector — no tocar estado_entrega ni mensajero_entrega
                 envio.usuario_mensajero_id = int(id_mensajero)
                 envio.ruta_id              = nueva_ruta.ruta_id
                 envio.estado_recogida      = "En_Ruta"
                 envio.estado               = "Pendiente_Recoger"
-
             elif tipo == "d":
-                # Solo entregador — la recogida ya fue hecha antes
                 envio.usuario_mensajero_entrega_id = int(id_mensajero)
                 envio.ruta_id                      = nueva_ruta.ruta_id
                 envio.estado_entrega               = "En_Ruta"
                 envio.estado                       = "Pendiente_Verificar"
-
             else:
-                # "all" — mismo mensajero hace recogida y entrega
                 envio.usuario_mensajero_id         = int(id_mensajero)
                 envio.usuario_mensajero_entrega_id = int(id_mensajero)
                 envio.ruta_id                      = nueva_ruta.ruta_id
@@ -992,17 +1029,15 @@ async def actualizar_gestion_envio(id: int, request: Request, db: Session = Depe
 
 
 # ─────────────────────────────────────────────
-# SUBIR FOTO DE ENTREGA — mensajero desde app Flutter
-# Usa get_current_user que soporta Bearer JWT + sesión web
+# SUBIR FOTO DE ENTREGA
 # ─────────────────────────────────────────────
 @router.post("/{envio_id}/foto-entrega")
 async def subir_foto_entrega(
     envio_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)   # ← JWT o sesión
+    current_user: Usuario = Depends(get_current_user)
 ):
-    # Solo mensajeros pueden subir fotos
     if current_user.rol != "MENSAJERO":
         raise HTTPException(status_code=403, detail="Solo mensajeros pueden subir fotos")
 
@@ -1013,7 +1048,6 @@ async def subir_foto_entrega(
     if envio.usuario_mensajero_id != current_user.id_usuario:
         raise HTTPException(status_code=403, detail="No tienes permiso sobre este envío")
 
-    # Crear carpeta si no existe
     carpeta = "app/static/fotos_entrega"
     os.makedirs(carpeta, exist_ok=True)
 
