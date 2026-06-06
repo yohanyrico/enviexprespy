@@ -26,7 +26,6 @@
             margin: 0;
         }
 
-        /* Recuadro de Localidad Dinámico */
         .localidad-box {
             background: #000;
             color: #fff;
@@ -42,7 +41,6 @@
             text-align: center;
         }
 
-        /* Estilo para el Sello COD contra entrega */
         .cod-stamp {
             border: 4px double #000;
             padding: 10px;
@@ -67,6 +65,42 @@
             background: #fafafa;
         }
 
+        /* ── PRODUCTOS EN GUÍA ── */
+        .productos-guia {
+            border: 1px solid #000;
+            border-radius: 3px;
+            margin-bottom: 8px;
+            background: #f5f5f5;
+            font-size: 12px;
+        }
+        .productos-guia .prod-header {
+            background: #000;
+            color: #fff;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            text-transform: uppercase;
+        }
+        .productos-guia table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        .productos-guia table td,
+        .productos-guia table th {
+            padding: 3px 8px;
+            font-size: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .productos-guia table th {
+            font-weight: 700;
+            background: #ebebeb;
+        }
+        .productos-guia table tr:last-child td {
+            border-bottom: none;
+        }
+
         @media print {
             .no-print { display: none; }
             .guia-print { border: 2px solid #000; margin: 0; width: 100%; max-width: 100%; }
@@ -78,7 +112,6 @@
     <div class="no-print text-center py-3">
         <button onclick="window.print()" class="btn btn-primary btn-lg">🖨️ IMPRIMIR GUÍA</button>
         
-        {# LÓGICA DINÁMICA PARA EL BOTÓN VOLVER #}
         {% if request.session.rol == 'ADMIN' %}
             <a href="/envios/" class="btn btn-secondary btn-lg">VOLVER</a>
         {% else %}
@@ -121,41 +154,35 @@
                 <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_entrega.direccion }}</p>
                 <p class="mb-1"><strong>TELÉFONO:</strong> {{ tel_dest }}</p>
                 
-                {# LÓGICA DE LOCALIDAD / CIUDAD INTELIGENTE #}
                 <div class="localidad-box">
-    {% set ref = envio.lugar_entrega.referencia.upper() if envio.lugar_entrega.referencia else "" %}
-    {% set dir = envio.lugar_entrega.direccion.upper() if envio.lugar_entrega.direccion else "" %}
-    {% set ciudad_dest = envio.lugar_entrega.ciudad.upper() if envio.lugar_entrega.ciudad else "" %}
-    
-    {% set localidades = ["USAQUÉN", "CHAPINERO", "SANTA FE", "SAN CRISTÓBAL", "USME", "KENNEDY", "FONTIBÓN", "ENGATIVÁ", "SUBA", "BARRIOS UNIDOS", "TEUSAQUILLO", "LOS MÁRTIRES", "ANTONIO NARIÑO", "PUENTE ARANDA", "LA CANDELARIA", "RAFAEL URIBE", "CIUDAD BOLÍVAR", "SUMAPAZ", "BOSA"] %}
-    
-    {% set encontrada = [] %}
+                    {% set ref = envio.lugar_entrega.referencia.upper() if envio.lugar_entrega.referencia else "" %}
+                    {% set dir = envio.lugar_entrega.direccion.upper() if envio.lugar_entrega.direccion else "" %}
+                    {% set ciudad_dest = envio.lugar_entrega.ciudad.upper() if envio.lugar_entrega.ciudad else "" %}
+                    
+                    {% set localidades = ["USAQUÉN", "CHAPINERO", "SANTA FE", "SAN CRISTÓBAL", "USME", "KENNEDY", "FONTIBÓN", "ENGATIVÁ", "SUBA", "BARRIOS UNIDOS", "TEUSAQUILLO", "LOS MÁRTIRES", "ANTONIO NARIÑO", "PUENTE ARANDA", "LA CANDELARIA", "RAFAEL URIBE", "CIUDAD BOLÍVAR", "SUMAPAZ", "BOSA"] %}
+                    
+                    {% set encontrada = [] %}
 
-    {# 1. Si el envío es NACIONAL, mostramos la ciudad de destino directamente #}
-    {% if envio.tipo_servicio == 'NACIONAL' %}
-        {# Limpiamos el texto por si viene con el departamento entre paréntesis, ej: Bucaramanga (SANTANDER) -> BUCARAMANGA #}
-        {{ ciudad_dest.split('(')[0].strip() }}
-    
-    {# 2. Si es EXPRESS (Urbano), buscamos la localidad #}
-    {% else %}
-        {% if 'LOCALIDAD:' in ref %}
-            {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim|upper }}
-        {% else %}
-            {% for loc in localidades %}
-                {% if loc in ref or loc in dir %}
-                    {% if encontrada.append(loc) %}{% endif %}
-                {% endif %}
-            {% endfor %}
+                    {% if envio.tipo_servicio == 'NACIONAL' %}
+                        {{ ciudad_dest.split('(')[0].strip() }}
+                    {% else %}
+                        {% if 'LOCALIDAD:' in ref %}
+                            {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim|upper }}
+                        {% else %}
+                            {% for loc in localidades %}
+                                {% if loc in ref or loc in dir %}
+                                    {% if encontrada.append(loc) %}{% endif %}
+                                {% endif %}
+                            {% endfor %}
 
-            {% if encontrada %}
-                {{ encontrada[0] }}
-            {% else %}
-                {# Si no encuentra localidad pero es en Bogotá, dejamos Bogotá, de lo contrario la ciudad #}
-                {{ ciudad_dest.split('(')[0].strip() }}
-            {% endif %}
-        {% endif %}
-    {% endif %}
-</div>
+                            {% if encontrada %}
+                                {{ encontrada[0] }}
+                            {% else %}
+                                {{ ciudad_dest.split('(')[0].strip() }}
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </div>
 
                 <p class="mt-1 mb-1"><strong>CONTACTO:</strong> {{ envio.lugar_entrega.referencia }}</p>
             </div>
@@ -164,6 +191,32 @@
         <div class="row border-top border-dark pt-3">
             <div class="col-7">
                 <p class="fw-bold mb-1 text-uppercase">Contenido / Observaciones:</p>
+
+                {# ── PRODUCTOS DE INVENTARIO ── #}
+                {% if envio.items_inventario %}
+                <div class="productos-guia mb-2">
+                    <div class="prod-header">📦 Productos del pedido</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>SKU</th>
+                                <th style="text-align:center;">Cant.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in envio.items_inventario %}
+                            <tr>
+                                <td>{{ item.producto.nombre }}</td>
+                                <td style="font-family: monospace;">{{ item.producto.sku }}</td>
+                                <td style="text-align:center; font-weight:700;">{{ item.cantidad }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
                 <div class="instrucciones-box">
                     {{ envio.instrucciones }}
                 </div>
@@ -180,7 +233,6 @@
                     </tr>
                 </table>
 
-                {# SECCIÓN COD - VALOR A COBRAR #}
                 {% if envio.es_cod %}
                 <div class="cod-stamp">
                     <p class="mb-0 fw-bold" style="font-size: 12px; letter-spacing: 1px;">COBRO CONTRA ENTREGA</p>
