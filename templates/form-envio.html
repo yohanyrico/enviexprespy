@@ -823,107 +823,158 @@
             }
         }
         
-        // ── INVENTARIO ────────────────────────────────────────────────────
-{% if current_user.maneja_inventario %}
-const clienteIdInv = {{ current_user.id_usuario }};
-let productosSeleccionados = [];
+        // ── INVENTARIO (CONECTADO A LA TABLA INVENTARIO_PRODUCTOS) ────────
+        {% if current_user.maneja_inventario %}
+        const clienteIdInv = {{ current_user.id_usuario }};
+        let productosSeleccionados = [];
 
-async function cargarProductosInventario() {
-    try {
-        const res  = await fetch(`/inventario/api/productos/${clienteIdInv}`);
-        const data = await res.json();
-        const cont = document.getElementById('lista_productos');
-        if (!cont) return;
+        async function cargarProductosInventario() {
+            const cont = document.getElementById('lista_productos');
+            if (!cont) return;
 
-        if (!data.length) {
-            cont.innerHTML = '<p class="text-muted small">No tienes productos con stock disponible.</p>';
-            return;
+            try {
+                // Fetch al endpoint de tu backend en Render
+                const res = await fetch(`/inventario/api/productos/${clienteIdInv}`);
+                
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                
+                const data = await res.json();
+                console.log("Datos mapeados desde inventario_productos:", data);
+
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    cont.innerHTML = `
+                        <div class="col-12 text-center py-2">
+                            <p class="text-muted small mb-0">
+                                <i class="bi bi-info-circle me-1"></i> No tienes productos con stock disponible en este momento.
+                            </p>
+                        </div>`;
+                    return;
+                }
+
+                // Generar tarjetas dinámicamente con los campos limpios de tu BD
+                cont.innerHTML = data.map(p => {
+                    const stock = p.stock_disponible !== undefined ? p.stock_disponible : 0;
+                    const minimo = p.stock_minimo !== undefined ? p.stock_minimo : 2;
+                    const sku = p.sku || 'S/N';
+                    const nombre = p.nombre || 'Producto sin nombre';
+                    const id = p.id;
+
+                    return `
+                        <div class="col-md-4">
+                            <div class="card border border-light shadow-sm h-100" style="border-radius:12px; background:#fefefe;">
+                                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-start gap-1">
+                                            <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size:0.85rem;" title="${nombre}">
+                                                ${nombre}
+                                            </h6>
+                                            <span class="badge rounded-pill" style="background:${stock <= minimo ? '#B20C06' : '#0B4A1E'}; font-size:0.65rem; white-space: nowrap;">
+                                                Stock: ${stock}
+                                            </span>
+                                        </div>
+                                        <small class="text-muted d-block mt-1" style="font-size:0.75rem;">SKU: ${sku}</small>
+                                    </div>
+                                    <div class="input-group input-group-sm mt-2">
+                                        <span class="input-group-text" style="font-size:0.75rem; background:#f8f9fa;">Cant.</span>
+                                        <input type="number" class="form-control text-center" id="qty_${id}"
+                                               min="1" max="${stock}" value="1"
+                                               style="max-width:65px; font-size:0.8rem;">
+                                        <button class="btn btn-sm d-flex align-items-center justify-content-center" 
+                                                type="button"
+                                                onclick="agregarProducto(${id}, '${nombre.replace(/'/g, "\\'")}', '${sku}')"
+                                                style="background:#B20C06; color:white; font-size:0.75rem; font-weight:500;">
+                                            <i class="bi bi-plus-lg me-1"></i> Agregar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch(e) { 
+                console.error('Error crítico consultando la tabla inventario_productos:', e); 
+                cont.innerHTML = `
+                    <div class="col-12 text-center py-2">
+                        <p class="text-danger small mb-0">
+                            <i class="bi bi-exclamation-octagon-fill me-1"></i> Error al conectar con el inventario. Revisa la consola (F12).
+                        </p>
+                    </div>`;
+            }
         }
 
-        cont.innerHTML = data.map(p => `
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm" style="border-radius:10px; overflow:hidden;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h6 class="mb-0 fw-bold" style="font-size:0.85rem;">${p.nombre}</h6>
-                                <small class="text-muted">SKU: ${p.sku}</small>
+        function agregarProducto(id, nombre, sku) {
+            const qtyInput = document.getElementById(`qty_${id}`);
+            if (!qtyInput) return;
+            
+            const cantidad = parseInt(qtyInput.value);
+            const maxStock = parseInt(qtyInput.getAttribute('max')) || 0;
+            
+            if (!cantidad || cantidad < 1) {
+                alert("La cantidad debe ser mayor o igual a 1.");
+                return;
+            }
+            if (cantidad > maxStock) {
+                alert(`No puedes agregar más del stock disponible (${maxStock}).`);
+                return;
+            }
+
+            const existe = productosSeleccionados.findIndex(p => p.producto_id === id);
+            if (existe >= 0) {
+                productosSeleccionados[existe].cantidad = cantidad;
+            } else {
+                productosSeleccionados.push({ producto_id: id, cantidad, nombre, sku });
+            }
+            actualizarResumenProductos();
+        }
+
+        function quitarProducto(id) {
+            productosSeleccionados = productosSeleccionados.filter(p => p.producto_id !== id);
+            actualizarResumenProductos();
+        }
+
+        function actualizarResumenProductos() {
+            const cont = document.getElementById('productos_seleccionados');
+            const hidden = document.getElementById('productos_inventario');
+
+            if (!productosSeleccionados.length) {
+                cont.innerHTML = '';
+                hidden.value = '[]';
+                return;
+            }
+
+            cont.innerHTML = `
+                <div class="mt-2 mb-3" style="background:rgba(178,12,6,0.04); border:1px dashed #B20C06; border-radius:10px; padding:14px;">
+                    <p class="fw-bold small mb-2" style="color:#B20C06;">
+                        <i class="bi bi-cart-check-fill me-1"></i> Productos vinculados a la guía:
+                    </p>
+                    <div class="d-flex flex-column gap-1">
+                        ${productosSeleccionados.map(p => `
+                            <div class="d-flex justify-content-between align-items-center bg-white p-2 border rounded" style="border-radius:6px;">
+                                <span class="small text-dark">
+                                    <strong class="text-danger">${p.cantidad}x</strong> ${p.nombre} 
+                                    <span class="text-muted font-monospace" style="font-size:0.75rem;">(${p.sku})</span>
+                                </span>
+                                <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2 lh-1"
+                                        onclick="quitarProducto(${p.producto_id})" style="text-decoration:none;">
+                                    <i class="bi bi-trash3" style="font-size:0.9rem;"></i>
+                                </button>
                             </div>
-                            <span class="badge" style="background:${p.stock_disponible <= p.stock_minimo ? '#7B0D0D' : '#0B4A1E'}; font-size:0.7rem;">
-                                Stock: ${p.stock_disponible}
-                            </span>
-                        </div>
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text">Cant.</span>
-                            <input type="number" class="form-control" id="qty_${p.id}"
-                                   min="1" max="${p.stock_disponible}" value="1"
-                                   style="max-width:70px;">
-                            <button class="btn btn-sm" onclick="agregarProducto(${p.id}, '${p.nombre}', '${p.sku}')"
-                                    style="background:#B20C06; color:white; font-size:0.75rem;">
-                                <i class="bi bi-plus"></i> Agregar
-                            </button>
-                        </div>
+                        `).join('')}
                     </div>
-                </div>
-            </div>
-        `).join('');
-    } catch(e) { console.error('Error cargando inventario:', e); }
-}
+                </div>`;    
 
-function agregarProducto(id, nombre, sku) {
-    const qtyInput = document.getElementById(`qty_${id}`);
-    const cantidad = parseInt(qtyInput.value);
-    if (!cantidad || cantidad < 1) return;
+            hidden.value = JSON.stringify(productosSeleccionados.map(p => ({
+                producto_id: p.producto_id,
+                cantidad: p.cantidad
+            })));
+        }
 
-    const existe = productosSeleccionados.findIndex(p => p.producto_id === id);
-    if (existe >= 0) {
-        productosSeleccionados[existe].cantidad = cantidad;
-    } else {
-        productosSeleccionados.push({ producto_id: id, cantidad, nombre, sku });
-    }
-    actualizarResumenProductos();
-}
-
-function quitarProducto(id) {
-    productosSeleccionados = productosSeleccionados.filter(p => p.producto_id !== id);
-    actualizarResumenProductos();
-}
-
-function actualizarResumenProductos() {
-    const cont = document.getElementById('productos_seleccionados');
-    const hidden = document.getElementById('productos_inventario');
-
-    if (!productosSeleccionados.length) {
-        cont.innerHTML = '';
-        hidden.value = '[]';
-        return;
-    }
-
-    cont.innerHTML = `
-        <div style="background:#fff5f5; border:1px solid #B20C06; border-radius:10px; padding:14px;">
-            <p class="fw-bold small mb-2" style="color:#B20C06;">
-                <i class="bi bi-cart-check me-1"></i> Productos en este envío:
-            </p>
-            ${productosSeleccionados.map(p => `
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="small"><strong>${p.cantidad}x</strong> ${p.nombre} <span class="text-muted">(${p.sku})</span></span>
-                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2"
-                            onclick="quitarProducto(${p.producto_id})" style="font-size:0.7rem;">
-                        <i class="bi bi-x"></i>
-                    </button>
-                </div>
-            `).join('')}
-        </div>`;    
-
-    hidden.value = JSON.stringify(productosSeleccionados.map(p => ({
-        producto_id: p.producto_id,
-        cantidad: p.cantidad
-    })));
-}
-
-document.addEventListener('DOMContentLoaded', cargarProductosInventario);
-{% endif %}
-// ─────────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', cargarProductosInventario);
+        {% endif %}
+        // ─────────────────────────────────────────────────────────────────
     </script>
 
     <script
