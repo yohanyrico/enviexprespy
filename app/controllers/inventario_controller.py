@@ -21,6 +21,36 @@ def listar_inventario(cliente_id: int, db: Session = Depends(get_db)):
     return repo.obtener_por_cliente(cliente_id)
 
 
+# --- NUEVO ENDPOINT COINCIDENTE CON TU FRONTEND ---
+@router.get("/api/productos/{usuario_id}")
+def obtener_inventario_cliente_api(usuario_id: int, db: Session = Depends(get_db)):
+    """
+    Ruta mapeada exactamente para el formulario de envíos.
+    Al estar dentro de APIRouter(prefix="/inventario"), la URL final 
+    será: /inventario/api/productos/{usuario_id}
+    """
+    try:
+        repo = InventarioRepository(db)
+        # Reutilizamos tu repositorio que ya busca por cliente_id en la base de datos
+        productos_db = repo.obtener_por_cliente(usuario_id)
+        
+        # Filtramos para enviar solo los productos que tengan existencias reales
+        resultado = []
+        for p in productos_db:
+            if p.stock_disponible and p.stock_disponible > 0:
+                resultado.append({
+                    "id": p.id,
+                    "sku": p.sku,
+                    "nombre": p.nombre,
+                    "stock_disponible": p.stock_disponible,
+                    "stock_minimo": p.stock_minimo if p.stock_minimo is not None else 2
+                })
+        return resultado
+    except Exception as e:
+        print(f"Error en API inventario para envíos: {str(e)}")
+        return []
+
+
 @router.post("/abastecer/{cliente_id}")
 async def abastecer_stock(cliente_id: int, request: Request, db: Session = Depends(get_db)):
     content_type = request.headers.get("content-type", "")

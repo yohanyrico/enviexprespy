@@ -823,9 +823,11 @@
             }
         }
         
-        // ── INVENTARIO (CONECTADO A LA TABLA INVENTARIO_PRODUCTOS) ────────
+        // ── INVENTARIO (CON DEFENSA CONTRA ID CORRUPTO "9:1") ─────────────
         {% if current_user.maneja_inventario %}
-        const clienteIdInv = {{ current_user.id_usuario }};
+        // Limpiamos el ID del usuario quitándole los dos puntos si vienen integrados desde el back
+        const clienteIdRaw = "{{ current_user.id_usuario }}";
+        const clienteIdInv = clienteIdRaw.split(':')[0]; 
         let productosSeleccionados = [];
 
         async function cargarProductosInventario() {
@@ -833,7 +835,7 @@
             if (!cont) return;
 
             try {
-                // Fetch al endpoint de tu backend en Render
+                // Generamos un fetch limpio apuntando directamente al número entero (ej: /inventario/api/productos/9)
                 const res = await fetch(`/inventario/api/productos/${clienteIdInv}`);
                 
                 if (!res.ok) {
@@ -841,7 +843,7 @@
                 }
                 
                 const data = await res.json();
-                console.log("Datos mapeados desde inventario_productos:", data);
+                console.log("Datos limpios mapeados desde inventario_productos:", data);
 
                 if (!data || !Array.isArray(data) || data.length === 0) {
                     cont.innerHTML = `
