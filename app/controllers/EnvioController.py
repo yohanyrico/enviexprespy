@@ -399,6 +399,19 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 concepto=f"Pago {'Nacional' if not es_bogota else 'Urbano'} Guía {envio.numero_guia} (Base: {costo_base} + COD 3%: {comision_cod})",
                 fecha_creacion=datetime.now()
             ))
+
+            # ── DESCUENTO DE INVENTARIO ──────────────────────────────────
+            productos_json = form.get("productos_inventario", "[]")
+            try:
+                import json
+                from app.controllers.inventario_controller import descontar_stock_envio
+                productos_seleccionados = json.loads(productos_json)
+                if productos_seleccionados and getattr(cliente, 'maneja_inventario', False):
+                    descontar_stock_envio(db, cliente.id_usuario, productos_seleccionados, envio.numero_guia)
+            except Exception as e_inv:
+                print(f"Error descontando inventario: {e_inv}")
+            # ────────────────────────────────────────────────────────────
+
         else:
             envio = db.query(Envio).filter(Envio.envio_id == int(envio_id)).first()
             if not envio:

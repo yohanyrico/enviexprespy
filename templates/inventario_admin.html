@@ -29,101 +29,39 @@
     }
     .navbar-brand { font-size: 1.8rem; font-weight: 800; color: var(--milano-red) !important; }
     .navbar-brand span { color: white; }
-
-    .btn-red {
-        background: var(--milano-red);
-        color: white;
-        border: none;
-        font-weight: 700;
-        transition: 0.3s;
-    }
-    .btn-red:hover {
-        background: var(--milano-hover);
-        color: white;
-        transform: translateY(-2px);
-    }
-    .btn-outline-red {
-        border: 2px solid var(--milano-red);
-        color: var(--milano-red);
-        font-weight: 600;
-        transition: 0.3s;
-    }
-    .btn-outline-red:hover {
-        background: var(--milano-red);
-        color: white;
-    }
-
-    .section-title {
-        color: var(--chinese-black);
-        font-weight: 800;
-        text-transform: uppercase;
-        border-bottom: 2px solid var(--milano-red);
-        display: inline-block;
-        padding-bottom: 4px;
-    }
-
-    .selector-card {
-        background: white;
-        border-radius: 16px;
-        padding: 28px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-        border-left: 5px solid var(--milano-red);
-        margin-bottom: 28px;
-    }
-
-    .stat-card {
-        background: white;
-        border-radius: 14px;
-        padding: 20px 24px;
-        border-left: 4px solid var(--milano-red);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        transition: all 0.3s;
-    }
+    .btn-red { background: var(--milano-red); color: white; border: none; font-weight: 700; transition: 0.3s; }
+    .btn-red:hover { background: var(--milano-hover); color: white; transform: translateY(-2px); }
+    .btn-outline-red { border: 2px solid var(--milano-red); color: var(--milano-red); font-weight: 600; transition: 0.3s; }
+    .btn-outline-red:hover { background: var(--milano-red); color: white; }
+    .section-title { color: var(--chinese-black); font-weight: 800; text-transform: uppercase; border-bottom: 2px solid var(--milano-red); display: inline-block; padding-bottom: 4px; }
+    .selector-card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-left: 5px solid var(--milano-red); margin-bottom: 28px; }
+    .stat-card { background: white; border-radius: 14px; padding: 20px 24px; border-left: 4px solid var(--milano-red); box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: all 0.3s; }
     .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
     .stat-card .stat-number { font-size: 1.8rem; font-weight: 800; color: var(--milano-red); }
     .stat-card .stat-label  { font-size: 0.72rem; text-transform: uppercase; color: var(--slate-gray); font-weight: 600; letter-spacing: 1px; }
     .stat-card i { font-size: 1.8rem; color: var(--milano-red); opacity: 0.6; }
-
-    .table-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        overflow: hidden;
-    }
-    .table-card .table thead {
-        background: var(--chinese-black);
-        color: white;
-    }
-    .table-card .table thead th {
-        font-weight: 700; font-size: 0.78rem;
-        text-transform: uppercase; letter-spacing: 0.5px;
-        border: none; padding: 14px 16px;
-    }
+    .table-card { background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); overflow: hidden; }
+    .table-card .table thead { background: var(--chinese-black); color: white; }
+    .table-card .table thead th { font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; padding: 14px 16px; }
     .table-card .table tbody tr:hover { background: #f8f9fa; }
-    .table-card .table tbody td {
-        padding: 12px 16px; vertical-align: middle;
-        font-size: 0.88rem; border-color: #f0f0f0;
-    }
-
+    .table-card .table tbody td { padding: 12px 16px; vertical-align: middle; font-size: 0.88rem; border-color: #f0f0f0; }
     .badge-ok   { background: #0B4A1E; color: white; }
     .badge-bajo { background: #7A4A00; color: white; }
     .badge-cero { background: #7B0D0D; color: white; }
-
     .empty-state { text-align: center; padding: 60px 20px; color: var(--slate-gray); }
     .empty-state i { font-size: 4rem; opacity: 0.3; margin-bottom: 16px; display: block; color: var(--milano-red); }
-
-    .breadcrumb-bar {
-        background: white; border-radius: 10px;
-        padding: 10px 20px; margin-bottom: 24px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
+    .breadcrumb-bar { background: white; border-radius: 10px; padding: 10px 20px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
     .breadcrumb-bar a { color: var(--milano-red); text-decoration: none; font-weight: 600; }
-
-    /* Modal */
     .modal-header { background: var(--chinese-black); color: white; }
     .modal-header .btn-close { filter: invert(1); }
-
     footer { background: var(--chinese-black); border-top: 3px solid var(--milano-red); margin-top: 60px; }
+
+    /* Alerta stock bajo en tabla */
+    .alerta-stock { animation: pulseRed 2s infinite; }
+    @keyframes pulseRed {
+        0%,100% { box-shadow: 0 0 0 0 rgba(178,12,6,0); }
+        50%      { box-shadow: 0 0 0 4px rgba(178,12,6,0.2); }
+    }
 </style>
 </head>
 <body>
@@ -152,14 +90,12 @@
 
 <div class="container">
 
-    <!-- Breadcrumb -->
     <div class="breadcrumb-bar d-flex align-items-center gap-2">
         <a href="/home"><i class="bi bi-house me-1"></i>Panel</a>
         <i class="bi bi-chevron-right text-muted small"></i>
         <span class="text-muted">Inventario Clientes</span>
     </div>
 
-    <!-- Título -->
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
         <div>
             <h2 class="section-title mb-1"><i class="bi bi-box-seam me-2" style="color:var(--milano-red)"></i>Inventario por Cliente</h2>
@@ -167,7 +103,7 @@
         </div>
     </div>
 
-    <!-- Selector de cliente -->
+    <!-- Selector -->
     <div class="selector-card">
         <form method="GET" action="/inventario/admin" class="row g-3 align-items-end">
             <div class="col-md-7">
@@ -196,7 +132,6 @@
 
     {% if cliente_seleccionado %}
 
-        <!-- Info del cliente -->
         <div class="d-flex align-items-center gap-3 mb-4">
             <div style="background:var(--milano-red); border-radius:50%; width:48px; height:48px; display:flex; align-items:center; justify-content:center;">
                 <i class="bi bi-person-fill text-white fs-5"></i>
@@ -208,42 +143,61 @@
         </div>
 
         {% if productos %}
-        {% set total_skus   = productos | length %}
-        {% set total_stock  = productos | sum(attribute='stock_disponible') %}
-        {% set sin_stock    = productos | selectattr('stock_disponible', 'equalto', 0) | list | length %}
+        {% set total_skus  = productos | length %}
+        {% set total_stock = productos | sum(attribute='stock_disponible') %}
+        {% set sin_stock   = productos | selectattr('stock_disponible', 'equalto', 0) | list | length %}
+        {% set bajo_minimo = [] %}
+        {% for p in productos %}{% if p.stock_minimo and p.stock_disponible <= p.stock_minimo and p.stock_disponible > 0 %}{% set _ = bajo_minimo.append(p) %}{% endif %}{% endfor %}
+
+        <!-- Alerta global si hay productos bajo mínimo -->
+        {% if bajo_minimo %}
+        <div class="alert d-flex align-items-center gap-3 mb-4"
+             style="background:#fff3cd; border:1.5px solid #ffc107; border-radius:12px; color:#856404;">
+            <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+            <div>
+                <strong>{{ bajo_minimo | length }} producto(s) con stock bajo el umbral mínimo.</strong>
+                Revisa la tabla y abastece antes de que se agote.
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Stats -->
         <div class="row g-3 mb-4">
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="stat-number">{{ total_skus }}</div>
-                            <div class="stat-label">Productos</div>
-                        </div>
+                        <div><div class="stat-number">{{ total_skus }}</div><div class="stat-label">Productos</div></div>
                         <i class="bi bi-tags"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="stat-number">{{ total_stock }}</div>
-                            <div class="stat-label">Unidades Totales</div>
-                        </div>
+                        <div><div class="stat-number">{{ total_stock }}</div><div class="stat-label">Unidades Totales</div></div>
                         <i class="bi bi-boxes"></i>
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
-                <div class="stat-card" style="border-left-color: {% if sin_stock > 0 %}#7B0D0D{% else %}#0B4A1E{% endif %}">
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="border-left-color:{% if sin_stock > 0 %}#7B0D0D{% else %}#0B4A1E{% endif %}">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="stat-number" style="color: {% if sin_stock > 0 %}#7B0D0D{% else %}#0B4A1E{% endif %}">{{ sin_stock }}</div>
+                            <div class="stat-number" style="color:{% if sin_stock > 0 %}#7B0D0D{% else %}#0B4A1E{% endif %}">{{ sin_stock }}</div>
                             <div class="stat-label">Sin Stock</div>
                         </div>
-                        <i class="bi bi-exclamation-triangle" style="color: {% if sin_stock > 0 %}#7B0D0D{% else %}#0B4A1E{% endif %}"></i>
+                        <i class="bi bi-exclamation-triangle" style="color:{% if sin_stock > 0 %}#7B0D0D{% else %}#0B4A1E{% endif %}"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="border-left-color:{% if bajo_minimo %}#7A4A00{% else %}#0B4A1E{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-number" style="color:{% if bajo_minimo %}#7A4A00{% else %}#0B4A1E{% endif %}">{{ bajo_minimo | length }}</div>
+                            <div class="stat-label">Bajo Umbral</div>
+                        </div>
+                        <i class="bi bi-bell" style="color:{% if bajo_minimo %}#7A4A00{% else %}#0B4A1E{% endif %}"></i>
                     </div>
                 </div>
             </div>
@@ -264,17 +218,27 @@
                             <th>Disponible</th>
                             <th>Comprometido</th>
                             <th>Ubicación</th>
-                            <th>Peso (kg)</th>
+                            <th>Umbral</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for p in productos %}
-                        <tr>
+                        {% set bajo_umbral = p.stock_minimo and p.stock_disponible <= p.stock_minimo and p.stock_disponible > 0 %}
+                        <tr {% if bajo_umbral %}class="table-warning"{% endif %}>
                             <td><span class="badge bg-secondary">{{ p.sku }}</span></td>
-                            <td class="fw-semibold">{{ p.nombre }}</td>
-                            <td class="fw-bold" style="color:var(--milano-red)">{{ p.stock_disponible }}</td>
+                            <td class="fw-semibold">
+                                {{ p.nombre }}
+                                {% if bajo_umbral %}
+                                <span class="badge ms-1" style="background:#7A4A00; font-size:0.65rem;">
+                                    <i class="bi bi-bell-fill"></i> Bajo umbral
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold" style="color:{% if p.stock_disponible == 0 %}#7B0D0D{% elif bajo_umbral %}#7A4A00{% else %}var(--milano-red){% endif %}">
+                                {{ p.stock_disponible }}
+                            </td>
                             <td class="text-muted">{{ p.stock_comprometido or 0 }}</td>
                             <td>
                                 {% if p.ubicacion_bodega %}
@@ -283,21 +247,32 @@
                                     <span class="text-muted">—</span>
                                 {% endif %}
                             </td>
-                            <td>{{ p.peso_kg or '—' }}</td>
+                            <td>
+                                <span class="badge rounded-pill px-2"
+                                      style="background:{% if p.stock_minimo %}#0b012e{% else %}#aaa{% endif %}; font-size:0.72rem;">
+                                    Min: {{ p.stock_minimo or 5 }}
+                                </span>
+                            </td>
                             <td>
                                 {% if p.stock_disponible == 0 %}
                                     <span class="badge badge-cero rounded-pill px-3">Sin stock</span>
-                                {% elif p.stock_disponible <= 5 %}
+                                {% elif bajo_umbral %}
                                     <span class="badge badge-bajo rounded-pill px-3">Stock bajo</span>
                                 {% else %}
                                     <span class="badge badge-ok rounded-pill px-3">Disponible</span>
                                 {% endif %}
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-red"
-                                    onclick="abastecer({{ p.id }}, '{{ p.sku }}', '{{ p.nombre }}', {{ cliente_seleccionado.id_usuario }})">
-                                    <i class="bi bi-plus-circle me-1"></i>Abastecer
-                                </button>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    <button class="btn btn-sm btn-outline-red"
+                                        onclick="abastecer({{ p.id }}, '{{ p.sku }}', '{{ p.nombre }}', {{ cliente_seleccionado.id_usuario }})">
+                                        <i class="bi bi-plus-circle me-1"></i>Abastecer
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                        onclick="editarUmbral({{ p.id }}, '{{ p.nombre }}', {{ p.stock_minimo or 5 }})">
+                                        <i class="bi bi-bell me-1"></i>Umbral
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -317,7 +292,6 @@
         {% endif %}
 
     {% else %}
-    <!-- Sin cliente seleccionado -->
     <div class="table-card mb-5">
         <div class="empty-state">
             <i class="bi bi-person-circle"></i>
@@ -354,6 +328,14 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Ubicación en Bodega <span class="text-muted">(opcional)</span></label>
                         <input type="text" name="ubicacion" class="form-control" placeholder="Ej: Estante A3">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">
+                            <i class="bi bi-bell me-1"></i>Umbral mínimo de alerta
+                        </label>
+                        <input type="number" name="stock_minimo" class="form-control" min="0" value="5"
+                               placeholder="Unidades mínimas antes de alertar">
+                        <small class="text-muted">Se enviará alerta cuando el stock baje de este número.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -399,6 +381,31 @@
     </div>
 </div>
 
+<!-- Modal Umbral -->
+<div class="modal fade" id="modalUmbral" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-bell me-2"></i>Umbral de Alerta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted mb-1">Producto:</p>
+                <p class="fw-bold mb-3" id="umbralNombre"></p>
+                <label class="form-label fw-bold small">Stock mínimo antes de alertar</label>
+                <input type="number" id="umbralValor" class="form-control" min="0" value="5">
+                <small class="text-muted">Se notificará por correo al cliente y en el panel.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-red btn-sm px-4" onclick="guardarUmbral()">
+                    <i class="bi bi-check-circle me-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer class="text-center py-4">
     <div class="container">
         <p class="mb-0 opacity-50 text-white">© 2026 ENVIEXPRESS – Gestión Logística Profesional</p>
@@ -415,6 +422,34 @@ function abastecer(id, sku, nombre, clienteId) {
     document.getElementById('abNombreLabel').textContent = nombre;
     document.getElementById('formAbastecer').action = '/inventario/abastecer/' + clienteId;
     new bootstrap.Modal(document.getElementById('modalAbastecer')).show();
+}
+
+let umbralProductoId = null;
+function editarUmbral(id, nombre, minimo) {
+    umbralProductoId = id;
+    document.getElementById('umbralNombre').textContent = nombre;
+    document.getElementById('umbralValor').value = minimo;
+    new bootstrap.Modal(document.getElementById('modalUmbral')).show();
+}
+
+async function guardarUmbral() {
+    if (!umbralProductoId) return;
+    const val = parseInt(document.getElementById('umbralValor').value);
+    try {
+        const res = await fetch(`/inventario/api/umbral/${umbralProductoId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stock_minimo: val })
+        });
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('modalUmbral')).hide();
+            location.reload();
+        } else {
+            alert('Error al guardar el umbral');
+        }
+    } catch(e) {
+        alert('Error de conexión');
+    }
 }
 </script>
 </body>

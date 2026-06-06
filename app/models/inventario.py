@@ -15,6 +15,7 @@ class InventarioProducto(Base):
     peso_kg = Column(Numeric(5, 2), default=0.0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    stock_minimo = Column(Integer, default=5)
 
 class HistorialInventario(Base):
     __tablename__ = "historial_inventario"
