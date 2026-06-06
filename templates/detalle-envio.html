@@ -237,14 +237,14 @@
                                         'Fallido': 'bg-danger'
                                     } %}
                                     <span class="badge-status {{ estado_class.get(envio.estado, 'bg-secondary') }}">
-                                        {{ envio.estado.replace('_', ' ') }}
+                                        {{ envio.estado.replace('_', ' ') if envio.estado else 'Registrado' }}
                                     </span>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="info-label">Tipo de Servicio:</div>
                                 <div class="info-value">
-                                    <span class="text-uppercase fw-bold text-info">{{ envio.tipo_servicio }}</span>
+                                    <span class="text-uppercase fw-bold text-info">{{ envio.tipo_servicio if envio.tipo_servicio else 'N/A' }}</span>
                                 </div>
                             </div>
                             <div class="col-12 mt-2">
@@ -264,7 +264,7 @@
                             <div class="costo-valor">${{ "{:,.0f}".format(envio.costo_envio) if envio.costo_envio else '0' }}</div>
                         </div>
                         <div class="info-label mt-3">Peso:</div>
-                        <div class="info-value">{{ envio.peso }} kg</div>
+                        <div class="info-value">{{ envio.peso if envio.peso else '0.0' }} kg</div>
                     </div>
                 </div>
             </div>
@@ -277,7 +277,7 @@
                             <div class="info-label">Ubicación:</div>
                             <div class="info-value">{{ envio.lugar_recogida.ciudad if envio.lugar_recogida else 'N/A' }}</div>
                             <div class="info-label">Dirección:</div>
-                            <div class="info-value text-orange">{{ envio.lugar_recogida.direccion if envio.lugar_recogida else 'N/A' }}</div>
+                            <div class="info-value text-danger fw-semibold">{{ envio.lugar_recogida.direccion if envio.lugar_recogida else 'N/A' }}</div>
                             <div class="info-label">Contacto / Localidad:</div>
                             <div class="info-value small opacity-75">{{ envio.lugar_recogida.referencia if envio.lugar_recogida else 'N/A' }}</div>
                         </div>
@@ -290,7 +290,7 @@
                             <div class="info-label">Ubicación:</div>
                             <div class="info-value">{{ envio.lugar_entrega.ciudad if envio.lugar_entrega else 'N/A' }}</div>
                             <div class="info-label">Dirección:</div>
-                            <div class="info-value text-orange">{{ envio.lugar_entrega.direccion if envio.lugar_entrega else 'N/A' }}</div>
+                            <div class="info-value text-danger fw-semibold">{{ envio.lugar_entrega.direccion if envio.lugar_entrega else 'N/A' }}</div>
                             <div class="info-label">Contacto / Localidad:</div>
                             <div class="info-value small opacity-75">{{ envio.lugar_entrega.referencia if envio.lugar_entrega else 'N/A' }}</div>
                         </div>
@@ -322,18 +322,18 @@
                 </div>
             </div>
 
-            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center mt-5">
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-center align-items-center mt-5">
                 <a href="/envios/imprimir/{{ envio.envio_id }}" target="_blank" class="btn btn-orange">
                     <i class="bi bi-printer"></i> Imprimir Guía
                 </a>
                 
                 {% if rol == 'ADMIN' or envio.estado == 'Registrado' %}
-                <a href="/envios/editar/{{ envio.envio_id }}" class="btn btn-outline-light d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px;">
+                <a href="/envios/editar/{{ envio.envio_id }}" class="btn btn-outline-dark d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; padding: 14px 30px; font-weight: bold; text-transform: uppercase;">
                     <i class="bi bi-pencil"></i> Modificar
                 </a>
                 {% endif %}
 
-                <a href="{{ '/envios/' if rol == 'ADMIN' else '/envios/mis-guias' }}" class="btn btn-link text-white opacity-50 text-decoration-none">
+                <a href="{{ '/envios/' if rol == 'ADMIN' else '/envios/mis-guias' }}" class="btn btn-link text-dark opacity-75 text-decoration-none fw-bold small">
                     <i class="bi bi-arrow-left"></i> Volver al listado
                 </a>
             </div>
@@ -342,4 +342,4 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>
