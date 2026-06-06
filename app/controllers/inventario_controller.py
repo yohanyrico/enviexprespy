@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
 from app.config.database import get_db
 from app.config.templates import templates
 from app.repositories.inventario_repository import InventarioRepository
-from app.models.inventario import InventarioProducto
+from app.models.inventario import InventarioProducto, HistorialInventario
 from app.models.Usuario import Usuario
 from app.security.SecurityConfig import get_current_user
 
@@ -22,24 +22,54 @@ def listar_inventario(cliente_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/abastecer/{cliente_id}")
-def abastecer_stock(cliente_id: int, data: dict, db: Session = Depends(get_db)):
-    repo = InventarioRepository(db)
-    producto = repo.buscar_por_sku(cliente_id, data['sku'])
+async def abastecer_stock(cliente_id: int, request: Request, db: Session = Depends(get_db)):
+    content_type = request.headers.get("content-type", "")
+
+    if "application/json" in content_type:
+        data      = await request.json()
+        sku       = data.get("sku")
+        nombre    = data.get("nombre")
+        cantidad  = int(data.get("cantidad", 1))
+        ubicacion = data.get("ubicacion", "").strip() or None
+        stock_minimo = int(data.get("stock_minimo", 5))
+    else:
+        form      = await request.form()
+        sku       = form.get("sku")
+        nombre    = form.get("nombre")
+        cantidad  = int(form.get("cantidad", 1))
+        ubicacion = (form.get("ubicacion") or "").strip() or None
+        stock_minimo = int(form.get("stock_minimo", 5))
+
+    repo     = InventarioRepository(db)
+    producto = repo.buscar_por_sku(cliente_id, sku)
 
     if producto:
-        producto.stock_disponible += data['cantidad']
+        producto.stock_disponible += cantidad
     else:
         producto = InventarioProducto(
             cliente_id=cliente_id,
-            sku=data['sku'],
-            nombre=data['nombre'],
-            stock_disponible=data['cantidad'],
-            ubicacion_bodega=data.get('ubicacion')
+            sku=sku,
+            nombre=nombre,
+            stock_disponible=cantidad,
+            ubicacion_bodega=ubicacion,
+            stock_minimo=stock_minimo
         )
-        repo.guardar_producto(producto)
+        db.add(producto)
+        db.flush()
 
+    db.add(HistorialInventario(
+        producto_id=producto.id,
+        tipo_movimiento="ENTRADA",
+        cantidad=cantidad,
+        motivo="Abastecimiento manual",
+        usuario_id=cliente_id
+    ))
     db.commit()
-    return {"message": "Stock actualizado", "nuevo_total": producto.stock_disponible}
+
+    if "application/json" in content_type:
+        return JSONResponse({"ok": True, "stock": producto.stock_disponible})
+
+    return RedirectResponse(url=f"/inventario/admin?cliente_id={cliente_id}", status_code=303)
 
 
 # ==========================================
