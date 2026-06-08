@@ -881,7 +881,10 @@
                                        style="max-width:65px; font-size:0.8rem;">
                                 <button class="btn btn-sm d-flex align-items-center justify-content-center"
                                         type="button"
-                                        onclick="agregarProducto(${id}, ${JSON.stringify(nombre)}, ${JSON.stringify(sku)})"                                        style="background:#B20C06; color:white; font-size:0.75rem; font-weight:500;">
+                                        onclick="agregarProducto(${id})"
+                                        data-nombre="${nombre.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"
+                                        data-sku="${sku.replace(/"/g, '&quot;')}"
+                                        style="background:#B20C06; color:white; font-size:0.75rem; font-weight:500;">
                                     <i class="bi bi-plus-lg me-1"></i> Agregar
                                 </button>
                             </div>
@@ -902,30 +905,35 @@
     }
 }
 
-        function agregarProducto(id, nombre, sku) {
-            const qtyInput = document.getElementById(`qty_${id}`);
-            if (!qtyInput) return;
+       function agregarProducto(id) {
+    const qtyInput = document.getElementById(`qty_${id}`);
+    if (!qtyInput) return;
 
-            const cantidad = parseInt(qtyInput.value);
-            const maxStock = parseInt(qtyInput.getAttribute('max')) || 0;
+    // Leer nombre y sku desde los data attributes del botón
+    const btn    = qtyInput.closest('.input-group').querySelector('button');
+    const nombre = btn.getAttribute('data-nombre') || '';
+    const sku    = btn.getAttribute('data-sku')    || '';
 
-            if (!cantidad || cantidad < 1) {
-                alert("La cantidad debe ser mayor o igual a 1.");
-                return;
-            }
-            if (cantidad > maxStock) {
-                alert(`No puedes agregar más del stock disponible (${maxStock}).`);
-                return;
-            }
+    const cantidad = parseInt(qtyInput.value);
+    const maxStock = parseInt(qtyInput.getAttribute('max')) || 0;
 
-            const existe = productosSeleccionados.findIndex(p => p.producto_id === id);
-            if (existe >= 0) {
-                productosSeleccionados[existe].cantidad = cantidad;
-            } else {
-                productosSeleccionados.push({ producto_id: id, cantidad, nombre, sku });
-            }
-            actualizarResumenProductos();
-        }
+    if (!cantidad || cantidad < 1) {
+        alert("La cantidad debe ser mayor o igual a 1.");
+        return;
+    }
+    if (cantidad > maxStock) {
+        alert(`No puedes agregar más del stock disponible (${maxStock}).`);
+        return;
+    }
+
+    const existe = productosSeleccionados.findIndex(p => p.producto_id === id);
+    if (existe >= 0) {
+        productosSeleccionados[existe].cantidad = cantidad;
+    } else {
+        productosSeleccionados.push({ producto_id: id, cantidad, nombre, sku });
+    }
+    actualizarResumenProductos();
+}
 
         function quitarProducto(id) {
             productosSeleccionados = productosSeleccionados.filter(p => p.producto_id !== id);
