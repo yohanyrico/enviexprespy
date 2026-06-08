@@ -881,8 +881,7 @@
                                        style="max-width:65px; font-size:0.8rem;">
                                 <button class="btn btn-sm d-flex align-items-center justify-content-center"
                                         type="button"
-                                        onclick="agregarProducto(${id}, '${nombre.replace(/'/g, "\\'")}', '${sku}')"
-                                        style="background:#B20C06; color:white; font-size:0.75rem; font-weight:500;">
+                                        onclick="agregarProducto(${id}, ${JSON.stringify(nombre)}, ${JSON.stringify(sku)})"                                        style="background:#B20C06; color:white; font-size:0.75rem; font-weight:500;">
                                     <i class="bi bi-plus-lg me-1"></i> Agregar
                                 </button>
                             </div>
