@@ -26,7 +26,7 @@ from app.models.Tarifa import Tarifa
 from app.models.Vehiculo import Vehiculo
 from app.models.Ruta import Ruta
 from app.models.EnvioItemInventario import EnvioItemInventario   # ← NUEVO
-from app.models.inventario import Inventario                     # ← IMPORTACIÓN CORREGIDA
+from app.models.inventario import InventarioProductos as Inventario                   # ← IMPORTACIÓN CORREGIDA
 
 from app.security.SecurityConfig import get_current_user, require_admin, require_admin_or_mensajero
 import app.repositories.EnvioRepository as envio_repo
