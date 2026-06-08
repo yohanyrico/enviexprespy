@@ -26,6 +26,7 @@ from app.models.Tarifa import Tarifa
 from app.models.Vehiculo import Vehiculo
 from app.models.Ruta import Ruta
 from app.models.EnvioItemInventario import EnvioItemInventario   # ← NUEVO
+from app.models.inventario import Inventario                     # ← IMPORTACIÓN CORREGIDA
 
 from app.security.SecurityConfig import get_current_user, require_admin, require_admin_or_mensajero
 import app.repositories.EnvioRepository as envio_repo
@@ -410,10 +411,10 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 fecha_creacion=datetime.now()
             ))
 
-            # ── GUARDAR ITEMS DE INVENTARIO EN LA TABLA ─────────────────
+            # ── GUARDAR ITEMS DE INVENTARIO EN LA TABLA Y DESCONTAR EN LÍNEA ──
             if productos_seleccionados and getattr(cliente, 'maneja_inventario', False):
                 for item in productos_seleccionados:
-                    pid = item.get("producto_id")
+                    pid = item.get("producto_id") or item.get("id")
                     qty = item.get("cantidad", 1)
                     if pid and qty:
                         db.add(EnvioItemInventario(
@@ -421,13 +422,21 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                             producto_id=int(pid),
                             cantidad=int(qty)
                         ))
+                        # Ejecutar rebaja directa sobre stock_disponible
+                        producto_db = db.query(Inventario).filter(Inventario.id == int(pid)).first()
+                        if producto_db:
+                            if producto_db.stock_disponible >= int(qty):
+                                producto_db.stock_disponible -= int(qty)
+                                if hasattr(producto_db, 'stock_comprometido'):
+                                    producto_db.stock_comprometido += int(qty)
+                            else:
+                                raise Exception(f"Stock insuficiente en bodega para {producto_db.nombre}")
 
-                # Descontar stock
                 try:
                     from app.controllers.inventario_controller import descontar_stock_envio
                     descontar_stock_envio(db, cliente.id_usuario, productos_seleccionados, envio.numero_guia)
                 except Exception as e_inv:
-                    print(f"Error descontando inventario: {e_inv}")
+                    print(f"Error en disparador secundario de inventario: {e_inv}")
             # ────────────────────────────────────────────────────────────
 
         else:
@@ -440,15 +449,25 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
             envio.valor_a_cobrar = valor_a_cobrar
             envio.peso           = Decimal(form.get("peso", "1.0"))
 
-            # ── ACTUALIZAR ITEMS DE INVENTARIO AL EDITAR ────────────────
+            # ── ACTUALIZAR ITEMS DE INVENTARIO AL EDITAR REVERTIENDO Y REAPLICANDO ──
             if productos_seleccionados and getattr(cliente, 'maneja_inventario', False):
-                # Borrar los anteriores y reemplazar
+                # 1. Devolver cantidades viejas antes de borrarlas
+                items_viejos = db.query(EnvioItemInventario).filter(EnvioItemInventario.envio_id == envio.envio_id).all()
+                for iv in items_viejos:
+                    prod_db = db.query(Inventario).filter(Inventario.id == iv.producto_id).first()
+                    if prod_db:
+                        prod_db.stock_disponible += iv.cantidad
+                        if hasattr(prod_db, 'stock_comprometido') and prod_db.stock_comprometido >= iv.cantidad:
+                            prod_db.stock_comprometido -= iv.cantidad
+
+                # 2. Borrar asignaciones viejas de la tabla intermedia
                 db.query(EnvioItemInventario).filter(
                     EnvioItemInventario.envio_id == envio.envio_id
                 ).delete(synchronize_session=False)
 
+                # 3. Aplicar nuevas cantidades seleccionadas
                 for item in productos_seleccionados:
-                    pid = item.get("producto_id")
+                    pid = item.get("producto_id") or item.get("id")
                     qty = item.get("cantidad", 1)
                     if pid and qty:
                         db.add(EnvioItemInventario(
@@ -456,6 +475,14 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                             producto_id=int(pid),
                             cantidad=int(qty)
                         ))
+                        producto_db = db.query(Inventario).filter(Inventario.id == int(pid)).first()
+                        if producto_db:
+                            if producto_db.stock_disponible >= int(qty):
+                                producto_db.stock_disponible -= int(qty)
+                                if hasattr(producto_db, 'stock_comprometido'):
+                                    producto_db.stock_comprometido += int(qty)
+                            else:
+                                raise Exception(f"Stock insuficiente para {producto_db.nombre} durante edición")
             # ────────────────────────────────────────────────────────────
 
         for tipo in ["recogida", "entrega"]:
@@ -517,6 +544,16 @@ def eliminar(id: int, request: Request, db: Session = Depends(get_db)):
         envio = db.query(Envio).filter(Envio.envio_id == id).first()
         if not envio:
             return RedirectResponse(url=destino_ok)
+
+        # Devolver stock a bodega si el envío es eliminado estando registrado
+        if envio.estado == "Registrado":
+            items_inventario = db.query(EnvioItemInventario).filter(EnvioItemInventario.envio_id == envio.envio_id).all()
+            for item in items_inventario:
+                prod_db = db.query(Inventario).filter(Inventario.id == item.producto_id).first()
+                if prod_db:
+                    prod_db.stock_disponible += item.cantidad
+                    if hasattr(prod_db, 'stock_comprometido') and prod_db.stock_comprometido >= item.cantidad:
+                        prod_db.stock_comprometido -= item.cantidad
 
         cliente = db.query(Usuario).filter(Usuario.id_usuario == envio.usuario_cliente_id).first()
         if cliente and envio.costo_envio > 0 and envio.estado == "Registrado":
@@ -1065,6 +1102,5 @@ async def subir_foto_entrega(
     db.commit()
 
     return JSONResponse({"ok": True, "foto": nombre_archivo})
-
 
 # --- FIN DEL CONTROLADOR DE ENVÍOS ---
