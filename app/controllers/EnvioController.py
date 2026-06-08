@@ -743,6 +743,75 @@ def editar(id: int, request: Request, db: Session = Depends(get_db)):
     })
 
 
+# --- EDITAR ENVÍO (UNIFICADO Y SINCRO CON ENVIOTEMINVENTARIO) ---
+@router.get("/editar/{id}", response_class=HTMLResponse)
+def editar(id: int, request: Request, db: Session = Depends(get_db)):
+    # 1. Traer el envío incluyendo la relación intermedia y el inventario real usando joinedload
+    envio = db.query(Envio).options(
+        joinedload(Envio.lugar_recogida),
+        joinedload(Envio.lugar_entrega),
+        joinedload(Envio.items_inventario).joinedload(EnvioItemInventario.inventario)
+    ).filter(Envio.envio_id == id).first()
+
+    if not envio:
+        raise HTTPException(status_code=404, detail="Guía no encontrada para edición")
+
+    # 2. Cargar catálogos base del formulario
+    datos = _cargar_datos_formulario(db)
+    user_id = request.session.get("user_id")
+
+    usuario_actual = db.query(Usuario).options(
+        joinedload(Usuario.tarifa)
+    ).filter(Usuario.id_usuario == user_id).first()
+
+    clientes_con_tarifa = db.query(Usuario).options(
+        joinedload(Usuario.tarifa)
+    ).filter(Usuario.rol == "CLIENTE").all()
+
+    datos['clientes'] = clientes_con_tarifa
+    clientes_tarifas = _build_clientes_tarifas(clientes_con_tarifa)
+
+    if usuario_actual and usuario_actual.rol != 'ADMIN':
+        clientes_tarifas = {}
+
+    # 3. Consultar productos de inventario disponibles en bodega (Modelo: InventarioProducto)
+    productos_inventario = db.query(Inventario).filter(Inventario.stock_disponible > 0).all()
+
+    # 4. Extracción de variables adicionales requeridas por 'form-envio.html'
+    ciudad_rec, depto_rec = _extraer_ciudad_depto(envio.lugar_recogida)
+    loc_rec, tel_rec = _extraer_localidad_telefono(envio.lugar_recogida)
+    ciudad_ent, depto_ent = _extraer_ciudad_depto(envio.lugar_entrega)
+    loc_ent, tel_ent = _extraer_localidad_telefono(envio.lugar_entrega)
+    descripcion, obs = _extraer_descripcion_obs(envio)
+
+    ref_ent = envio.lugar_entrega.referencia if envio.lugar_entrega and envio.lugar_entrega.referencia else ""
+    nombre_dest = ""
+    if "Nombre:" in ref_ent:
+        nombre_dest = ref_ent.split("Nombre:")[1].split("|")[0].strip()
+
+    # Renderizamos la plantilla con todo el contexto necesario
+    return templates.TemplateResponse("form-envio.html", {
+        "request": request,
+        "envio": envio,
+        "productos_inventario": productos_inventario,
+        "rol": request.session.get("rol", "CLIENTE"),
+        "current_user": usuario_actual,
+        "clientes_tarifas": clientes_tarifas,
+        "edit_depto_rec": depto_rec,
+        "edit_ciudad_rec": ciudad_rec,
+        "edit_tel_rec": tel_rec,
+        "edit_loc_rec": loc_rec,
+        "edit_depto_ent": depto_ent,
+        "edit_ciudad_ent": ciudad_ent,
+        "edit_tel_ent": tel_ent,
+        "edit_loc_ent": loc_ent,
+        "edit_descripcion": descripcion,
+        "edit_obs": obs,
+        "edit_nombre_dest": nombre_dest,
+        **datos
+    })
+
+
 @router.post("/editar/{id}")
 async def actualizar_envio(
     id: int,
@@ -760,54 +829,58 @@ async def actualizar_envio(
     form_data = await request.form()
 
     try:
-        # 2. REVERSAR STOCK ANTERIOR (Solo si estaba registrado)
+        # 2. REVERSAR STOCK ANTERIOR USANDO COLUMNAS REALES (envio_id, producto_id)
         items_previos = db.query(EnvioItemInventario).filter(EnvioItemInventario.envio_id == id).all()
         for item in items_previos:
-            # Usamos 'Inventario.id' correspondiente a tu clase InventarioProducto
-            producto_db = db.query(Inventario).filter(Inventario.id == item.id_inventario).first()
+            producto_db = db.query(Inventario).filter(Inventario.id == item.producto_id).first()
             if producto_db:
                 producto_db.stock_disponible += item.cantidad
+                # Si manejas stock comprometido, revertirlo también
+                if hasattr(producto_db, 'stock_comprometido') and producto_db.stock_comprometido >= item.cantidad:
+                    producto_db.stock_comprometido -= item.cantidad
 
-        # Limpiar la tabla intermedia vieja para este envío en particular
+        # Limpiar físicamente las relaciones viejas
         db.query(EnvioItemInventario).filter(EnvioItemInventario.envio_id == id).delete()
 
-        # 3. ACTUALIZACIÓN DE DATOS BÁSICOS DEL FORMULARIO
-        # (Aquí puedes mapear el resto de campos si tu form actualiza direcciones o tarifas)
+        # 3. ACTUALIZACIÓN DE CAMPOS BÁSICOS DEL FORMULARIO
         envio.descripcion = form_data.get("descripcion")
+        # Si tu frontend envía el estado en el formulario de edición, lo actualizamos; si no, preserva el actual
+        nuevo_estado_form = form_data.get("estado")
+        if nuevo_estado_form:
+            envio.estado = nuevo_estado_form
         
-        # 4. PROCESAR NUEVA SELECCIÓN DE PRODUCTOS DESDE EL FORMULARIO
-        # Lee los arreglos 'productos[]' y 'cantidades[]' enviados por el cliente
+        # 4. PROCESAR NUEVA SELECCIÓN DE PRODUCTOS DEL INVENTARIO
         productos_input = form_data.getlist("productos[]")
         cantidades_input = form_data.getlist("cantidades[]")
 
-        for id_inv_str, cant_str in zip(productos_input, cantidades_input):
-            if not id_inv_str or not cant_str:
+        for id_prod_str, cant_str in zip(productos_input, cantidades_input):
+            if not id_prod_str or not cant_str:
                 continue
 
-            id_inventario = int(id_inv_str)
+            id_producto = int(id_prod_str)
             cantidad_solicitada = int(cant_str)
 
             if cantidad_solicitada <= 0:
                 continue
 
-            # Buscar y bloquear fila con for_update() usando la columna 'id'
-            producto_db = db.query(Inventario).filter(Inventario.id == id_inventario).with_for_update().first()
+            # Bloqueo optimista de la fila con con with_for_update() usando 'id'
+            producto_db = db.query(Inventario).filter(Inventario.id == id_producto).with_for_update().first()
             if not producto_db or producto_db.stock_disponible < cantidad_solicitada:
                 db.rollback()
                 return RedirectResponse(url=f"{destino_ok}?error=stock_insuficiente", status_code=302)
 
-            # Descontar existencias reales
+            # Descontar del stock real de la bodega
             producto_db.stock_disponible -= cantidad_solicitada
 
-            # Guardar el nuevo enlace en la tabla intermedia
+            # Registrar la nueva fila con los nombres exactos de tu base de datos
             nuevo_item = EnvioItemInventario(
                 envio_id=envio.envio_id,
-                id_inventario=id_inventario,
+                producto_id=id_producto,
                 cantidad=cantidad_solicitada
             )
             db.add(nuevo_item)
 
-        # 5. Confirmar transacción de actualización de forma segura
+        # 5. Guardar permanentemente la transacción
         db.commit()
         return RedirectResponse(url=destino_ok, status_code=303)
 
