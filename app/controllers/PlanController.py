@@ -32,7 +32,7 @@ def vista_pago(nombre: str, request: Request, db: Session = Depends(get_db)):
     
     # Si sale None, fuerza la llave manualmente solo para probar:
     if not key:
-        key = "pub_prod_JWQ3KBYPCQXmfIdC6Frk7767EQY9XWzE" # Pon tu llave real aquí
+        key = "pub_test_7dp1Bc4HwBDy0I6MGSKhD5FTZX6deV8q" # Pon tu llave real aquí
 
     return templates.TemplateResponse("pago.html", {
         "request": request,
