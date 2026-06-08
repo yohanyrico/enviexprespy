@@ -87,8 +87,7 @@ app.include_router(plan_router)
 app.include_router(bodega_router)
 app.include_router(inventario_controller.router)
 
-# --- 💻 ENDPOINT GLOBAL PARA EL MAPA DEL ADMINISTRADOR (DOBLE RUTA) ---
-# Se le asignan múltiples decoradores para que responda tanto al frontend JS como a la ruta admin
+# --- 💻 ENDPOINT GLOBAL PARA EL MAPA DEL ADMINISTRADOR ---
 @app.get("/api/admin/ubicaciones-mensajeros")
 @app.get("/api/ubicaciones-mensajeros")
 def obtener_ubicaciones_actuales(db: Session = Depends(get_db)):
@@ -97,6 +96,8 @@ def obtener_ubicaciones_actuales(db: Session = Depends(get_db)):
     Ideal para pintar todas las motos activas en el mapa de Bogotá.
     """
     try:
+        from app.models.Usuario import Usuario
+        
         # Consulta SQL nativa usando DISTINCT ON para traer solo la última coordenada de cada mensajero
         query = """
             SELECT DISTINCT ON (usuario) usuario, latitud, longitud, fecha
@@ -105,15 +106,20 @@ def obtener_ubicaciones_actuales(db: Session = Depends(get_db)):
         """
         resultados = db.execute(text(query)).fetchall()
         
-        return [
-            {
-                "usuario": r.usuario, 
-                "latitud": r.latitud, 
-                "longitud": r.longitud, 
-                "fecha": r.fecha.isoformat() if hasattr(r.fecha, 'isoformat') else str(r.fecha)
-            }
-            for r in resultados
-        ]
+        ubicaciones = []
+        for r in resultados:
+            # Obtener nombre del mensajero
+            mensajero = db.query(Usuario).filter(Usuario.id_usuario == r.usuario).first()
+            nombre_mensajero = f"{mensajero.nombre} {mensajero.apellido}" if mensajero else f"Mensajero {r.usuario}"
+            
+            ubicaciones.append({
+                "id": r.usuario,
+                "nombre": nombre_mensajero,
+                "lat": float(r.latitud),
+                "lng": float(r.longitud)
+            })
+        
+        return ubicaciones
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al consultar ubicaciones: {str(e)}")
 

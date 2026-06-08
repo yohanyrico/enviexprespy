@@ -484,8 +484,7 @@ let formasActivas = [];
 
 // 🌐 VARIABLES GLOBALES AÑADIDAS PARA RASTREO EN TIEMPO REAL 🌐
 let marcadoresMensajeros = {}; // Almacena las motos activas en mapa { id_mensajero: google.maps.Marker }
-const URL_API_MENSAJEROS = "/api/mensajero/ubicaciones-activas";// Cambia por tu endpoint real del Backend
-
+const URL_API_MENSAJEROS = "/api/ubicaciones-mensajeros";
 function setTab(tab) {
     ['creada','en-curso','finalizada'].forEach(t => {
         document.getElementById(`tab-${t}`).className = 's-tab';
