@@ -201,10 +201,9 @@ def actualizar_ubicacion(
 
 # --- 💻 UBICACIONES ACTIVAS (Para el Mapa Web) ---
 @router.get("/ubicaciones-activas", response_model=List[Dict[str, Any]])
-@router.get("/../ubicaciones-mensajeros", response_model=List[Dict[str, Any]])
 def obtener_ubicaciones_activas(db: Session = Depends(get_db)):
     hace_5_min = datetime.now() - timedelta(minutes=5)
-
+ 
     mensajeros = db.query(Usuario).filter(
         Usuario.rol == "MENSAJERO",
         Usuario.activo == True,
@@ -212,7 +211,7 @@ def obtener_ubicaciones_activas(db: Session = Depends(get_db)):
         Usuario.longitud.isnot(None),
         Usuario.ultima_ubicacion >= hace_5_min
     ).all()
-
+ 
     return [
         {
             "id_usuario": m.id_usuario,
