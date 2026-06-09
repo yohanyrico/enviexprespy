@@ -3,6 +3,8 @@ from sqlalchemy.orm import relationship, Session
 from app.config.database import Base
 from datetime import datetime
 
+from app.models.Seguimiento import Seguimiento
+from app.models.EnvioItemInventario import EnvioItemInventario
 class Envio(Base):
     __tablename__ = "envios"
 
@@ -43,25 +45,26 @@ class Envio(Base):
 
     # Estado principal del envío — flujo completo
     estado = Column(
-    Enum(
-        "Registrado",
-        "Pendiente_Recoger",
-        "Colectado",           # ← ya existe pero falta aquí
-        "C-Colectado",
-        "Pendiente_Verificar",
-        "En_Bodega",           # ← también agrégalo por si acaso
-        "En_Ruta",
-        "En_Destino",
-        "Entregado",
-        "Cancelado",
-        "Devolucion",
-        "Retorno",
-        "Rechazado",
-        "Fallido",
-        name="estadoenvio", native_enum=False
-    ),
-    nullable=False, default="Registrado"
-)
+        Enum(
+            "Registrado",
+            "Pendiente_Recoger",
+            "Colectado",
+            "C-Colectado",
+            "Pendiente_Verificar",
+            "En_Bodega",
+            "En_Ruta",
+            "En_Destino",
+            "Entregado",
+            "Cancelado",
+            "Devolucion",
+            "Retorno",
+            "Rechazado",
+            "Fallido",
+            name="estadoenvio", native_enum=False
+        ),
+        nullable=False, default="Registrado"
+    )
+
     # Estados independientes por punto (recogida y entrega)
     estado_recogida = Column(
         Enum("Pendiente", "En_Ruta", "Colectado", "Cancelado",
@@ -83,16 +86,20 @@ class Envio(Base):
     vehiculo_id = Column(BigInteger, ForeignKey("vehiculo.vehiculo_id"), nullable=True)
     vehiculo = relationship("Vehiculo", back_populates="envios")
 
+    # 👇 Ya mapeado correctamente, ahora sí encuentra la clase 'Seguimiento'
     seguimientos = relationship(
         "Seguimiento",
         back_populates="envio",
         cascade="all, delete-orphan"
     )
+    
+    # 👇 Ya mapeado correctamente, ahora sí encuentra la clase 'EnvioItemInventario'
     items_inventario = relationship(
-    "EnvioItemInventario",
-    back_populates="envio",
-    cascade="all, delete-orphan"
-)
+        "EnvioItemInventario",
+        back_populates="envio",
+        cascade="all, delete-orphan"
+    )
+
     @classmethod
     def generar_numero_guia(cls, db: Session) -> str:
         ultima_guia = (

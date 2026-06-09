@@ -12,7 +12,8 @@ def _base_query(db: Session):
         joinedload(Envio.cliente),
         joinedload(Envio.mensajero),
         joinedload(Envio.lugar_recogida),
-        joinedload(Envio.lugar_entrega)
+        joinedload(Envio.lugar_entrega),
+        joinedload(Envio.seguimientos)
     )
 
 
