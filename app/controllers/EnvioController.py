@@ -5,6 +5,7 @@ import io
 import time
 import json
 
+from django import db
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, Form, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse, StreamingResponse, JSONResponse
 from sqlalchemy.orm import Session, joinedload
@@ -27,6 +28,7 @@ from app.models.Vehiculo import Vehiculo
 from app.models.Ruta import Ruta
 from app.models.EnvioItemInventario import EnvioItemInventario
 from app.models.inventario import InventarioProducto as Inventario
+from app.models.Seguimiento import Seguimiento
 
 from app.security.SecurityConfig import get_current_user, require_admin, require_admin_or_mensajero
 import app.repositories.EnvioRepository as envio_repo
@@ -363,6 +365,7 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
         except Exception:
             productos_seleccionados = []
 
+       # The code snippet provided is not complete and contains syntax errors. It seems to be a Python if statement, but it is missing the condition that should be checked after the "if" keyword. Additionally, the indentation is incorrect. To provide a more accurate explanation, please provide the complete and correctly formatted code snippet.
         if es_nuevo:
             # Tarifa y costo
             if not es_bogota:
@@ -410,6 +413,13 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 monto=-costo_total,
                 concepto=f"Pago {'Nacional' if not es_bogota else 'Urbano'} Guía {envio.numero_guia}",
                 fecha_creacion=datetime.now()
+            ))
+            
+            db.add(Seguimiento(
+                envio_id=envio.envio_id,
+                estado="Registrado",
+                descripcion="Guía creada en el sistema",
+                fecha=datetime.now()
             ))
 
             # Guardar items de inventario (sin revertir previos, es nuevo)
@@ -927,16 +937,23 @@ async def actualizar_gestion_envio(id: int, request: Request, db: Session = Depe
             envio.lugar_entrega.direccion = form.get("dir_ent")
 
         nuevo_estado = form.get("nuevo_estado", "").strip()
-        if nuevo_estado:
+        if nuevo_estado and nuevo_estado != envio.estado:
             envio.estado = nuevo_estado
+            descripcion = form.get("observacion_estado", "").strip()
+            if not descripcion:
+                descripcion = f"Estado actualizado a: {nuevo_estado}"
+            db.add(Seguimiento(
+                envio_id=id,
+                estado=nuevo_estado,
+                descripcion=descripcion,
+                fecha=datetime.now()
+            ))
 
         db.commit()
         return RedirectResponse(url=f"/envios/gestion/{id}?success=true", status_code=303)
     except Exception as e:
         db.rollback()
         return RedirectResponse(url=f"/envios/gestion/{id}?error=true", status_code=303)
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # FOTO DE ENTREGA
 # ─────────────────────────────────────────────────────────────────────────────
@@ -996,8 +1013,7 @@ def rastrear_guia_publica(numero_guia: str, db: Session = Depends(get_db)):
                 "seguimiento_id": s.seguimiento_id,
                 "estado": s.estado,
                 "descripcion": s.descripcion if s.descripcion else "Sin observaciones.",
-                "fecha_cambio": s.fecha_cambio.isoformat() if getattr(s, 'fecha_cambio', None) else (s.fecha_creacion.isoformat() if getattr(s, 'fecha_creacion', None) else None)
-            }
+                "fecha": s.fecha.isoformat() if s.fecha else None            }
             for s in envio.seguimientos
         ] if envio.seguimientos else []
     }

@@ -698,8 +698,7 @@
 
                         <div class="mb-3">
                             <label class="label-custom">Comentario / Novedad</label>
-                            <textarea name="comentario_novedad" class="form-control form-control-sm"
-                                      rows="2" placeholder="Ej: Recibió Juan Pérez, o motivo de la novedad."></textarea>
+                            descripcion = form.get("comentario_novedad", "").strip()
                         </div>
 
                         <div class="d-grid">
@@ -784,12 +783,15 @@
             })
         })
         .then(response => {
-            if (response.ok || response.redirected) {
-                // Agregar fila al historial sin recargar
-                agregarFilaTracking(fecha, hora, estado, comentario, pod);
-                cerrarTrackingModal();
-            }
-        })
+    if (response.ok || response.redirected) {
+        cerrarTrackingModal();
+        window.location.reload(); // ← esto hace que Jinja pinte los seguimientos reales
+    }
+})
+.catch(() => {
+    cerrarTrackingModal();
+    window.location.reload();
+});
         .catch(() => {
             // Agregar fila de igual forma (optimistic UI)
             agregarFilaTracking(fecha, hora, estado, comentario, pod);
