@@ -762,12 +762,11 @@ async def ver_ruta(request: Request, mensajero_id: int, db: Session = Depends(ge
         Envio.usuario_mensajero_entrega_id == mensajero_id,
         Envio.estado_entrega.in_(["En_Ruta", "En_Destino"]),
         Envio.estado.in_(["Pendiente_Verificar", "En_Ruta"])
-    ).options(joinedload(Envio.lugar_recogida), joinedload(Envio.lugar_entrega)).all()
+    ).options(joinedload(Envio.lugar_entrega)).all()
 
     ids_vistos = set()
     envios = []
     for e in envios_c + envios_d:
-        if e.envio_id not in ids_vistos:
             ids_vistos.add(e.envio_id)
             envios.append(e)
 
@@ -968,5 +967,39 @@ async def subir_foto_entrega(
     envio.foto_entrega = nombre_archivo
     db.commit()
     return JSONResponse({"ok": True, "foto": nombre_archivo})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 🛠️ API ENDPOINT: RASTREO PÚBLICO DE GUÍAS CON HISTORIAL
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/api/rastreo/{numero_guia}")
+def rastrear_guia_publica(numero_guia: str, db: Session = Depends(get_db)):
+    """
+    Busca un envío por su número de guía y retorna sus datos junto con el 
+    historial completo de seguimientos para pintar en el Timeline del Frontend.
+    """
+    # Se usa el módulo importado envio_repo (mapeado desde app.repositories.EnvioRepository)
+    envio = envio_repo.find_by_numero_guia(db, numero_guia)
+    
+    if not envio:
+        raise HTTPException(status_code=404, detail="Número de guía no encontrado")
+    
+    return {
+        "envio_id": envio.envio_id,
+        "numero_guia": envio.numero_guia,
+        "estado": envio.estado,
+        "tipo_servicio": envio.tipo_servicio,
+        "fecha_creacion": envio.fecha_creacion.isoformat() if envio.fecha_creacion else None,
+        "seguimientos": [
+            {
+                "seguimiento_id": s.seguimiento_id,
+                "estado": s.estado,
+                "descripcion": s.descripcion if s.descripcion else "Sin observaciones.",
+                "fecha_cambio": s.fecha_cambio.isoformat() if getattr(s, 'fecha_cambio', None) else (s.fecha_creacion.isoformat() if getattr(s, 'fecha_creacion', None) else None)
+            }
+            for s in envio.seguimientos
+        ] if envio.seguimientos else []
+    }
 
 # --- FIN DEL CONTROLADOR ---
