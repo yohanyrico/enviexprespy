@@ -5,7 +5,7 @@ import io
 import time
 import json
 
-from django import db
+from app.config.database import get_db  # ✅ el que ya tenías antes
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, Form, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse, StreamingResponse, JSONResponse
 from sqlalchemy.orm import Session, joinedload
