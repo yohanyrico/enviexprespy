@@ -1,3 +1,4 @@
+cat << 'EOF' > /home/claude/gestionar_detalle.html
 {# templates/gestionar_detalle.html #}
 <!DOCTYPE html>
 <html lang="es">
@@ -104,7 +105,6 @@
     .bg-pendiente { background: #f0f0f0; color: #555; }
     .bg-novedad   { background: #f8d7da; color: #842029; }
 
-    /* Foto thumbnail */
     .foto-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 4px; border: 2px solid var(--chinese-black); cursor: pointer; transition: transform 0.2s; }
     .foto-thumb:hover { transform: scale(1.08); border-color: var(--milano-red); }
 
@@ -119,7 +119,6 @@
     .foto-badge.recogida { background: #0056b3; }
     .foto-badge.entrega  { background: var(--milano-red); }
 
-    /* Modal foto fullscreen */
     .foto-modal-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.88);
         display: flex; align-items: center; justify-content: center;
@@ -128,7 +127,6 @@
     .foto-modal-overlay img { max-width: 90vw; max-height: 88vh; border-radius: 6px; border: 3px solid #fff; box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
     @keyframes fadeInOverlay { from{opacity:0;} to{opacity:1;} }
 
-    /* ══ MODAL ADD TRACKING (estilo React) ══ */
     .tracking-modal-overlay {
         display: none; position: fixed; inset: 0;
         background: rgba(0,0,0,0.5); z-index: 2000;
@@ -166,7 +164,6 @@
     .btn-add-tracking { padding: 9px 18px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: 800; font-family: 'Montserrat', sans-serif; cursor: pointer; transition: 0.2s; text-transform: uppercase; font-size: 0.82rem; }
     .btn-add-tracking:hover { background: #003d82; }
 
-    /* Badge de estado en historial */
     .status-badge {
         display: inline-flex; align-items: center; padding: 3px 10px;
         border-radius: 20px; font-size: 0.72rem; font-weight: 700;
@@ -181,7 +178,6 @@
     .status-pendiente   { background: #f0f0f0; color: #555; }
     .status-novedad     { background: #f8d7da; color: #842029; }
 
-    /* Indicador de estado del envío */
     .estado-pipeline {
         display: flex; align-items: center; gap: 6px;
         flex-wrap: wrap; padding: 10px 0; margin-bottom: 16px;
@@ -199,19 +195,19 @@
 </head>
 <body>
 
-<!-- ══ MODAL ADD TRACKING ══ -->
+<!-- ══ MODAL AGREGAR SEGUIMIENTO ══ -->
 <div class="tracking-modal-overlay" id="trackingModalOverlay">
     <div class="tracking-modal-box">
-        <h2>Add Tracking</h2>
-        <p class="consignment-no">Tracking No. — <strong>{{ envio.numero_guia }}</strong></p>
+        <h2>Agregar Seguimiento</h2>
+        <p class="consignment-no">No. de Guía — <strong>{{ envio.numero_guia }}</strong></p>
 
-        <label>Date / Time</label>
+        <label>Fecha / Hora</label>
         <div class="datetime-row">
             <input type="date" id="tm_fecha">
             <input type="time" id="tm_hora">
         </div>
 
-        <label>Status</label>
+        <label>Estado</label>
         <select id="tm_estado">
             <option value="Pendiente_Recoger">Pendiente por Recoger</option>
             <option value="Colectado">Colectado (Recogido)</option>
@@ -225,17 +221,17 @@
             <option value="Rechazado">Rechazado</option>
         </select>
 
-        <label>Comment</label>
+        <label>Comentario</label>
         <textarea id="tm_comentario" rows="3" placeholder="Agrega un comentario o novedad..."></textarea>
 
         <div class="pod-check">
             <input type="checkbox" id="tm_pod">
-            <span>Is POD Available (Foto de evidencia disponible)</span>
+            <span>¿Foto de evidencia disponible?</span>
         </div>
 
         <div class="tracking-modal-actions">
-            <button class="btn-cancel-modal" onclick="cerrarTrackingModal()">Cancel</button>
-            <button class="btn-add-tracking" onclick="guardarTracking()">ADD TRACKING</button>
+            <button class="btn-cancel-modal" onclick="cerrarTrackingModal()">Cancelar</button>
+            <button class="btn-add-tracking" onclick="guardarTracking()">AGREGAR</button>
         </div>
     </div>
 </div>
@@ -349,7 +345,7 @@
                     </li>
                     <li class="nav-item">
                         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tracking" type="button">
-                            <i class="bi bi-geo-alt-fill me-1"></i> TRACKING
+                            <i class="bi bi-geo-alt-fill me-1"></i> SEGUIMIENTO
                         </button>
                     </li>
                 </ul>
@@ -387,7 +383,6 @@
                                                 <input type="text" name="telefono_rec" class="form-control form-control-erp" value="{{ tel_rec }}">
                                             </div>
                                         </div>
-                                        {# Mensajero recolector #}
                                         <div class="mt-3">
                                             <label class="label-custom"><i class="bi bi-bicycle me-1"></i> Mensajero Recolector</label>
                                             <div class="fw-bold">
@@ -434,7 +429,6 @@
                                                 <input type="text" name="telefono_ent" class="form-control form-control-erp" value="{{ tel_ent }}">
                                             </div>
                                         </div>
-                                        {# Mensajero entregador #}
                                         <div class="mt-3">
                                             <label class="label-custom"><i class="bi bi-bicycle me-1"></i> Mensajero Entregador</label>
                                             <select name="mensajero_entrega_id" class="form-select form-select-sm">
@@ -487,19 +481,19 @@
                         </div>
                     </div>
 
-                    {# ── TAB TRACKING ── #}
+                    {# ── TAB SEGUIMIENTO ── #}
                     <div class="tab-pane fade" id="tracking">
                         <div class="info-card shadow-sm">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6 class="fw-bold text-uppercase text-muted m-0" style="font-size:0.8rem;">
-                                    Tracking History — <span style="color:var(--milano-red);">{{ envio.numero_guia }}</span>
+                                    Historial de Seguimiento — <span style="color:var(--milano-red);">{{ envio.numero_guia }}</span>
                                 </h6>
                                 <div class="d-flex gap-2 align-items-center">
                                     <span class="small text-muted">No. Interno: {{ envio.envio_id }}</span>
                                     <button type="button" class="btn-milano btn-sm"
                                             onclick="abrirTrackingModal()"
                                             style="padding:6px 14px;font-size:0.75rem;">
-                                        <i class="bi bi-plus-lg me-1"></i> Add Tracking
+                                        <i class="bi bi-plus-lg me-1"></i> Agregar Seguimiento
                                     </button>
                                 </div>
                             </div>
@@ -507,9 +501,9 @@
                             <table class="table-erp" id="trackingTable">
                                 <thead>
                                     <tr>
-                                        <th>Date / Time</th>
-                                        <th>Status</th>
-                                        <th>Comment</th>
+                                        <th>Fecha / Hora</th>
+                                        <th>Estado</th>
+                                        <th>Comentario</th>
                                         <th>Usuario</th>
                                         <th style="text-align:center;">POD / Foto</th>
                                     </tr>
@@ -519,10 +513,10 @@
                                     {# Fila inicial — creación #}
                                     <tr>
                                         <td>
-                                            <div class="fw-bold">{{ envio.fecha_creacion.strftime('%b %d, %Y') }}</div>
+                                            <div class="fw-bold">{{ envio.fecha_creacion.strftime('%d %b, %Y') }}</div>
                                             <div class="text-muted" style="font-size:0.75rem;">{{ envio.fecha_creacion.strftime('%H:%M') }}</div>
                                         </td>
-                                        <td><span class="status-badge status-booking"><i class="bi bi-bookmark-fill me-1"></i>Booking</span></td>
+                                        <td><span class="status-badge status-booking"><i class="bi bi-bookmark-fill me-1"></i>Registrado</span></td>
                                         <td>Guía registrada exitosamente por el cliente.</td>
                                         <td>Sistema</td>
                                         <td style="text-align:center;">—</td>
@@ -552,7 +546,7 @@
                                     {% set estado_val = seg.estado.value if seg.estado.value is defined else seg.estado %}
                                     <tr>
                                         <td>
-                                            <div class="fw-bold">{{ seg.fecha.strftime('%b %d, %Y') }}</div>
+                                            <div class="fw-bold">{{ seg.fecha.strftime('%d %b, %Y') }}</div>
                                             <div class="text-muted" style="font-size:0.75rem;">{{ seg.fecha.strftime('%H:%M') }}</div>
                                         </td>
                                         <td>
@@ -610,7 +604,7 @@
 
                             <div class="p-2 mt-2" style="background:#f8f9fa;border-radius:6px;font-size:0.72rem;color:#888;">
                                 <i class="bi bi-info-circle me-1"></i>
-                                Los eventos de tracking son visibles en el portal de seguimiento del cliente.
+                                Los eventos de seguimiento son visibles en el portal de rastreo del cliente.
                             </div>
                         </div>
                     </div>
@@ -698,7 +692,8 @@
 
                         <div class="mb-3">
                             <label class="label-custom">Comentario / Novedad</label>
-                            descripcion = form.get("comentario_novedad", "").strip()
+                            <textarea name="comentario_novedad" class="form-control form-control-sm"
+                                      rows="2" placeholder="Escribe una novedad o comentario..."></textarea>
                         </div>
 
                         <div class="d-grid">
@@ -723,7 +718,6 @@
         ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
         document.getElementById('fecha_novedad').value = ahora.toISOString().slice(0, 16);
 
-        // Inicializar fecha/hora del modal de tracking
         const hoy = ahora.toISOString().slice(0, 10);
         const hora = ahora.toISOString().slice(11, 16);
         document.getElementById('tm_fecha').value = hoy;
@@ -732,7 +726,7 @@
 
     // ── COD panel ──
     function verificarEstadoEntregado(estado) {
-        const panelCod  = document.getElementById('cod_info_panel');
+        const panelCod   = document.getElementById('cod_info_panel');
         const checkCobro = document.getElementById('confirmar_cobro');
         if (estado === 'Entregado') {
             panelCod.style.display = 'block';
@@ -743,7 +737,7 @@
         }
     }
 
-    // ── Modal Add Tracking ──
+    // ── Modal Agregar Seguimiento ──
     function abrirTrackingModal() {
         document.getElementById('trackingModalOverlay').classList.add('open');
     }
@@ -754,104 +748,70 @@
         document.getElementById('tm_pod').checked = false;
     }
 
-    // Cerrar modal al clickear overlay
     document.getElementById('trackingModalOverlay').addEventListener('click', function(e) {
         if (e.target === this) cerrarTrackingModal();
     });
 
     function guardarTracking() {
-        const fecha     = document.getElementById('tm_fecha').value;
-        const hora      = document.getElementById('tm_hora').value;
-        const estado    = document.getElementById('tm_estado').value;
+        const fecha      = document.getElementById('tm_fecha').value;
+        const hora       = document.getElementById('tm_hora').value;
+        const estado     = document.getElementById('tm_estado').value;
         const comentario = document.getElementById('tm_comentario').value.trim();
-        const pod       = document.getElementById('tm_pod').checked;
+        const pod        = document.getElementById('tm_pod').checked;
 
         if (!fecha || !hora || !estado) {
             alert('Completa la fecha, hora y estado.');
             return;
         }
 
-        // Enviar al backend
         fetch('/envios/actualizar-gestion/{{ envio.envio_id }}', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
-                nuevo_estado:      estado,
+                nuevo_estado:       estado,
                 comentario_novedad: comentario,
-                fecha_novedad:     `${fecha}T${hora}`,
-                accion:            'add_tracking'
+                fecha_novedad:      `${fecha}T${hora}`,
+                accion:             'add_tracking'
             })
         })
         .then(response => {
-    if (response.ok || response.redirected) {
-        cerrarTrackingModal();
-        window.location.reload(); // ← esto hace que Jinja pinte los seguimientos reales
-    }
-})
-.catch(() => {
-    cerrarTrackingModal();
-    window.location.reload();
-});
+            if (response.ok || response.redirected) {
+                cerrarTrackingModal();
+                window.location.reload();
+            }
+        })
         .catch(() => {
-            // Agregar fila de igual forma (optimistic UI)
-            agregarFilaTracking(fecha, hora, estado, comentario, pod);
             cerrarTrackingModal();
+            window.location.reload();
         });
-    }
-
-    function agregarFilaTracking(fecha, hora, estado, comentario, pod) {
-        const tbody = document.getElementById('trackingBody');
-        const tr = document.createElement('tr');
-        tr.style.animation = 'fadeInRow 0.4s ease';
-
-        const fechaObj = new Date(`${fecha}T${hora}`);
-        const fechaFmt = fechaObj.toLocaleDateString('es-CO', { month: 'short', day: '2-digit', year: 'numeric' });
-
-        const badgeClass = getBadgeClass(estado);
-        const badgeIcon  = getBadgeIcon(estado);
-
-        tr.innerHTML = `
-            <td>
-                <div class="fw-bold">${fechaFmt}</div>
-                <div class="text-muted" style="font-size:0.75rem;">${hora}</div>
-            </td>
-            <td><span class="status-badge ${badgeClass}">${badgeIcon}${estado}</span></td>
-            <td>${comentario || '—'}</td>
-            <td>Admin</td>
-            <td style="text-align:center;">${pod ? '✓ Disponible' : '—'}</td>
-        `;
-
-        // Insertar antes de la última fila de foto de entrega si existe
-        const lastRow = tbody.lastElementChild;
-        tbody.insertBefore(tr, lastRow);
     }
 
     function getBadgeClass(estado) {
         const map = {
-            'Entregado':          'status-entregado',
-            'Colectado':          'status-collected',
-            'En_Ruta':            'status-en-ruta',
-            'En_Destino':         'status-en-ruta',
-            'Pendiente_Recoger':  'status-pendiente',
-            'Pendiente_Verificar':'status-pendiente',
-            'Fallido':            'status-exception',
-            'Cancelado':          'status-exception',
-            'Devolucion':         'status-exception',
-            'Rechazado':          'status-exception',
+            'Entregado':           'status-entregado',
+            'Colectado':           'status-collected',
+            'En_Ruta':             'status-en-ruta',
+            'En_Destino':          'status-en-ruta',
+            'Pendiente_Recoger':   'status-pendiente',
+            'Pendiente_Verificar': 'status-pendiente',
+            'Fallido':             'status-exception',
+            'Cancelado':           'status-exception',
+            'Devolucion':          'status-exception',
+            'Rechazado':           'status-exception',
         };
         return map[estado] || 'status-booking';
     }
 
     function getBadgeIcon(estado) {
         const map = {
-            'Entregado':          '<i class="bi bi-check-circle-fill me-1"></i>',
-            'Colectado':          '<i class="bi bi-box-seam me-1"></i>',
-            'En_Ruta':            '<i class="bi bi-truck me-1"></i>',
-            'En_Destino':         '<i class="bi bi-geo-alt-fill me-1"></i>',
-            'Pendiente_Recoger':  '<i class="bi bi-hourglass-split me-1"></i>',
-            'Pendiente_Verificar':'<i class="bi bi-hourglass-split me-1"></i>',
-            'Fallido':            '<i class="bi bi-x-circle-fill me-1"></i>',
-            'Cancelado':          '<i class="bi bi-x-circle-fill me-1"></i>',
+            'Entregado':           '<i class="bi bi-check-circle-fill me-1"></i>',
+            'Colectado':           '<i class="bi bi-box-seam me-1"></i>',
+            'En_Ruta':             '<i class="bi bi-truck me-1"></i>',
+            'En_Destino':          '<i class="bi bi-geo-alt-fill me-1"></i>',
+            'Pendiente_Recoger':   '<i class="bi bi-hourglass-split me-1"></i>',
+            'Pendiente_Verificar': '<i class="bi bi-hourglass-split me-1"></i>',
+            'Fallido':             '<i class="bi bi-x-circle-fill me-1"></i>',
+            'Cancelado':           '<i class="bi bi-x-circle-fill me-1"></i>',
         };
         return map[estado] || '<i class="bi bi-bookmark-fill me-1"></i>';
     }
@@ -865,7 +825,6 @@
         document.body.appendChild(overlay);
     }
 
-    // CSS para animación de fila nueva
     const style = document.createElement('style');
     style.textContent = `
         @keyframes fadeInRow {
