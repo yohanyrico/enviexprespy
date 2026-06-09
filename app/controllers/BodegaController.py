@@ -19,10 +19,10 @@ router = APIRouter(prefix="/api/bodega", tags=["Bodega"])
 # ── SCHEMAS ──────────────────────────────────────────────────────────────────
 
 class RecibirLoteRequest(BaseModel):
-    guias: List[str]  # Números de guía escaneados
+    guias: List[str]
 
 class DespacharLoteRequest(BaseModel):
-    guias: List[str]  # Números de guía escaneados antes de salir
+    guias: List[str]
 
 
 # ── HELPER ───────────────────────────────────────────────────────────────────
@@ -31,9 +31,45 @@ def _es_admin(usuario: Usuario) -> bool:
     return usuario.rol in ("CEO", "ADMINISTRATIVO", "ADMIN")
 
 
-# ── ENDPOINTS ────────────────────────────────────────────────────────────────
+# ==============================================================================
+# 1. OBTENER PEDIDOS CON ESTADO "C-Colectado" (PARA RECIBIR EN BODEGA)
+# ==============================================================================
+@router.get("/pendientes-recibir", response_model=List[Dict[str, Any]])
+def listar_pedidos_para_recibir(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """Obtiene todos los pedidos con estado C-Colectado listos para recibir en bodega"""
+    if not _es_admin(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo administradores pueden ver esta lista."
+        )
 
-# --- 1. RECIBIR PEDIDOS EN BODEGA (Admin escanea lo que trajo el mensajero) ---
+    pedidos = db.query(Envio).filter(Envio.estado == "C-Colectado").all()
+
+    return [
+        {
+            "id": p.envio_id,
+            "guia": p.numero_guia,
+            "cliente": f"{p.cliente.nombre} {p.cliente.apellido}" if p.cliente else "N/A",
+            "telefono_cliente": p.cliente.telefono if p.cliente else "",
+            "direccion_recogida": p.lugar_recogida.direccion if p.lugar_recogida else "Sin dirección",
+            "direccion_entrega": p.lugar_entrega.direccion if p.lugar_entrega else "Sin dirección",
+            "estado": p.estado,
+            "peso": float(p.peso) if p.peso else 0.0,
+            "tipo_servicio": p.tipo_servicio or "BASICA",
+            "es_cod": p.es_cod or False,
+            "valor_a_cobrar": float(p.valor_a_cobrar) if p.valor_a_cobrar else 0.0,
+            "mensajero_recogida": p.usuario_mensajero_recogida.nombre if p.usuario_mensajero_recogida else "No asignado",
+        }
+        for p in pedidos
+    ]
+
+
+# ==============================================================================
+# 2. RECIBIR PEDIDOS EN BODEGA (LOTE - POR GUÍAS)
+# ==============================================================================
 @router.post("/recibir")
 def recibir_en_bodega(
     body: RecibirLoteRequest,
@@ -57,7 +93,6 @@ def recibir_en_bodega(
             no_encontrados.append(guia)
             continue
 
-        # Solo se pueden recibir pedidos que vienen de recolección
         if envio.estado != "C-Colectado":
             estado_incorrecto.append({
                 "guia": guia,
@@ -67,11 +102,10 @@ def recibir_en_bodega(
             continue
 
         envio.estado = "En_Bodega"
+        envio.fecha_en_bodega = datetime.now()
         recibidos.append(guia)
 
     db.commit()
-
-    print(f"[BODEGA] Admin {current_user.id_usuario} recibió {len(recibidos)} pedido(s) en bodega.")
 
     return {
         "ok": True,
@@ -82,7 +116,49 @@ def recibir_en_bodega(
     }
 
 
-# --- 2. LISTAR PEDIDOS EN BODEGA ---
+# ==============================================================================
+# 3. RECIBIR PEDIDO INDIVIDUAL EN BODEGA (POR ID)
+# ==============================================================================
+@router.put("/recibir-individual/{envio_id}")
+def recibir_pedido_individual(
+    envio_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if not _es_admin(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo administradores pueden recibir pedidos."
+        )
+
+    envio = db.query(Envio).filter(Envio.envio_id == envio_id).first()
+    if not envio:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+
+    if envio.estado != "C-Colectado":
+        raise HTTPException(
+            status_code=400,
+            detail=f"El pedido está en estado '{envio.estado}', no se puede recibir. Solo se reciben pedidos en estado 'C-Colectado'."
+        )
+
+    envio.estado = "En_Bodega"
+    envio.fecha_en_bodega = datetime.now()
+    db.commit()
+
+    return {
+        "ok": True,
+        "mensaje": f"Pedido {envio.numero_guia} recibido en bodega correctamente.",
+        "pedido": {
+            "id": envio.envio_id,
+            "guia": envio.numero_guia,
+            "estado": envio.estado
+        }
+    }
+
+
+# ==============================================================================
+# 4. LISTAR PEDIDOS EN BODEGA (ESTADO "En_Bodega")
+# ==============================================================================
 @router.get("/pendientes", response_model=List[Dict[str, Any]])
 def listar_pedidos_bodega(
     db: Session = Depends(get_db),
@@ -94,9 +170,7 @@ def listar_pedidos_bodega(
             detail="Acceso denegado."
         )
 
-    pedidos = db.query(Envio).filter(
-        Envio.estado == "En_Bodega"
-    ).all()
+    pedidos = db.query(Envio).filter(Envio.estado == "En_Bodega").all()
 
     return [
         {
@@ -116,14 +190,15 @@ def listar_pedidos_bodega(
     ]
 
 
-# --- 3. DESPACHAR PEDIDOS DE BODEGA (Mensajero escanea antes de salir → En_Ruta) ---
+# ==============================================================================
+# 5. DESPACHAR PEDIDOS DE BODEGA (Mensajero escanea → En_Ruta)
+# ==============================================================================
 @router.post("/despachar")
 def despachar_de_bodega(
     body: DespacharLoteRequest,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    # Tanto mensajero como admin pueden despachar
     if current_user.rol not in ("MENSAJERO", "CEO", "ADMINISTRATIVO", "ADMIN"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -141,7 +216,6 @@ def despachar_de_bodega(
             no_encontrados.append(guia)
             continue
 
-        # Solo se pueden despachar pedidos en bodega o pendientes de verificar
         if envio.estado not in ("En_Bodega", "Pendiente_Verificar"):
             estado_incorrecto.append({
                 "guia": guia,
@@ -151,16 +225,14 @@ def despachar_de_bodega(
             continue
 
         envio.estado = "En_Ruta"
+        envio.fecha_en_ruta = datetime.now()
 
-        # Si el mensajero que despacha es el entregador asignado, lo registramos
         if current_user.rol == "MENSAJERO":
             envio.usuario_mensajero_entrega_id = current_user.id_usuario
 
         despachados.append(guia)
 
     db.commit()
-
-    print(f"[BODEGA] Usuario {current_user.id_usuario} ({current_user.rol}) despachó {len(despachados)} pedido(s).")
 
     return {
         "ok": True,
@@ -171,7 +243,9 @@ def despachar_de_bodega(
     }
 
 
-# --- 4. RESUMEN DE BODEGA (Conteos por estado) ---
+# ==============================================================================
+# 6. RESUMEN DE BODEGA (Conteos por estado)
+# ==============================================================================
 @router.get("/resumen")
 def resumen_bodega(
     db: Session = Depends(get_db),
@@ -186,8 +260,8 @@ def resumen_bodega(
     en_ruta          = db.query(Envio).filter(Envio.estado == "En_Ruta").count()
 
     return {
-        "c_colectado": c_colectado,        # Vienen en camino a bodega
-        "en_bodega": en_bodega,            # Ya están en bodega
-        "pendiente_verificar": pend_verificar,  # Asignados pero no despachados
-        "en_ruta": en_ruta,                # Ya salieron a entregar
+        "c_colectado": c_colectado,
+        "en_bodega": en_bodega,
+        "pendiente_verificar": pend_verificar,
+        "en_ruta": en_ruta,
     }
