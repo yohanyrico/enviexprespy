@@ -1,3 +1,4 @@
+from django import db
 from sqlalchemy import Column, BigInteger, String, Numeric, Text, DateTime, Enum, ForeignKey, func, Boolean
 from sqlalchemy.orm import relationship, Session
 from app.config.database import Base
@@ -34,6 +35,7 @@ class Envio(Base):
     # Fotos de evidencia para el seguimiento en Bogotá
     foto_recogida = Column(String(255), nullable=True)   # Foto al recoger el paquete
     foto_entrega  = Column(String(255), nullable=True)   # Foto al entregar el paquete
+    fecha_en_bodega = db.Column(db.DateTime, nullable=True)  # 👈 AGREGAR
 
     es_cod         = Column(Boolean, default=False)
     valor_a_cobrar = Column(Numeric(12, 2), default=0.00)

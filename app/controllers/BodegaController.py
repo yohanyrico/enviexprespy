@@ -46,7 +46,7 @@ def listar_pedidos_para_recibir(
             detail="Solo administradores pueden ver esta lista."
         )
 
-    pedidos = db.query(Envio).filter(Envio.estado == "C-Colectado").all()
+    pedidos = db.query(Envio).filter(Envio.estado == "C-COLECTADO").all()
 
     return [
         {
