@@ -1,4 +1,3 @@
-from django import db
 from sqlalchemy import Column, BigInteger, String, Numeric, Text, DateTime, Enum, ForeignKey, func, Boolean
 from sqlalchemy.orm import relationship, Session
 from app.config.database import Base
