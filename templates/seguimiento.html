@@ -213,6 +213,7 @@
         .step-date {
             font-size: 0.52rem; color: var(--slate);
             text-align: center; margin-bottom: 3px; line-height: 1.3;
+            min-height: 12px;
         }
         .step.pending .step-lbl  { color: var(--slate-lt); }
         .step.pending .step-date { color: var(--slate-lt); }
@@ -284,7 +285,6 @@
 </head>
 <body>
 
-<!-- Navbar -->
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand" href="/home_cliente">ENVI<span>EXPRESS</span></a>
@@ -297,13 +297,11 @@
 <div style="padding-top: 70px;">
 <div class="page-wrapper">
 
-    <!-- Encabezado -->
     <div class="page-header">
         <i class="bi bi-box-seam"></i>
         <h1>Rastrear Envío</h1>
     </div>
 
-    <!-- Buscador -->
     <form action="/seguimiento" method="get" class="search-bar">
         <input type="text" name="numero_guia" class="search-input"
                placeholder="Ingresa el número de guía — ej: ENV00014"
@@ -398,18 +396,25 @@
             {% set fecha_ruta      = '' %}
             {% set fecha_destino   = '' %}
             {% set fecha_entregado = '' %}
-            {% for seg in envio.seguimientos | sort(attribute='fecha') %}
-                {% if seg.estado.value in ['Registrado','En_Bodega'] and not fecha_origen %}
-                    {% set fecha_origen = seg.fecha.strftime('%d/%m %I:%M%p') %}
+            
+            {# Se corrige ordenamiento usando 'fecha_creacion' o 'fecha_cambio' #}
+            {% set n_segs = envio.seguimientos | sort(attribute='fecha_creacion') if envio.seguimientos and (envio.seguimientos[0].fecha_creacion is defined) else (envio.seguimientos | sort(attribute='fecha_cambio') if envio.seguimientos) %}
+            
+            {% for seg in n_segs %}
+                {% set f_raw = seg.fecha_creacion if seg.fecha_creacion is defined else seg.fecha_cambio %}
+                {% set f_str = f_raw.strftime('%d/%m %I:%M%p') if f_raw else '' %}
+                
+                {% if seg.estado.value in ['Registrado','En_Bodega'] or seg.estado in ['Registrado','En_Bodega'] and not fecha_origen %}
+                    {% set fecha_origen = f_str %}
                 {% endif %}
-                {% if seg.estado.value == 'En_Ruta' and not fecha_ruta %}
-                    {% set fecha_ruta = seg.fecha.strftime('%d/%m %I:%M%p') %}
+                {% if seg.estado.value == 'En_Ruta' or seg.estado == 'En_Ruta' and not fecha_ruta %}
+                    {% set fecha_ruta = f_str %}
                 {% endif %}
-                {% if seg.estado.value == 'En_Destino' and not fecha_destino %}
-                    {% set fecha_destino = seg.fecha.strftime('%d/%m %I:%M%p') %}
+                {% if seg.estado.value == 'En_Destino' or seg.estado == 'En_Destino' and not fecha_destino %}
+                    {% set fecha_destino = f_str %}
                 {% endif %}
-                {% if seg.estado.value == 'Entregado' and not fecha_entregado %}
-                    {% set fecha_entregado = seg.fecha.strftime('%d/%m %I:%M%p') %}
+                {% if seg.estado.value == 'Entregado' or seg.estado == 'Entregado' and not fecha_entregado %}
+                    {% set fecha_entregado = f_str %}
                 {% endif %}
             {% endfor %}
 
@@ -417,7 +422,7 @@
             {% set c0 = 'done' if idx > 0 else ('current' if idx == 0 else 'pending') %}
             <div class="step {{ c0 }}">
                 <div class="step-icon {{ c0 }}"><i class="bi bi-box"></i></div>
-                <div class="step-date">{{ fecha_origen if fecha_origen else '&nbsp;' }}</div>
+                <div class="step-date">{% if fecha_origen %}{{ fecha_origen }}{% endif %}</div>
                 <div class="step-lbl">Terminal<br>origen</div>
             </div>
 
@@ -425,7 +430,7 @@
             {% set c1 = 'done' if idx > 1 else ('current' if idx == 1 else 'pending') %}
             <div class="step {{ c1 }}">
                 <div class="step-icon {{ c1 }}"><i class="bi bi-truck"></i></div>
-                <div class="step-date">{{ fecha_ruta if fecha_ruta else '&nbsp;' }}</div>
+                <div class="step-date">{% if fecha_ruta %}{{ fecha_ruta }}{% endif %}</div>
                 <div class="step-lbl">En<br>transporte</div>
             </div>
 
@@ -433,7 +438,7 @@
             {% set c2 = 'done' if idx > 2 else ('current' if idx == 2 else 'pending') %}
             <div class="step {{ c2 }}">
                 <div class="step-icon {{ c2 }}"><i class="bi bi-building"></i></div>
-                <div class="step-date">{{ fecha_destino if fecha_destino else '&nbsp;' }}</div>
+                <div class="step-date">{% if fecha_destino %}{{ fecha_destino }}{% endif %}</div>
                 <div class="step-lbl">Terminal<br>destino</div>
             </div>
 
@@ -443,14 +448,14 @@
                 <div class="step-icon current" style="background:#842029;">
                     <i class="bi bi-x-circle"></i>
                 </div>
-                <div class="step-date">&nbsp;</div>
+                <div class="step-date"></div>
                 <div class="step-lbl" style="color:#842029;">{{ s }}</div>
             </div>
             {% else %}
             {% set c3 = 'current' if idx == 3 else 'pending' %}
             <div class="step {{ c3 }}">
                 <div class="step-icon {{ c3 }}"><i class="bi bi-patch-check"></i></div>
-                <div class="step-date">{{ fecha_entregado if fecha_entregado else '&nbsp;' }}</div>
+                <div class="step-date">{% if fecha_entregado %}{{ fecha_entregado }}{% endif %}</div>
                 <div class="step-lbl">Entregado</div>
             </div>
             {% endif %}
@@ -462,11 +467,13 @@
     <div class="historial-panel">
         <div class="historial-title">Historial</div>
 
-        {% set seguimientos_ordenados = envio.seguimientos | sort(attribute='fecha', reverse=True) %}
+        {# Se aplica ordenamiento inverso sutil adaptado al nombre real de la propiedad de fecha #}
+        {% set seguimientos_ordenados = envio.seguimientos | sort(attribute='fecha_creacion', reverse=True) if envio.seguimientos and (envio.seguimientos[0].fecha_creacion is defined) else (envio.seguimientos | sort(attribute='fecha_cambio', reverse=True) if envio.seguimientos) %}
 
         {% if seguimientos_ordenados %}
             {% for seg in seguimientos_ordenados %}
             {% set estado_val = seg.estado.value if seg.estado.value is defined else seg.estado %}
+            {% set f_obj = seg.fecha_creacion if seg.fecha_creacion is defined else seg.fecha_cambio %}
 
             {% set dot_class = 'hist-dot' %}
             {% if estado_val in ['Fallido','Cancelado','Devolucion','Retorno','Rechazado'] %}
@@ -478,7 +485,7 @@
             <div class="hist-row">
                 <div class="{{ dot_class }}"></div>
                 <div class="hist-body">
-                    <div class="hist-fecha">{{ seg.fecha.strftime('%Y/%m/%d') }}</div>
+                    <div class="hist-fecha">{% if f_obj %}{{ f_obj.strftime('%Y/%m/%d') }}{% else %}—{% endif %}</div>
                     <div class="hist-desc">
                         {% if seg.descripcion %}
                             {% if estado_val in ['Fallido','Cancelado','Devolucion','Retorno','Rechazado'] %}
@@ -502,7 +509,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="hist-time">{{ seg.fecha.strftime('%I:%M %p') }}</div>
+                <div class="hist-time">{% if f_obj %}{{ f_obj.strftime('%I:%M %p') }}{% endif %}</div>
             </div>
             {% endfor %}
 
@@ -565,7 +572,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (steps.length < 2 || idxActual === 0) return;
 
     const rRect   = row.getBoundingClientRect();
-    // Usar el .step-icon para calcular correctamente el centro de cada paso
     const firstIcon   = steps[0].querySelector('.step-icon').getBoundingClientRect();
     const currentIcon = steps[idxActual].querySelector('.step-icon').getBoundingClientRect();
 
