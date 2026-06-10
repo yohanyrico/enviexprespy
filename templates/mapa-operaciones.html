@@ -291,7 +291,7 @@
                 <div class="ley-row"><div class="ley-dot" style="background:#FF6B35;"></div> C · Pend. Recoger</div>
                 <div class="ley-row"><div class="ley-dot" style="background:#9B59B6;"></div> D · Pend. Verificar</div>
                 <div class="ley-row"><div class="ley-dot" style="background:#7B2FBE;"></div> C/D · En ruta</div>
-                <div class="ley-row"><div class="ley-dot" style="background:#00BFFF;"></div> C · Colectado</div>
+                <div class="ley-row"><div class="ley-dot" style="background:#00BFFF;"></div> C · C-Colectado</div>
                 <div class="ley-row"><div class="ley-dot" style="background:#28a745;"></div> D · Entregado</div>
                 <div class="ley-row"><div class="ley-dot" style="background:#B20C06;"></div> Cancelado</div>
             </div>
@@ -410,11 +410,11 @@ function getColor(tipo, estado) {
     if (['Cancelado', 'Rechazado', 'Devolucion', 'Retorno'].includes(estado)) return '#B20C06';
 
     if (tipo === 'c') {
-        if (estado === 'Colectado' || estado === 'En_Bodega') return '#00BFFF';
-        if (estado === 'En_Ruta')                               return '#7B2FBE';
-        if (estado === 'Pendiente_Recoger')                  return '#FF6B35'; // Naranja asignado
-        return '#BEBEBE'; 
-    }
+    if (estado === 'C-Colectado' || estado === 'En_Bodega') return '#00BFFF';
+    if (estado === 'En_Ruta')          return '#7B2FBE';
+    if (estado === 'Pendiente_Recoger') return '#FF6B35';
+    return '#BEBEBE';
+}
 
     if (tipo === 'd') {
         if (estado === 'Entregado')                           return '#28a745';
@@ -461,7 +461,7 @@ const enviosData = [
         {# 🔴 MARCADOR D (DESTINO / ENTREGA) #}
         {# Condición: Se muestra SIEMPRE desde que se registra hasta antes de ser entregado/cancelado #}
         {# No importa si la C ya se quitó, la D permanecerá sola en el mapa #}
-        {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado'] %}
+        {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'En_Bodega'] % }       
         {
             tipo: 'd', // Destino / Entrega
             lat: {{ e.lugar_entrega.latitud }},
