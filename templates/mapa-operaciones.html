@@ -397,41 +397,28 @@
 </div>
 
 <script>
-// ─────────────────────────────────────────────────────────────
-// ESTADO DE SELECCIÓN INDIVIDUAL POR URL — del archivo corregido
-// ─────────────────────────────────────────────────────────────
 let origenSeleccionadoId = new URLSearchParams(window.location.search).get('origen_id') || null;
 let destinoSeleccionadoId = new URLSearchParams(window.location.search).get('destino_id') || null;
 
-// ─────────────────────────────────────────────────────────────
-// COLORES POR ESTADO — alineado con el nuevo flujo de 6 estados
-// ─────────────────────────────────────────────────────────────
 function getColor(tipo, estado) {
     if (['Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'].includes(estado)) return '#B20C06';
-
     if (tipo === 'c') {
-        if (estado === 'Registrado')        return '#BEBEBE';
-        if (estado === 'Pendiente_Recoger') return '#FF6B35';
-        if (estado === 'C-Colectado')       return '#00BFFF';
-        if (estado === 'En_Bodega')         return '#7c3aed';
-        if (estado === 'Pendiente_Entregar')return '#f59e0b';
-        if (estado === 'En_Ruta')           return '#7B2FBE';
+        if (estado === 'Registrado')         return '#BEBEBE';
+        if (estado === 'Pendiente_Recoger')  return '#FF6B35';
+        if (estado === 'C-Colectado')        return '#00BFFF';
+        if (estado === 'En_Bodega')          return '#7c3aed';
+        if (estado === 'Pendiente_Entregar') return '#f59e0b';
+        if (estado === 'En_Ruta')            return '#7B2FBE';
         return '#BEBEBE';
     }
-
     if (tipo === 'd') {
-        
-        
-        
+        if (estado === 'Registrado')         return '#003580';
+        if (estado === 'Pendiente_Recoger')  return '#003580';
+        if (estado === 'C-Colectado')        return '#003580';
         if (estado === 'En_Bodega')          return '#003580';
         if (estado === 'Pendiente_Entregar') return '#f59e0b';
         if (estado === 'En_Ruta')            return '#7B2FBE';
         if (estado === 'Entregado')          return '#28a745';
-        if (estado === 'Cancelado')          return '#B20C06';
-        if (estado === 'Rechazado')          return '#e29693';
-        if (estado === 'Devolucion')          return '#e0d758';
-        if (estado === 'Retorno')          return '#e7e5e5';
-        if (estado === 'Fallido')          return '#7a4343';
         return '#003580';
     }
     return '#003580';
@@ -442,15 +429,10 @@ function getTextColor(tipo, estado) {
     return '#ffffff';
 }
 
-// ─────────────────────────────────────────────────────────────
-// DATOS DEL MAPA DE OPERACIONES (GESTIÓN DE ENVÍOS)
-// ─────────────────────────────────────────────────────────────
-// ENVIOS DATA CORREGIDO — FUERZA A QUE LA D APAREZCA SI LA C ESTÁ EN RUTA
-// ─────────────────────────────────────────────────────────────
+// ── DATOS DEL MAPA ────────────────────────────────────────────
 const enviosData = [
     {% for e in envios %}
 
-        {# MARCADOR C — aparece en todos los estados excepto Entregado y cancelados #}
         {% if e.lugar_recogida and e.lugar_recogida.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'] %}
         {
             tipo: 'c',
@@ -459,11 +441,11 @@ const enviosData = [
             envioId: {{ e.envio_id }},
             guia: "{{ e.numero_guia }}",
             estado: "{{ e.estado }}",
+            fecha: "{{ e.fecha_creacion.strftime('%Y-%m-%d') if e.fecha_creacion else '' }}",
             direccion: "{{ e.lugar_recogida.direccion | replace('"', '\\"') }}"
         },
         {% endif %}
 
-        {# MARCADOR D — aparece en todos los estados excepto Entregado y cancelados #}
         {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'] %}
         {
             tipo: 'd',
@@ -472,6 +454,7 @@ const enviosData = [
             envioId: {{ e.envio_id }},
             guia: "{{ e.numero_guia }}",
             estado: "{{ e.estado }}",
+            fecha: "{{ e.fecha_creacion.strftime('%Y-%m-%d') if e.fecha_creacion else '' }}",
             direccion: "{{ e.lugar_entrega.direccion | replace('"', '\\"') }}"
         },
         {% endif %}
@@ -484,10 +467,9 @@ let todosLosMarcadores = [];
 let showC = true, showD = true;
 let modoActivo = null, popupAbierto = false;
 let formasActivas = [];
-
-// 🌐 VARIABLES GLOBALES AÑADIDAS PARA RASTREO EN TIEMPO REAL 🌐
-let marcadoresMensajeros = {}; // Almacena las motos activas en mapa { id_mensajero: google.maps.Marker }
+let marcadoresMensajeros = {};
 const URL_API_MENSAJEROS = "/api/mensajero/ubicaciones-activas";
+
 function setTab(tab) {
     ['creada','en-curso','finalizada'].forEach(t => {
         document.getElementById(`tab-${t}`).className = 's-tab';
@@ -542,27 +524,21 @@ function onGoogleMapsReady() {
     crearMarcadores();
     aplicarFiltros();
 
-    // 🔥 INICIALIZACIÓN DEL SISTEMA DE RASTREO DE MOTOS EN VIVO 🔥
-    consultarUbicacionesMensajeros(); // Primera carga inmediata
-    setInterval(consultarUbicacionesMensajeros, 5000); // Consulta recursiva automática cada 5 segundos
+    consultarUbicacionesMensajeros();
+    setInterval(consultarUbicacionesMensajeros, 5000);
 }
 
-// 🛵 FUNCIÓN CREADA PARA TRAER LAS MOTOS DE TU BD EN TIEMPO REAL 🛵
 async function consultarUbicacionesMensajeros() {
     try {
         const response = await fetch(URL_API_MENSAJEROS);
         if (!response.ok) return;
-
         const mensajeros = await response.json();
-
         mensajeros.forEach(function(m) {
             const pos = new google.maps.LatLng(m.latitud, m.longitud);
-
             if (marcadoresMensajeros[m.id_usuario]) {
                 marcadoresMensajeros[m.id_usuario].setPosition(pos);
                 return;
             }
-
             const svgIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="65" viewBox="0 0 50 65">'
                 + '<circle cx="25" cy="25" r="22" fill="#810202" stroke="white" stroke-width="3"/>'
                 + '<path d="M12 28 h26 l-4 -10 h-18 z M16 28 c-1.5 0 -3 1.5 -3 3 v4 h26 v-4 c0 -1.5 -1.5 -3 -3 -3 z" fill="white"/>'
@@ -571,31 +547,17 @@ async function consultarUbicacionesMensajeros() {
                 + '<path d="M25 48 L25 65 M18 55 L25 65 L32 55" stroke="#810202" stroke-width="3" fill="none"/>'
                 + '<text x="25" y="15" text-anchor="middle" font-family="Arial" font-size="9" font-weight="bold" fill="white">' + m.nombre + '</text>'
                 + '</svg>';
-
             const marker = new google.maps.Marker({
-                position: pos,
-                map: gmap,
-                title: 'Mensajero: ' + m.nombre,
-                optimized: false,
-                zIndex: 1000,
-                icon: {
-                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgIcon),
-                    scaledSize: new google.maps.Size(42, 55),
-                    anchor: new google.maps.Point(21, 55)
-                }
+                position: pos, map: gmap, title: 'Mensajero: ' + m.nombre,
+                optimized: false, zIndex: 1000,
+                icon: { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgIcon), scaledSize: new google.maps.Size(42, 55), anchor: new google.maps.Point(21, 55) }
             });
-
             const infoWindow = new google.maps.InfoWindow({
                 content: '<div style="color:black;padding:5px;"><b>Mensajero:</b> ' + m.nombre + '<br><b>Estado:</b> En ruta activa</div>'
             });
-
-            marker.addListener('click', function() {
-                infoWindow.open(gmap, marker);
-            });
-
+            marker.addListener('click', function() { infoWindow.open(gmap, marker); });
             marcadoresMensajeros[m.id_usuario] = marker;
         });
-
     } catch(error) {
         console.error('Error consultando ubicaciones:', error);
     }
@@ -636,16 +598,13 @@ function crearMarcadores() {
         const textColor = getTextColor(data.tipo, data.estado);
         const letra     = data.tipo === 'c' ? 'C' : 'D';
         const label     = data.tipo === 'c' ? 'Origen' : 'Destino';
-
         const marker = new google.maps.Marker({
             position: { lat: data.lat, lng: data.lng }, map: null,
             icon: { url: crearIconoSVG(letra, color, textColor, false), scaledSize: new google.maps.Size(40, 50), anchor: new google.maps.Point(20, 50) },
             title: `${data.guia} | ${label} | ${data.estado}`
         });
-
         marker.addListener('click', () => { toggleItem(data.envioId, data.tipo); });
         marker.addListener('dblclick', () => { if (contarSel() > 0) abrirModal(); });
-
         todosLosMarcadores.push({
             marker, envioId: data.envioId, fecha: data.fecha,
             tipo: data.tipo, guia: data.guia, direccion: data.direccion,
@@ -770,11 +729,13 @@ function quitarItem(envioId, tipo) {
     if (i) { i.seleccionado = false; setIconMarcador(i); } actualizarUI();
 }
 
+// ── CORRECCIÓN CLAVE: fecha undefined ya no bloquea los marcadores ──
 function aplicarFiltros() {
     const s = document.getElementById('dateStart').value;
     const e = document.getElementById('dateEnd').value;
     todosLosMarcadores.forEach(i => {
-        const ok = ((i.tipo==='c'&&showC)||(i.tipo==='d'&&showD)) && (!s||i.fecha>=s) && (!e||i.fecha<=e);
+        const fechaOk = (!s && !e) || !i.fecha || ((!s || i.fecha >= s) && (!e || i.fecha <= e));
+        const ok = ((i.tipo === 'c' && showC) || (i.tipo === 'd' && showD)) && fechaOk;
         i.marker.setMap(ok ? gmap : null);
         if (!ok && i.seleccionado) { i.seleccionado = false; setIconMarcador(i); }
     });
@@ -787,24 +748,15 @@ function toggleLayer(tipo) {
     aplicarFiltros();
 }
 
-// ─────────────────────────────────────────────────────────────
-// MODAL DE ASIGNACIÓN — versión mejorada con detección de tipo
-// ─────────────────────────────────────────────────────────────
 function abrirModal() {
     const count = contarSel();
-    if (count === 0) {
-        mostrarToast('No hay pedidos seleccionados.', true);
-        return;
-    }
-
+    if (count === 0) { mostrarToast('No hay pedidos seleccionados.', true); return; }
     const itemsSel = todosLosMarcadores.filter(i => i.seleccionado);
     const hayOrigenes = itemsSel.some(i => i.tipo === 'c');
     const hayDestinos = itemsSel.some(i => i.tipo === 'd');
-
     let tipoRecomendado = 'all';
     if (hayOrigenes && !hayDestinos) tipoRecomendado = 'c';
     if (!hayOrigenes && hayDestinos) tipoRecomendado = 'd';
-
     document.getElementById('modalTipo').value = tipoRecomendado;
     document.getElementById('resumenTexto').innerHTML = `<b style="color:#FFD700;">${count}</b> pedidos listos para asignar.`;
     document.getElementById('modalAsignacion').classList.add('open');
@@ -823,99 +775,38 @@ function confirmarAsignacion() {
     const mId      = sel.value;
     const mNombre  = sel.options[sel.selectedIndex]?.dataset?.nombre || '';
     const tipoAsig = document.getElementById('modalTipo').value;
-
     if (!nombre) { mostrarToast('Escribe el nombre de la ruta.', true); return; }
     if (!mId)    { mostrarToast('Selecciona un mensajero.', true); return; }
-
     let itemsSeleccionados = todosLosMarcadores.filter(i => i.seleccionado);
-
-    let itemsAAsignar = itemsSeleccionados;
-    if (tipoAsig !== 'all') {
-        itemsAAsignar = itemsSeleccionados.filter(i => i.tipo === tipoAsig);
-    }
-
-    if (itemsAAsignar.length === 0) {
-        mostrarToast(`No hay puntos tipo "${tipoAsig.toUpperCase()}" seleccionados.`, true);
-        return;
-    }
-
+    let itemsAAsignar = tipoAsig !== 'all' ? itemsSeleccionados.filter(i => i.tipo === tipoAsig) : itemsSeleccionados;
+    if (itemsAAsignar.length === 0) { mostrarToast(`No hay puntos tipo "${tipoAsig.toUpperCase()}" seleccionados.`, true); return; }
     const idsAEnviar = [...new Set(itemsAAsignar.map(i => i.envioId))];
-
     const btn = document.getElementById('btnConfirmar');
     btn.disabled = true;
     btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Asignando...';
-
     fetch('/envios/asignar-mensajero-masivo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            envio_ids:    idsAEnviar,
-            id_mensajero: mId,
-            nombre_ruta:  nombre,
-            tipo:         tipoAsig
-        })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ envio_ids: idsAEnviar, id_mensajero: mId, nombre_ruta: nombre, tipo: tipoAsig })
     })
     .then(r => r.json())
     .then(data => {
         if (data.status === 'success') {
-            
             todosLosMarcadores.forEach(item => {
                 if (idsAEnviar.includes(item.envioId)) {
-                    
-                    if (tipoAsig === 'c') {
-                        if (item.tipo === 'c') {
-                            item.seleccionado = false;
-                            item.estado = 'Pendiente_Recoger';
-                        }
-                    } 
-                    else if (tipoAsig === 'd') {
-                        if (item.tipo === 'd') {
-                            item.seleccionado = false;
-                            item.estado = 'Pendiente_Verificar';
-                        }
-                    } 
+                    item.seleccionado = false;
+                    if (tipoAsig === 'c' && item.tipo === 'c') item.estado = 'Pendiente_Recoger';
+                    else if (tipoAsig === 'd' && item.tipo === 'd') item.estado = 'Pendiente_Verificar';
                     else if (tipoAsig === 'all') {
-                        item.seleccionado = false;
                         if (item.tipo === 'c') item.estado = 'Pendiente_Recoger';
                         if (item.tipo === 'd') item.estado = 'Pendiente_Verificar';
                     }
-                    
-                    if (typeof setIconMarcador === 'function') {
-                        setIconMarcador(item);
-                    }
+                    setIconMarcador(item);
                 }
             });
-
-            let nuevosOrigenes = [];
-            let nuevosDestinos = [];
-
-            if (tipoAsig === 'c' || tipoAsig === 'all') {
-                nuevosOrigenes = itemsAAsignar.filter(i => i.tipo === 'c').map(i => i.envioId);
-            }
-            if (tipoAsig === 'd' || tipoAsig === 'all') {
-                nuevosDestinos = itemsAAsignar.filter(i => i.tipo === 'd').map(i => i.envioId);
-            }
-
-            const params = new URLSearchParams();
-            if (origenSeleccionadoId && !nuevosOrigenes.includes(parseInt(origenSeleccionadoId))) {
-                params.set('origen_id', origenSeleccionadoId);
-            }
-            if (destinoSeleccionadoId && !nuevosDestinos.includes(parseInt(destinoSeleccionadoId))) {
-                params.set('destino_id', destinoSeleccionadoId);
-            }
-
-            const nuevaUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
-            history.pushState(null, null, nuevaUrl);
-
             eliminarDibujo();
             cerrarModal();
-            
-            if (typeof actualizarUI === 'function') {
-                actualizarUI();
-            }
-            
+            actualizarUI();
             mostrarToast(`✓ ${idsAEnviar.length} pedidos (${tipoAsig.toUpperCase()}) → ${mNombre}`);
-
             setTimeout(() => location.reload(), 1000);
         } else {
             mostrarToast('Error al asignar.', true);
@@ -928,32 +819,21 @@ function confirmarAsignacion() {
     });
 }
 
-// ─────────────────────────────────────────────────────────────
-// SELECCIÓN INDIVIDUAL POR URL (P y D independientes)
-// ─────────────────────────────────────────────────────────────
 function seleccionarOrigen(envioId) {
     const params = new URLSearchParams(window.location.search);
-    params.set('origen_id', envioId);
-    window.location.search = params.toString();
+    params.set('origen_id', envioId); window.location.search = params.toString();
 }
-
 function seleccionarDestino(envioId) {
     const params = new URLSearchParams(window.location.search);
-    params.set('destino_id', envioId);
-    window.location.search = params.toString();
+    params.set('destino_id', envioId); window.location.search = params.toString();
 }
-
 function limpiarOrigen() {
     const params = new URLSearchParams(window.location.search);
-    params.delete('origen_id');
-    window.location.search = params.toString();
+    params.delete('origen_id'); window.location.search = params.toString();
 }
-
-// Limpiar la selección de destino de la URL
 function limpiarDestino() {
     const params = new URLSearchParams(window.location.search);
-    params.delete('destino_id');
-    window.location.search = params.toString();
+    params.delete('destino_id'); window.location.search = params.toString();
 }
 
 function mostrarToast(msg, esError=false, tipo='') {
