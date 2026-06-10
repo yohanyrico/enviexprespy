@@ -106,15 +106,25 @@ async def planificar_ruta(
 ):
     try:
         envios_db = db.query(Envio).filter(
-            Envio.estado.in_([
-                "Registrado", "Pendiente_Recoger", "En_Ruta", "Colectado", "En_Bodega",
-                "Entregado", "Cancelado", "Rechazado", "Devolucion", "Retorno"
-            ])
-        ).options(
-            joinedload(Envio.lugar_recogida),
-            joinedload(Envio.lugar_entrega)
-        ).all()
-        
+    Envio.estado.in_([
+        "Registrado",
+        "Pendiente_Recoger",
+        "C-Colectado",
+        "En_Bodega",
+        "Pendiente_Entregar",
+        "En_Ruta",
+        "En_Destino",
+        "Entregado",
+        "Cancelado",
+        "Rechazado",
+        "Devolucion",
+        "Retorno",
+        "Fallido"
+    ])
+).options(
+    joinedload(Envio.lugar_recogida),
+    joinedload(Envio.lugar_entrega)
+).all()
         envios = []
         for e in envios_db:
             # Asignar tipo de marcador basado en variables SEPARADAS
@@ -132,13 +142,14 @@ async def planificar_ruta(
         
         # Agregadas las columnas críticas de mensajero de entrega y estados granulares en SQL Puro
         query_envios = text("""
-            SELECT e.*, 
-                   lr.direccion as rec_dir, lr.latitud as rec_lat, lr.longitud as rec_lng, lr.ciudad as rec_ciu,
-                   le.direccion as ent_dir, le.latitud as ent_lat, le.longitud as ent_lng, le.ciudad as ent_ciu
-            FROM envios e
-            LEFT JOIN lugares lr ON e.lugar_recogida_id = lr.lugar_id
-            LEFT JOIN lugares le ON e.lugar_entrega_id = le.lugar_id
-        """)
+    SELECT e.*, 
+           lr.direccion as rec_dir, lr.latitud as rec_lat, lr.longitud as rec_lng, lr.ciudad as rec_ciu,
+           le.direccion as ent_dir, le.latitud as ent_lat, le.longitud as ent_lng, le.ciudad as ent_ciu
+    FROM envios e
+    LEFT JOIN lugares lr ON e.lugar_recogida_id = lr.lugar_id
+    LEFT JOIN lugares le ON e.lugar_entrega_id = le.lugar_id
+    WHERE e.estado NOT IN ('Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido')
+""")
         resultado_envios = db.execute(query_envios).fetchall()
         
         envios = []
