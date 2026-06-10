@@ -461,7 +461,7 @@ const enviosData = [
         {# 🔴 MARCADOR D (DESTINO / ENTREGA) #}
         {# Condición: Se muestra SIEMPRE desde que se registra hasta antes de ser entregado/cancelado #}
         {# No importa si la C ya se quitó, la D permanecerá sola en el mapa #}
-        {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'En_Bodega'] % }       
+        {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'En_Bodega'] %}
         {
             tipo: 'd', // Destino / Entrega
             lat: {{ e.lugar_entrega.latitud }},
