@@ -407,23 +407,32 @@ let destinoSeleccionadoId = new URLSearchParams(window.location.search).get('des
 // COLORES POR ESTADO — alineado con el nuevo flujo de 6 estados
 // ─────────────────────────────────────────────────────────────
 function getColor(tipo, estado) {
-    if (['Cancelado', 'Rechazado', 'Devolucion', 'Retorno'].includes(estado)) return '#B20C06';
+    if (['Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'].includes(estado)) return '#B20C06';
 
     if (tipo === 'c') {
-    if (estado === 'C-Colectado' || estado === 'En_Bodega') return '#00BFFF';
-    if (estado === 'En_Ruta')          return '#7B2FBE';
-    if (estado === 'Pendiente_Recoger') return '#FF6B35';
-    return '#BEBEBE';
-}
+        if (estado === 'Registrado')        return '#BEBEBE';
+        if (estado === 'Pendiente_Recoger') return '#FF6B35';
+        if (estado === 'C-Colectado')       return '#00BFFF';
+        if (estado === 'En_Bodega')         return '#7c3aed';
+        if (estado === 'Pendiente_Entregar')return '#f59e0b';
+        if (estado === 'En_Ruta')           return '#7B2FBE';
+        return '#BEBEBE';
+    }
 
     if (tipo === 'd') {
-        if (estado === 'Entregado')                           return '#28a745';
-        if (estado === 'En_Ruta')                               return '#7B2FBE'; // Se pinta morado si ya va en camino al destino
-        if (estado === 'Pendiente_Verificar')                 return '#9B59B6';
         
-        // ¡ESTA LÍNEA DE ALIVIO!: Si el estado general es Pendiente_Recoger (porque se asignó la C)
-        // o sigue en Registrado, la D se sigue pintando en el mapa principal con el azul oscuro de entrega.
-        if (estado === 'Pendiente_Recoger' || estado === 'Registrado') return '#003580'; 
+        
+        
+        if (estado === 'En_Bodega')          return '#003580';
+        if (estado === 'Pendiente_Entregar') return '#f59e0b';
+        if (estado === 'En_Ruta')            return '#7B2FBE';
+        if (estado === 'Entregado')          return '#28a745';
+        if (estado === 'Cancelado')          return '#B20C06';
+        if (estado === 'Rechazado')          return '#e29693';
+        if (estado === 'Devolucion')          return '#e0d758';
+        if (estado === 'Retorno')          return '#e7e5e5';
+        if (estado === 'Fallido')          return '#7a4343';
+        return '#003580';
     }
     return '#003580';
 }
@@ -440,30 +449,24 @@ function getTextColor(tipo, estado) {
 // ─────────────────────────────────────────────────────────────
 const enviosData = [
     {% for e in envios %}
-        
-        {# 🟢 MARCADOR C (ORIGEN / RECOGIDA) #}
-        {# Condición: Solo se muestra si el estado es exactamente 'Registrado' #}
-        {# Si ya pasó a 'Pendiente_Recoger', 'Colectado' o cualquier otro, se QUITA del mapa #}
-        {% if e.estado == 'Registrado' %}
-            {% if e.lugar_recogida and e.lugar_recogida.latitud %}
-            {
-                tipo: 'c', // Captura / Recogida
-                lat: {{ e.lugar_recogida.latitud }},
-                lng: {{ e.lugar_recogida.longitud }},
-                envioId: {{ e.envio_id }},
-                guia: "{{ e.numero_guia }}",
-                estado: "{{ e.estado }}",
-                direccion: "{{ e.lugar_recogida.direccion | replace('"', '\\"') }}"
-            },
-            {% endif %}
+
+        {# MARCADOR C — aparece en todos los estados excepto Entregado y cancelados #}
+        {% if e.lugar_recogida and e.lugar_recogida.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'] %}
+        {
+            tipo: 'c',
+            lat: {{ e.lugar_recogida.latitud }},
+            lng: {{ e.lugar_recogida.longitud }},
+            envioId: {{ e.envio_id }},
+            guia: "{{ e.numero_guia }}",
+            estado: "{{ e.estado }}",
+            direccion: "{{ e.lugar_recogida.direccion | replace('"', '\\"') }}"
+        },
         {% endif %}
 
-        {# 🔴 MARCADOR D (DESTINO / ENTREGA) #}
-        {# Condición: Se muestra SIEMPRE desde que se registra hasta antes de ser entregado/cancelado #}
-        {# No importa si la C ya se quitó, la D permanecerá sola en el mapa #}
-        {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'En_Bodega'] %}
+        {# MARCADOR D — aparece en todos los estados excepto Entregado y cancelados #}
+        {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'] %}
         {
-            tipo: 'd', // Destino / Entrega
+            tipo: 'd',
             lat: {{ e.lugar_entrega.latitud }},
             lng: {{ e.lugar_entrega.longitud }},
             envioId: {{ e.envio_id }},
