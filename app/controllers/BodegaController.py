@@ -2,7 +2,7 @@
 import os
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from datetime import datetime
@@ -46,7 +46,12 @@ def listar_pedidos_para_recibir(
             detail="Solo administradores pueden ver esta lista."
         )
 
-    pedidos = db.query(Envio).filter(Envio.estado == "C-Colectado").all()
+    pedidos = db.query(Envio).options(
+    joinedload(Envio.cliente),
+    joinedload(Envio.lugar_recogida),
+    joinedload(Envio.lugar_entrega),
+    joinedload(Envio.mensajero),  # <-- nombre correcto del modelo
+).filter(Envio.estado == "C-Colectado").all()
 
     return [
         {
@@ -61,7 +66,7 @@ def listar_pedidos_para_recibir(
             "tipo_servicio": p.tipo_servicio or "BASICA",
             "es_cod": p.es_cod or False,
             "valor_a_cobrar": float(p.valor_a_cobrar) if p.valor_a_cobrar else 0.0,
-            "mensajero_recogida": p.usuario_mensajero_recogida.nombre if p.usuario_mensajero_recogida else "No asignado",
+            "mensajero_recogida": f"{p.mensajero.nombre} {p.mensajero.apellido}" if p.mensajero else "No asignado",
         }
         for p in pedidos
     ]
