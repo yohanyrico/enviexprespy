@@ -429,38 +429,8 @@ function getTextColor(tipo, estado) {
     return '#ffffff';
 }
 
-// ── DATOS DEL MAPA ────────────────────────────────────────────
-const enviosData = [
-    {% for e in envios %}
-
-        {% if e.lugar_recogida and e.lugar_recogida.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'] %}
-        {
-            tipo: 'c',
-            lat: {{ e.lugar_recogida.latitud }},
-            lng: {{ e.lugar_recogida.longitud }},
-            envioId: {{ e.envio_id }},
-            guia: "{{ e.numero_guia }}",
-            estado: "{{ e.estado }}",
-            fecha: "{{ e.fecha_creacion.strftime('%Y-%m-%d') if e.fecha_creacion else '' }}",
-            direccion: "{{ e.lugar_recogida.direccion | replace('"', '\\"') }}"
-        },
-        {% endif %}
-
-        {% if e.lugar_entrega and e.lugar_entrega.latitud and e.estado not in ['Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'] %}
-        {
-            tipo: 'd',
-            lat: {{ e.lugar_entrega.latitud }},
-            lng: {{ e.lugar_entrega.longitud }},
-            envioId: {{ e.envio_id }},
-            guia: "{{ e.numero_guia }}",
-            estado: "{{ e.estado }}",
-            fecha: "{{ e.fecha_creacion.strftime('%Y-%m-%d') if e.fecha_creacion else '' }}",
-            direccion: "{{ e.lugar_entrega.direccion | replace('"', '\\"') }}"
-        },
-        {% endif %}
-
-    {% endfor %}
-];
+// ── DATOS DEL MAPA — inyectados de forma segura desde Python/json.dumps ──
+const enviosData = {{ envios_json | safe }};
 
 let gmap = null, drawingManager = null;
 let todosLosMarcadores = [];
@@ -729,7 +699,6 @@ function quitarItem(envioId, tipo) {
     if (i) { i.seleccionado = false; setIconMarcador(i); } actualizarUI();
 }
 
-// ── CORRECCIÓN CLAVE: fecha undefined ya no bloquea los marcadores ──
 function aplicarFiltros() {
     const s = document.getElementById('dateStart').value;
     const e = document.getElementById('dateEnd').value;
@@ -817,23 +786,6 @@ function confirmarAsignacion() {
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Confirmar';
     });
-}
-
-function seleccionarOrigen(envioId) {
-    const params = new URLSearchParams(window.location.search);
-    params.set('origen_id', envioId); window.location.search = params.toString();
-}
-function seleccionarDestino(envioId) {
-    const params = new URLSearchParams(window.location.search);
-    params.set('destino_id', envioId); window.location.search = params.toString();
-}
-function limpiarOrigen() {
-    const params = new URLSearchParams(window.location.search);
-    params.delete('origen_id'); window.location.search = params.toString();
-}
-function limpiarDestino() {
-    const params = new URLSearchParams(window.location.search);
-    params.delete('destino_id'); window.location.search = params.toString();
 }
 
 function mostrarToast(msg, esError=false, tipo='') {

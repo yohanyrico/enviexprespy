@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import APIRouter, Request, Depends, Body, Query, HTTPException, status
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse, RedirectResponse
@@ -29,7 +30,7 @@ def get_db():
 # ─────────────────────────────────────────────
 class CambiarEstadoRequest(BaseModel):
     envio_ids: Optional[List[int]] = None
-    ruta_id: int        # ← renombrado para coincidir con el frontend
+    ruta_id: int
     estado: str
 
 # ─────────────────────────────────────────────
@@ -92,6 +93,52 @@ def _get_rutas_por_estado(db: Session):
 
 
 # ─────────────────────────────────────────────
+# HELPER: construye la lista de puntos del mapa de forma segura
+# Usa json.dumps para evitar que caracteres especiales en direcciones
+# (comillas, tildes, #, &, etc.) rompan el bloque <script> en el template.
+# ─────────────────────────────────────────────
+ESTADOS_EXCLUIR_MAPA = {
+    'Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido'
+}
+
+def _build_envios_json(envios: list) -> str:
+    puntos = []
+    for e in envios:
+        if e.estado in ESTADOS_EXCLUIR_MAPA:
+            continue
+
+        # Punto C — recogida
+        rec = e.lugar_recogida
+        if rec and rec.latitud and rec.longitud:
+            puntos.append({
+                "tipo":      "c",
+                "lat":       float(rec.latitud),
+                "lng":       float(rec.longitud),
+                "envioId":   e.envio_id,
+                "guia":      e.numero_guia or "",
+                "estado":    e.estado or "",
+                "fecha":     e.fecha_creacion.strftime('%Y-%m-%d') if e.fecha_creacion else "",
+                "direccion": rec.direccion or "",
+            })
+
+        # Punto D — entrega
+        ent = e.lugar_entrega
+        if ent and ent.latitud and ent.longitud:
+            puntos.append({
+                "tipo":      "d",
+                "lat":       float(ent.latitud),
+                "lng":       float(ent.longitud),
+                "envioId":   e.envio_id,
+                "guia":      e.numero_guia or "",
+                "estado":    e.estado or "",
+                "fecha":     e.fecha_creacion.strftime('%Y-%m-%d') if e.fecha_creacion else "",
+                "direccion": ent.direccion or "",
+            })
+
+    return json.dumps(puntos, ensure_ascii=False)
+
+
+# ─────────────────────────────────────────────
 # MAPA OPERATIVO - CONTROL INTEGRAL DE RECOGIDA Y ENTREGA
 # ─────────────────────────────────────────────
 @router.get("/rutas", response_class=HTMLResponse)
@@ -100,56 +147,55 @@ def _get_rutas_por_estado(db: Session):
 @router.api_route("/envios/planificar-ruta", methods=["GET", "POST"], response_class=HTMLResponse)
 async def planificar_ruta(
     request: Request, 
-    origen_id: Optional[int] = Query(None, description="ID del envío seleccionado como ORIGEN (P)"),
-    destino_id: Optional[int] = Query(None, description="ID del envío seleccionado como DESTINO (D)"),
+    origen_id: Optional[int] = Query(None),
+    destino_id: Optional[int] = Query(None),
     db: Session = Depends(get_db)
 ):
     try:
         envios_db = db.query(Envio).filter(
-    Envio.estado.in_([
-        "Registrado",
-        "Pendiente_Recoger",
-        "C-Colectado",
-        "En_Bodega",
-        "Pendiente_Entregar",
-        "En_Ruta",
-        "En_Destino",
-        "Entregado",
-        "Cancelado",
-        "Rechazado",
-        "Devolucion",
-        "Retorno",
-        "Fallido"
-    ])
-).options(
-    joinedload(Envio.lugar_recogida),
-    joinedload(Envio.lugar_entrega)
-).all()
+            Envio.estado.in_([
+                "Registrado",
+                "Pendiente_Recoger",
+                "C-Colectado",
+                "En_Bodega",
+                "Pendiente_Entregar",
+                "En_Ruta",
+                "En_Destino",
+                "Entregado",
+                "Cancelado",
+                "Rechazado",
+                "Devolucion",
+                "Retorno",
+                "Fallido"
+            ])
+        ).options(
+            joinedload(Envio.lugar_recogida),
+            joinedload(Envio.lugar_entrega)
+        ).all()
+
         envios = []
         for e in envios_db:
-            # Asignar tipo de marcador basado en variables SEPARADAS
             if e.envio_id == origen_id:
-                e.tipo_marcador = "P"  # Origen (recogida)
+                e.tipo_marcador = "P"
             elif e.envio_id == destino_id:
-                e.tipo_marcador = "D"  # Destino (entrega)
+                e.tipo_marcador = "D"
             else:
-                e.tipo_marcador = None  # Sin asignar
+                e.tipo_marcador = None
             envios.append(e)
         
     except Exception as e:
         db.rollback()
         print(f"🛡️ Bypass activado en planificar_ruta (Envios) por registro corrupto: {e}")
         
-        # Agregadas las columnas críticas de mensajero de entrega y estados granulares en SQL Puro
         query_envios = text("""
-    SELECT e.*, 
-           lr.direccion as rec_dir, lr.latitud as rec_lat, lr.longitud as rec_lng, lr.ciudad as rec_ciu,
-           le.direccion as ent_dir, le.latitud as ent_lat, le.longitud as ent_lng, le.ciudad as ent_ciu
-    FROM envios e
-    LEFT JOIN lugares lr ON e.lugar_recogida_id = lr.lugar_id
-    LEFT JOIN lugares le ON e.lugar_entrega_id = le.lugar_id
-    WHERE e.estado NOT IN ('Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido')
-""")
+            SELECT e.*, 
+                   lr.direccion as rec_dir, lr.latitud as rec_lat, lr.longitud as rec_lng, lr.ciudad as rec_ciu,
+                   le.direccion as ent_dir, le.latitud as ent_lat, le.longitud as ent_lng, le.ciudad as ent_ciu
+            FROM envios e
+            LEFT JOIN lugares lr ON e.lugar_recogida_id = lr.lugar_id
+            LEFT JOIN lugares le ON e.lugar_entrega_id = le.lugar_id
+            WHERE e.estado NOT IN ('Entregado', 'Cancelado', 'Rechazado', 'Devolucion', 'Retorno', 'Fallido')
+        """)
         resultado_envios = db.execute(query_envios).fetchall()
         
         envios = []
@@ -166,12 +212,11 @@ async def planificar_ruta(
                     self.estado = estado_envio_seguro
                     self.ruta_id = d.get("ruta_id")
                     self.usuario_cliente_id = d.get("usuario_cliente_id")
-                    
-                    # 💡 ASIGNACIONES CLAVE PARA LA LOGICA DE ENTRADAS Y SALIDAS DE MOTOS
                     self.usuario_mensajero_id = d.get("usuario_mensajero_id")
                     self.usuario_mensajero_entrega_id = d.get("usuario_mensajero_entrega_id")
                     self.estado_recogida = d.get("estado_recogida") or "Pendiente"
                     self.estado_entrega = d.get("estado_entrega") or "Pendiente"
+                    self.fecha_creacion = d.get("fecha_creacion")
                     
                     if es_origen:
                         self.tipo_marcador = "P"
@@ -181,32 +226,41 @@ async def planificar_ruta(
                         self.tipo_marcador = None
                     
                     self.lugar_recogida = type('LugRec', (), {
-                        'direccion': d.get("rec_dir") or "", 'ciudad': d.get("rec_ciu") or "Bogotá",
-                        'latitud': d.get("rec_lat"), 'longitud': d.get("rec_lng")
+                        'direccion': d.get("rec_dir") or "",
+                        'ciudad':    d.get("rec_ciu") or "Bogotá",
+                        'latitud':   d.get("rec_lat"),
+                        'longitud':  d.get("rec_lng"),
                     })
                     self.lugar_entrega = type('LugEnt', (), {
-                        'direccion': d.get("ent_dir") or "", 'ciudad': d.get("ent_ciu") or "Bogotá",
-                        'latitud': d.get("ent_lat"), 'longitud': d.get("ent_lng")
+                        'direccion': d.get("ent_dir") or "",
+                        'ciudad':    d.get("ent_ciu") or "Bogotá",
+                        'latitud':   d.get("ent_lat"),
+                        'longitud':  d.get("ent_lng"),
                     })
             
-            es_origen = (row_dict.get("envio_id") == origen_id)
+            es_origen  = (row_dict.get("envio_id") == origen_id)
             es_destino = (row_dict.get("envio_id") == destino_id)
             envios.append(EnvioMapaSimulado(row_dict, es_origen, es_destino))
 
-    mensajeros = db.query(Usuario).filter(Usuario.rol == "MENSAJERO").all()
-    rutas      = _get_rutas_por_estado(db)
-    rol        = request.session.get("rol")
+    mensajeros  = db.query(Usuario).filter(Usuario.rol == "MENSAJERO").all()
+    rutas       = _get_rutas_por_estado(db)
+    rol         = request.session.get("rol")
+
+    # ── FIX CRÍTICO: serializar envíos con json.dumps para evitar
+    #    que caracteres especiales en direcciones rompan el JS ──
+    envios_json = _build_envios_json(envios)
 
     return templates.TemplateResponse("mapa-operaciones.html", {
         "request":           request,
-        "envios":            envios,
+        "envios":            envios,       # sigue disponible para el HTML de rutas
+        "envios_json":       envios_json,  # ← NUEVO: usado por enviosData en el mapa
         "mensajeros":        mensajeros,
         "rutas_creadas":     rutas["creadas"],
         "rutas_en_curso":    rutas["en_curso"],
         "rutas_finalizadas": rutas["finalizadas"],
         "rol":               rol,
         "origen_id":         origen_id,
-        "destino_id":        destino_id
+        "destino_id":        destino_id,
     })
 
 
@@ -224,11 +278,11 @@ async def cambiar_estado_ruta(payload: CambiarEstadoRequest, db: Session = Depen
         if payload.envio_ids:
             db.query(Envio).filter(
                 Envio.envio_id.in_(payload.envio_ids),
-                Envio.ruta_id == payload.ruta_id          # ← corregido
+                Envio.ruta_id == payload.ruta_id
             ).update({"estado": "Registrado", "ruta_id": None}, synchronize_session=False)
             db.commit()
 
-        envios_restantes = db.query(Envio).filter(Envio.ruta_id == payload.ruta_id).count()  # ← corregido
+        envios_restantes = db.query(Envio).filter(Envio.ruta_id == payload.ruta_id).count()
 
         if envios_restantes == 0:
             db.delete(ruta)
@@ -242,12 +296,11 @@ async def cambiar_estado_ruta(payload: CambiarEstadoRequest, db: Session = Depen
         return {"status": "success", "action": "pedidos_quitados", "message": "Pedidos removidos de la ruta con éxito."}
 
     elif payload.estado in ["Finalizada", "Finalizadas", "En curso", "Creada"]:
-        ruta.estado = payload.estado                       # ← usa el estado recibido directamente
+        ruta.estado = payload.estado
         db.commit()
 
-        # Solo marcar envíos como Entregado si se está finalizando
         if payload.estado in ["Finalizada", "Finalizadas"]:
-            db.query(Envio).filter(Envio.ruta_id == payload.ruta_id).update(  # ← corregido
+            db.query(Envio).filter(Envio.ruta_id == payload.ruta_id).update(
                 {"estado": "Entregado"},
                 synchronize_session=False
             )
