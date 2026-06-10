@@ -252,7 +252,10 @@
                         <td>
                             <div class="d-flex align-items-center justify-content-center gap-2">
                                 {% if e.estado == 'Registrado' %}<span class="st-box bg-booking">REGISTRADO</span>
-                                {% elif e.estado == 'En_Bodega' or e.estado == 'Colectado' %}<span class="st-box bg-colectado">COLECTADO</span>
+                                {% elif e.estado == 'Pendiente_Recoger' %}<span class="st-box bg-booking">PENDIENTE RECOGER</span>                                
+                                {% elif e.estado == 'C-Colectado' %}<span class="st-box bg-colectado">C-COLECTADO</span>
+                                {% elif e.estado == 'En_Bodega' %}<span class="st-box bg-en_bodega">EN BODEGA</span>
+                                {% elif e.estado == 'Pendiente_Entregar' %}<span class="st-box bg-booking">PENDIENTE ENTREGAR</span>
                                 {% elif e.estado == 'En_Ruta' %}<span class="st-box bg-ruta">EN RUTA</span>
                                 {% elif e.estado == 'Entregado' %}<span class="st-box bg-entregado">ENTREGADO</span>
                                 {% elif e.estado == 'Cancelado' %}<span class="st-box bg-cancelado">CANCELADO</span>

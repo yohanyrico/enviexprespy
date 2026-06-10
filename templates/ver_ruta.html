@@ -292,12 +292,26 @@
                                 </td>
                                 <td>
                                     <span class="badge badge-estado
-                                        {% if e.estado == 'En_Ruta' %}bg-en-ruta
-                                        {% elif e.estado == 'Colectado' or e.estado == 'En_Bodega' %}bg-colectado
+                                        {% if e.estado == 'Registrado' %}bg-registrado
+                                        {% elif e.estado == 'Pendiente_Recoger' %}bg-registrado
+                                        {% elif e.estado == 'C-Colectado' %}bg-colectado
+                                        {% elif e.estado == 'En_Bodega' %}bg-en_bodega
+                                        {% elif e.estado == 'Pendiente_Entregar' %}bg-registrado
+                                        {% elif e.estado == 'En_Ruta' %}bg-en-ruta
                                         {% elif e.estado == 'Entregado' %}bg-entregado
                                         {% elif e.estado in ['Cancelado','Rechazado','Devolucion','Retorno'] %}bg-cancelado
                                         {% else %}bg-registrado{% endif %}">
-                                        {{ e.estado }}
+                                        {% if e.estado == 'Pendiente_Recoger' %}PENDIENTE RECOGER
+                                        {% elif e.estado == 'C-Colectado' %}C-COLECTADO
+                                        {% elif e.estado == 'En_Bodega' %}EN BODEGA
+                                        {% elif e.estado == 'Pendiente_Entregar' %}PENDIENTE ENTREGAR
+                                        {% elif e.estado == 'En_Ruta' %}EN RUTA
+                                        {% elif e.estado == 'Entregado' %}ENTREGADO
+                                        {% elif e.estado == 'Cancelado' %}CANCELADO
+                                        {% elif e.estado == 'Rechazado' %}RECHAZADO
+                                        {% elif e.estado == 'Devolucion' %}DEVOLUCIÓN
+                                        {% elif e.estado == 'Retorno' %}RETORNO
+                                        {% else %}{{ e.estado }}{% endif %}
                                     </span>
                                 </td>
                                 <td class="text-end fw-bold" style="color: var(--negro-puro);">

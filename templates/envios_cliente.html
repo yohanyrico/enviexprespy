@@ -261,9 +261,21 @@
                                 <span class="badge badge-status bg-booking">
                                     <i class="bi bi-bookmark-check-fill me-2"></i> REGISTRADO
                                 </span>
-                            {% elif e.estado == 'Colectado' %}
+                            {% elif e.estado == 'Pendiente_Recoger' %}
+                                <span class="badge badge-status bg-booking">
+                                    <i class="bi bi-clock-fill me-2"></i> PENDIENTE RECOGER
+                                </span>
+                            {% elif e.estado == 'C-Colectado' %}
                                 <span class="badge badge-status bg-colectado">
-                                    <i class="bi bi-box-seam me-2"></i> COLECTADO
+                                    <i class="bi bi-box-seam me-2"></i> C-COLECTADO
+                                </span>
+                            {% elif e.estado == 'En_Bodega' %}
+                                <span class="badge badge-status bg-en_bodega">
+                                    <i class="bi bi-archive me-2"></i> EN BODEGA
+                                </span>
+                            {% elif e.estado == 'Pendiente_Entregar' %}
+                                <span class="badge badge-status bg-booking">
+                                    <i class="bi bi-clock-fill me-2"></i> PENDIENTE ENTREGAR
                                 </span>
                             {% elif e.estado == 'En_Ruta' %}
                                 <span class="badge badge-status bg-ruta">
@@ -278,20 +290,16 @@
                                     <i class="bi bi-x-circle me-2"></i> CANCELADO
                                 </span>
                             {% elif e.estado == 'Rechazado' %}
-                                <span class="badge badge-status bg-cancelado">
+                                <span class="badge badge-status bg-rechazado">
                                     <i class="bi bi-x-octagon me-2"></i> RECHAZADO
                                 </span>
                             {% elif e.estado == 'Devolucion' %}
-                                <span class="badge badge-status bg-cancelado">
+                                <span class="badge badge-status bg-devolucion">
                                     <i class="bi bi-arrow-counterclockwise me-2"></i> DEVOLUCIÓN
                                 </span>
                             {% elif e.estado == 'Retorno' %}
-                                <span class="badge badge-status bg-cancelado">
+                                <span class="badge badge-status bg-retorno">
                                     <i class="bi bi-arrow-counterclockwise me-2"></i> RETORNO
-                                </span>
-                            {% elif e.estado == 'En_Bodega' %}
-                                <span class="badge badge-status bg-en_bodega">
-                                    <i class="bi bi-archive me-2"></i> EN BODEGA
                                 </span>
                             {% else %}
                                 <span class="badge badge-status bg-secondary">
