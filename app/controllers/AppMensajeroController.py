@@ -87,9 +87,12 @@ def obtener_pedidos_app(
     current_user: Usuario = Depends(get_current_user)
 ):
     try:
+        # Definimos exactamente qué estados queremos que procese la app de Flutter
+        estados_activos = ["Registrado", "Pendiente por recoger", "En_Bodega", "En_Ruta", "En_Destino"]
+        
         pedidos = db.query(Envio).filter(
             Envio.usuario_mensajero_id == current_user.id_usuario,
-            Envio.estado != "Entregado"
+            Envio.estado.in_(estados_activos) # <--- Cambiado para que sea estricto y seguro
         ).all()
 
         return [
@@ -241,7 +244,7 @@ def actualizacion_masiva(
         )
 
     estados_validos = [
-        "Registrado", "En_Bodega", "En_Ruta", "En_Destino",
+        "Registrado", "Pendiente por recoger", "En_Bodega", "En_Ruta", "En_Destino",
         "Entregado", "Cancelado", "Devolucion", "Retorno",
         "Rechazado", "Fallido", "C-Colectado"
     ]
