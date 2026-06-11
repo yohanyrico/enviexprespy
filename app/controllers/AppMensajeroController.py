@@ -3,6 +3,7 @@ import shutil
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
@@ -21,7 +22,7 @@ class ActualizarEstadoRequest(BaseModel):
     estado: str
 
 class ActualizacionMasivaRequest(BaseModel):
-    guias: List[str]   # Flutter envía números de guía ej: ["ENV00023", "ENV00024"]
+    guias: List[str]
     estado: str
 
 class GestionEntregaRequest(BaseModel):
@@ -43,12 +44,6 @@ class IniciarRutaRequest(BaseModel):
 # ─────────────────────────────────────────────────────────────
 
 def _verificar_y_auto_finalizar(ruta_id: int, db: Session) -> bool:
-    """
-    Verifica si todos los envíos de una ruta están gestionados
-    y finaliza la ruta automáticamente según su tipo:
-    - RECOLECCION: cierra cuando todos están en C-Colectado
-    - ENTREGA: cierra cuando todos están en Entregado, Rechazado o Fallido
-    """
     if not ruta_id:
         return False
 
@@ -56,10 +51,9 @@ def _verificar_y_auto_finalizar(ruta_id: int, db: Session) -> bool:
     if not ruta or ruta.estado != "En curso":
         return False
 
-    # Estados terminales según el tipo de ruta
     if ruta.tipo_ruta == "RECOLECCION":
         estados_terminales = {"C-Colectado", "Cancelado", "Rechazado"}
-    else:  # ENTREGA
+    else:
         estados_terminales = {"Entregado", "Rechazado", "Fallido", "Cancelado"}
 
     pendientes = db.query(Envio).filter(
@@ -87,12 +81,23 @@ def obtener_pedidos_app(
     current_user: Usuario = Depends(get_current_user)
 ):
     try:
-        # Definimos exactamente qué estados queremos que procese la app de Flutter
-        estados_activos = ["Registrado", "Pendiente_Recoger", "C-Colectado", "En_Bodega", "Pendiente_Entregar", "En_Ruta", "En_Destino"]
-        
+        estados_activos = [
+            "Registrado",
+            "Pendiente_Recoger",
+            "C-Colectado",
+            "En_Bodega",
+            "Pendiente_Entregar",
+            "En_Ruta",
+            "En_Destino"
+        ]
+
+        # ✅ FIX: busca por mensajero recolector O mensajero entregador
         pedidos = db.query(Envio).filter(
-            Envio.usuario_mensajero_id == current_user.id_usuario,
-            Envio.estado.in_(estados_activos) # <--- Cambiado para que sea estricto y seguro
+            or_(
+                Envio.usuario_mensajero_id == current_user.id_usuario,
+                Envio.usuario_mensajero_entrega_id == current_user.id_usuario
+            ),
+            Envio.estado.in_(estados_activos)
         ).all()
 
         return [
@@ -105,8 +110,8 @@ def obtener_pedidos_app(
                 "ciudad_destino": p.lugar_entrega.ciudad if p.lugar_entrega else "",
                 "estado": p.estado,
                 "instrucciones": p.instrucciones or "",
-                "latitud": p.lugar_entrega.latitud if p.lugar_entrega else None,
-                "longitud": p.lugar_entrega.longitud if p.lugar_entrega else None,
+                "latitud": float(p.lugar_entrega.latitud) if p.lugar_entrega and p.lugar_entrega.latitud else None,
+                "longitud": float(p.lugar_entrega.longitud) if p.lugar_entrega and p.lugar_entrega.longitud else None,
                 "es_cod": p.es_cod or False,
                 "valor_a_cobrar": float(p.valor_a_cobrar) if p.valor_a_cobrar else 0.0,
                 "peso": float(p.peso) if p.peso else 0.0,
@@ -119,7 +124,7 @@ def obtener_pedidos_app(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-# --- INICIAR RUTA (Flutter → Al presionar botón Iniciar) ---
+# --- INICIAR RUTA ---
 @router.post("/ruta/iniciar")
 def iniciar_ruta(
     body: IniciarRutaRequest,
@@ -162,7 +167,7 @@ def iniciar_ruta(
     }
 
 
-# --- 📲 ACTUALIZAR UBICACIÓN DESDE FLUTTER ---
+# --- ACTUALIZAR UBICACIÓN DESDE FLUTTER ---
 @router.post("/ubicacion")
 def actualizar_ubicacion(
     body: UbicacionRequest,
@@ -202,11 +207,11 @@ def actualizar_ubicacion(
         )
 
 
-# --- 💻 UBICACIONES ACTIVAS (Para el Mapa Web) ---
+# --- UBICACIONES ACTIVAS (Para el Mapa Web) ---
 @router.get("/ubicaciones-activas", response_model=List[Dict[str, Any]])
 def obtener_ubicaciones_activas(db: Session = Depends(get_db)):
     hace_5_min = datetime.now() - timedelta(minutes=5)
- 
+
     mensajeros = db.query(Usuario).filter(
         Usuario.rol == "MENSAJERO",
         Usuario.activo == True,
@@ -214,7 +219,7 @@ def obtener_ubicaciones_activas(db: Session = Depends(get_db)):
         Usuario.longitud.isnot(None),
         Usuario.ultima_ubicacion >= hace_5_min
     ).all()
- 
+
     return [
         {
             "id_usuario": m.id_usuario,
@@ -226,9 +231,6 @@ def obtener_ubicaciones_activas(db: Session = Depends(get_db)):
         for m in mensajeros
     ]
 
-
-# ⚠️ IMPORTANTE: Esta ruta DEBE ir ANTES de /pedidos/{envio_id}/estado
-# para evitar que FastAPI interprete "actualizacion-masiva" como un envio_id
 
 # --- ACTUALIZACIÓN MASIVA DE LOTE ---
 @router.put("/pedidos/actualizacion-masiva")
@@ -244,9 +246,10 @@ def actualizacion_masiva(
         )
 
     estados_validos = [
-        "Registrado", "Pendiente por recoger", "En_Bodega", "En_Ruta", "En_Destino",
+        "Registrado", "Pendiente_Recoger", "C-Colectado",
+        "En_Bodega", "Pendiente_Entregar", "En_Ruta", "En_Destino",
         "Entregado", "Cancelado", "Devolucion", "Retorno",
-        "Rechazado", "Fallido", "C-Colectado"
+        "Rechazado", "Fallido"
     ]
     if body.estado not in estados_validos:
         raise HTTPException(
@@ -259,9 +262,13 @@ def actualizacion_masiva(
     rutas_afectadas = set()
 
     for guia in body.guias:
+        # ✅ FIX: busca por mensajero recolector O entregador
         envio = db.query(Envio).filter(
             Envio.numero_guia == guia,
-            Envio.usuario_mensajero_id == current_user.id_usuario
+            or_(
+                Envio.usuario_mensajero_id == current_user.id_usuario,
+                Envio.usuario_mensajero_entrega_id == current_user.id_usuario
+            )
         ).first()
 
         if envio:
@@ -274,7 +281,6 @@ def actualizacion_masiva(
 
     db.commit()
 
-    # Verificar cierre automático de rutas afectadas
     rutas_finalizadas = []
     for ruta_id in rutas_afectadas:
         if _verificar_y_auto_finalizar(ruta_id, db):
@@ -300,9 +306,10 @@ def actualizar_estado_envio(
     current_user: Usuario = Depends(get_current_user)
 ):
     estados_validos = [
-        "Registrado", "En_Bodega", "En_Ruta", "En_Destino",
+        "Registrado", "Pendiente_Recoger", "C-Colectado",
+        "En_Bodega", "Pendiente_Entregar", "En_Ruta", "En_Destino",
         "Entregado", "Cancelado", "Devolucion", "Retorno",
-        "Rechazado", "Fallido", "C-Colectado"
+        "Rechazado", "Fallido"
     ]
     if body.estado not in estados_validos:
         raise HTTPException(
@@ -310,9 +317,13 @@ def actualizar_estado_envio(
             detail="El estado proporcionado es inválido."
         )
 
+    # ✅ FIX: busca por mensajero recolector O entregador
     envio = db.query(Envio).filter(
         Envio.envio_id == envio_id,
-        Envio.usuario_mensajero_id == current_user.id_usuario
+        or_(
+            Envio.usuario_mensajero_id == current_user.id_usuario,
+            Envio.usuario_mensajero_entrega_id == current_user.id_usuario
+        )
     ).first()
 
     if not envio:
@@ -349,9 +360,13 @@ def gestionar_entrega(
             detail="Estado de gestión no permitido."
         )
 
+    # ✅ FIX: busca por mensajero recolector O entregador
     envio = db.query(Envio).filter(
         Envio.envio_id == envio_id,
-        Envio.usuario_mensajero_id == current_user.id_usuario
+        or_(
+            Envio.usuario_mensajero_id == current_user.id_usuario,
+            Envio.usuario_mensajero_entrega_id == current_user.id_usuario
+        )
     ).first()
 
     if not envio:
@@ -390,14 +405,17 @@ async def subir_evidencia(
     if current_user.rol != "MENSAJERO":
         raise HTTPException(status_code=403, detail="Solo mensajeros pueden subir fotos")
 
+    # ✅ FIX: busca por mensajero recolector O entregador
     envio = db.query(Envio).filter(
         Envio.envio_id == envio_id,
-        Envio.usuario_mensajero_id == current_user.id_usuario
+        or_(
+            Envio.usuario_mensajero_id == current_user.id_usuario,
+            Envio.usuario_mensajero_entrega_id == current_user.id_usuario
+        )
     ).first()
     if not envio:
         raise HTTPException(status_code=404, detail="Envío no encontrado")
 
-    # Guardar en carpeta de fotos de recogida
     carpeta = "app/static/fotos_recogida"
     os.makedirs(carpeta, exist_ok=True)
 
