@@ -1,4 +1,3 @@
-cat << 'EOF' > /home/claude/gestionar_detalle.html
 {# templates/gestionar_detalle.html #}
 <!DOCTYPE html>
 <html lang="es">
@@ -308,8 +307,10 @@ cat << 'EOF' > /home/claude/gestionar_detalle.html
                                     <span class="st-box bg-booking">Registrado</span>
                                 {% elif envio.estado == 'Pendiente_Recoger' %}
                                     <span class="st-box bg-pendiente">Pend. Recoger</span>
-                                {% elif envio.estado == 'Colectado' %}
-                                    <span class="st-box bg-colectado">Colectado</span>
+                                {% elif envio.estado == 'C-Colectado' %}
+                                    <span class="st-box bg-C-Colectado">C-Colectado</span>
+                                {% elif envio.estado == 'En_Bodega' %}
+                                    <span class="st-box bg-bodega">En Bodega</span>
                                 {% elif envio.estado == 'Pendiente_Verificar' %}
                                     <span class="st-box bg-pendiente">Pend. Verificar</span>
                                 {% elif envio.estado == 'En_Ruta' %}
