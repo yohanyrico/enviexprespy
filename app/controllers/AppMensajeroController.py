@@ -88,7 +88,7 @@ def obtener_pedidos_app(
 ):
     try:
         # Definimos exactamente qué estados queremos que procese la app de Flutter
-        estados_activos = ["Registrado", "Pendiente por recoger", "En_Bodega", "En_Ruta", "En_Destino"]
+        estados_activos = ["Registrado", "Pendiente_Recoger", "C-Colectado", "En_Bodega", "Pendiente_Entregar", "En_Ruta", "En_Destino"]
         
         pedidos = db.query(Envio).filter(
             Envio.usuario_mensajero_id == current_user.id_usuario,
