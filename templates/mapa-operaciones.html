@@ -500,14 +500,15 @@ function onGoogleMapsReady() {
 
     // Doble click para terminar dibujo
     gmap.addListener('dblclick', function(e) {
-        if (modoActivo === 'linea' && puntosLinea.length >= 2) {
-            seleccionarCercanosALinea();
-            terminarDibujo();
-        } else if (modoActivo === 'poligono' && puntosPoligono.length >= 3) {
-            seleccionarDentroDePoligono();
-            terminarDibujo();
-        }
-    });
+    e.stop(); // ← evita zoom y propagación
+    if (modoActivo === 'linea' && puntosLinea.length >= 2) {
+        seleccionarCercanosALinea();
+        terminarDibujo();
+    } else if (modoActivo === 'poligono' && puntosPoligono.length >= 3) {
+        seleccionarDentroDePoligono();
+        terminarDibujo();
+    }
+});
 
     crearMarcadores();
     aplicarFiltros();
@@ -649,6 +650,16 @@ function seleccionarDentroDePoligono() {
             item.seleccionado = true; setIconMarcador(item); nuevos++;
         }
     });
+    // Cerrar visualmente el polígono
+    if (poligonoActivo) {
+        poligonoActivo.setMap(null);
+        poligonoActivo = new google.maps.Polygon({
+            paths: puntosPoligono,
+            fillColor: '#B20C06', fillOpacity: 0.15,
+            strokeColor: '#B20C06', strokeWeight: 2,
+            map: gmap
+        });
+    }
     finalizarSeleccion(nuevos, 'polígono');
 }
 
