@@ -236,7 +236,8 @@
                 <label class="form-label">CONTRASEÑA</label>
                 <div class="input-group-custom">
                     <i class="bi bi-lock-fill"></i>
-                    <input type="password" class="form-control-custom" name="password" placeholder="••••••••" required>
+                    <input type="password" class="form-control-custom" name="password" id="passwordInput" placeholder="••••••••" required>
+                    <i class="bi bi-eye-fill" id="togglePassword" onclick="togglePass()" style="position:absolute;right:15px;left:auto;cursor:pointer;color:var(--slate-gray);z-index:10;"></i>
                 </div>
             </div>
 
@@ -261,6 +262,18 @@
             setTimeout(() => mensaje.style.display = "none", 500);
         }
     }, 3000);
+    function togglePass() {
+    const input = document.getElementById('passwordInput');
+    const icon = document.getElementById('togglePassword');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash-fill';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye-fill';
+    }
+    icon.style.cssText = 'position:absolute;right:15px;left:auto;cursor:pointer;color:var(--slate-gray);z-index:10;';
+}
 </script>
 
 </body>
