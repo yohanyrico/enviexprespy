@@ -797,6 +797,15 @@ function mostrarToast(msg, esError=false, tipo='') {
     setTimeout(() => { t.className = ''; }, 4000);
 }
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7jZIsSRbPml8l1CAypHNuTNDaQS8MyT0&libraries=drawing&v=3.64"></script>
+<script>
+function loadGoogleMaps() {
+    const script = document.createElement('script');
+    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyD7jZIsSRbPml8l1CAypHNuTNDaQS8MyT0&libraries=drawing,geometry&language=es&callback=onGoogleMapsReady";
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+}
+window.addEventListener('load', loadGoogleMaps);
+</script>
 </body>
 </html>
