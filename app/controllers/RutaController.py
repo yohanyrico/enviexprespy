@@ -249,6 +249,7 @@ async def planificar_ruta(
     # ── FIX CRÍTICO: serializar envíos con json.dumps para evitar
     #    que caracteres especiales en direcciones rompan el JS ──
     envios_json = _build_envios_json(envios)
+    print(f"DEBUG envios_json tiene {len(json.loads(envios_json))} puntos") 
 
     return templates.TemplateResponse("mapa-operaciones.html", {
         "request":           request,
