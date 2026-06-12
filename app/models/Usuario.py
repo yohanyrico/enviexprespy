@@ -36,6 +36,7 @@ class Usuario(Base):
 
     # Relaciones
     transacciones = relationship("Transaccion", back_populates="usuario", cascade="all, delete-orphan")
+    subtipo_mensajero = Column(String(20), nullable=True)
 
     envios_como_cliente = relationship(
         "Envio",

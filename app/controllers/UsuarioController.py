@@ -119,7 +119,8 @@ async def api_login(data: LoginRequest, db: Session = Depends(get_db)):
         "username": user.user_name,
         "id_usuario": user.id_usuario,
         "nombre": user.nombre,
-        "apellido": user.apellido
+        "apellido": user.apellido,
+        "subtipo_mensajero": user.subtipo_mensajero or ""  # ← nuevo
     })
 
 
