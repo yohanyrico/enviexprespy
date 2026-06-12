@@ -112,20 +112,35 @@
         .date-input { border: none; background: transparent; font-weight: 700; font-size: 0.76rem; color: var(--azul-oscuro); outline: none; }
 
         #toolbar-vertical {
-            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-            z-index: 1000; display: flex; flex-direction: column; gap: 4px;
-            background: white; border-radius: 16px; padding: 10px 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25); border: 1px solid rgba(0,0,0,0.08);
-        }
-        .tool-btn { width: 44px; height: 44px; border-radius: 10px; border: 2px solid transparent; background: #f8f9fa; color: var(--azul-oscuro); font-size: 1.15rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; position: relative; font-family: 'Montserrat', sans-serif; }
-        .tool-btn:hover { background: #f0f0f0; border-color: var(--gris); transform: scale(1.05); }
-        .tool-btn.active { background: var(--azul-oscuro); color: white; border-color: var(--rojo); box-shadow: 0 0 0 3px rgba(178,12,6,0.2); }
-        .tool-btn.has-items { background: var(--rojo); color: white; border-color: var(--rojo-hover); }
-        .tool-divider { width: 28px; height: 1px; background: #e0e0e0; margin: 3px auto; }
-        .tool-btn::after { content: attr(data-tip); position: absolute; right: calc(100% + 10px); background: var(--azul-oscuro); color: white; padding: 5px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.2s; }
-        .tool-btn:hover::after { opacity: 1; }
-        .tool-badge { position: absolute; top: -6px; right: -6px; background: var(--rojo); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.62rem; font-weight: 900; display: none; align-items: center; justify-content: center; border: 2px solid white; }
-        .tool-badge.show { display: flex; }
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    z-index: 1000; display: flex; flex-direction: column; gap: 2px;
+    background: white; border-radius: 4px; padding: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 1px solid rgba(0,0,0,0.15);
+}
+.tool-btn {
+    width: 38px; height: 38px; border-radius: 3px; border: 1px solid transparent;
+    background: white; color: #333; font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; position: relative; font-family: 'Montserrat', sans-serif;
+}
+.tool-btn:hover { background: #f0f0f0; border-color: #ccc; transform: none; }
+.tool-btn.active { background: #e8f0fe; color: #1a73e8; border-color: #1a73e8; }
+.tool-btn.has-items { background: var(--rojo); color: white; border-color: var(--rojo-hover); }
+.tool-divider { width: 100%; height: 1px; background: #e0e0e0; margin: 2px 0; }
+.tool-btn::after {
+    content: attr(data-tip); position: absolute; right: calc(100% + 8px);
+    background: rgba(0,0,0,0.75); color: white; padding: 4px 8px; border-radius: 4px;
+    font-size: 0.68rem; font-weight: 600; white-space: nowrap;
+    pointer-events: none; opacity: 0; transition: opacity 0.15s;
+}
+.tool-btn:hover::after { opacity: 1; }
+.tool-badge {
+    position: absolute; top: -5px; right: -5px; background: var(--rojo);
+    color: white; border-radius: 50%; width: 16px; height: 16px;
+    font-size: 0.58rem; font-weight: 900; display: none;
+    align-items: center; justify-content: center; border: 2px solid white;
+}
+.tool-badge.show { display: flex; }
 
         #popup-lista { position: absolute; right: 72px; top: 50%; transform: translateY(-50%); z-index: 1001; width: 260px; background: rgba(11,1,46,0.97); border: 2px solid var(--rojo); border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); display: none; flex-direction: column; max-height: 420px; }
         #popup-lista.open { display: flex; }
@@ -319,25 +334,45 @@
             </div>
         </div>
 
-        <div id="toolbar-vertical">
-            <button class="tool-btn" id="toolLinea" data-tip="Dibujar línea" onclick="setModo('linea')">
-                <i class="bi bi-slash-lg" style="transform:rotate(-45deg);font-size:1.3rem;"></i>
-            </button>
-            <div class="tool-divider"></div>
-            <button class="tool-btn" id="toolPoligono" data-tip="Dibujar polígono" onclick="setModo('poligono')">
-                <i class="bi bi-hexagon"></i>
-            </button>
-            <div class="tool-divider"></div>
-            <button class="tool-btn" id="toolEliminar" data-tip="Eliminar dibujo" onclick="eliminarDibujo()" style="color:#dc3545;">
-                <i class="bi bi-trash3-fill"></i>
-            </button>
-            <div class="tool-divider"></div>
-            <button class="tool-btn" id="toolLista" data-tip="Pedidos seleccionados" onclick="togglePopupLista()">
-                <i class="bi bi-list-check"></i>
-                <span class="tool-badge" id="toolBadge">0</span>
-            </button>
-        </div>
-
+       <div id="toolbar-vertical">
+    <button class="tool-btn" id="toolLinea" data-tip="Dibujar línea" onclick="setModo('linea')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <line x1="3" y1="17" x2="17" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="3" cy="17" r="2" fill="currentColor"/>
+            <circle cx="17" cy="3" r="2" fill="currentColor"/>
+        </svg>
+    </button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn" id="toolPoligono" data-tip="Dibujar polígono" onclick="setModo('poligono')">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <polygon points="10,2 18,8 15,17 5,17 2,8" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>
+            <circle cx="10" cy="2" r="1.5" fill="currentColor"/>
+            <circle cx="18" cy="8" r="1.5" fill="currentColor"/>
+            <circle cx="15" cy="17" r="1.5" fill="currentColor"/>
+            <circle cx="5" cy="17" r="1.5" fill="currentColor"/>
+            <circle cx="2" cy="8" r="1.5" fill="currentColor"/>
+        </svg>
+    </button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn" id="toolEliminar" data-tip="Eliminar dibujo" onclick="eliminarDibujo()" style="color:#dc3545;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <polyline points="2,4 16,4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 4V2h6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 4l1 12h8l1-12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="7" y1="8" x2="7" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="11" y1="8" x2="11" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    </button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn" id="toolLista" data-tip="Pedidos seleccionados" onclick="togglePopupLista()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <line x1="3" y1="5" x2="17" y2="5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="3" y1="10" x2="17" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="3" y1="15" x2="11" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="tool-badge" id="toolBadge">0</span>
+    </button>
+</div>
         <div id="popup-lista">
             <div class="pl-header">
                 <span><i class="bi bi-list-check me-1"></i> Pedidos Seleccionados</span>
