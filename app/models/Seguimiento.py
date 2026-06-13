@@ -19,6 +19,7 @@ class Seguimiento(Base):
         "Pendiente_Recoger",
         "Colectado",
         "Pendiente_Verificar",
+        "Pendiente_Entregar",
         "En_Bodega",
         "En_Ruta",
         "En_Destino",

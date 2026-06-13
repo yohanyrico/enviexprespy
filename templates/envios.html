@@ -90,6 +90,12 @@
             background: #fff; color: var(--chinese-black);
             cursor: pointer; white-space: nowrap; font-weight: 700;
         }
+        /* Cuando hay un cliente activo, el botón se resalta */
+        .cliente-dd-btn.activo {
+            background: var(--chinese-black);
+            color: #fff;
+            border-color: var(--milano-red);
+        }
         .cliente-dd-panel {
             display: none; position: absolute; top: calc(100% + 4px); left: 0;
             width: 220px; background: var(--chinese-black);
@@ -107,6 +113,7 @@
         .cliente-dd-opt { padding: 8px 14px; font-size: 13px; cursor: pointer; color: var(--white); }
         .cliente-dd-opt:hover { background: var(--milano-red); }
         .cliente-dd-opt.hidden { display: none; }
+        .cliente-dd-opt.activo-opt { background: var(--milano-red); }
 
         .modal-overlay-custom {
             display: none; position: fixed; inset: 0;
@@ -163,16 +170,40 @@
                 </button>
                 {% endif %}
 
-                {# Filtro de clientes — CEO, FACTURACION y ADMINISTRATIVO #}
+                {# ── FILTRO DE CLIENTES — conectado al backend ── #}
                 {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
                 <div class="cliente-dd-wrap" id="clienteDdWrap">
-                    <button class="cliente-dd-btn" onclick="toggleClienteDd()"><i class="bi bi-person-fill"></i><span id="clienteLabel">Cliente</span></button>
+                    <button class="cliente-dd-btn {% if cliente_id_filtro %}activo{% endif %}"
+                            id="clienteDdBtn"
+                            onclick="toggleClienteDd()">
+                        <i class="bi bi-person-fill"></i>
+                        <span id="clienteLabel">
+                            {% if cliente_id_filtro %}
+                                {# Mostrar el nombre del cliente activo #}
+                                {% for c in clientes %}
+                                    {% if c.id_usuario == cliente_id_filtro %}{{ c.nombre }} {{ c.apellido }}{% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Todos
+                            {% endif %}
+                        </span>
+                        {% if cliente_id_filtro %}
+                        <a href="/envios/" onclick="event.stopPropagation();"
+                           title="Limpiar filtro"
+                           style="color:#fff; margin-left:4px; line-height:1;">&#x2715;</a>
+                        {% endif %}
+                    </button>
                     <div class="cliente-dd-panel" id="clienteDdPanel">
-                        <div class="cliente-dd-search"><input type="text" id="clienteSearchInput" placeholder="Buscar..." oninput="filtrarClientes(this.value)" /></div>
+                        <div class="cliente-dd-search">
+                            <input type="text" id="clienteSearchInput" placeholder="Buscar..." oninput="filtrarClientes(this.value)" />
+                        </div>
                         <div class="cliente-dd-list" id="clienteDdList">
-                            <div class="cliente-dd-opt" onclick="seleccionarCliente('', 'Todos')">Todos</div>
+                            <div class="cliente-dd-opt {% if not cliente_id_filtro %}activo-opt{% endif %}"
+                                 onclick="seleccionarCliente('', 'Todos')">Todos</div>
                             {% for c in clientes %}
-                            <div class="cliente-dd-opt" onclick="seleccionarCliente('{{ c.id_usuario }}', '{{ c.nombre }} {{ c.apellido }}')">
+                            <div class="cliente-dd-opt {% if cliente_id_filtro == c.id_usuario %}activo-opt{% endif %}"
+                                 data-id="{{ c.id_usuario }}"
+                                 onclick="seleccionarCliente('{{ c.id_usuario }}', '{{ c.nombre }} {{ c.apellido }}')">
                                 {{ c.nombre }} {{ c.apellido }}
                             </div>
                             {% endfor %}
@@ -356,9 +387,11 @@
                 r.style.display = g.includes(f) ? "" : "none";
             });
         }
+
         document.getElementById('selectAll').onclick = function() {
             document.querySelectorAll('input[name="envio_ids"]').forEach(cb => cb.checked = this.checked);
         }
+
         function asignarMasivo() {
             const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
             const m = document.getElementById('mensajeroSelect').value;
@@ -368,6 +401,7 @@
                 body: JSON.stringify({ envio_ids: ids, id_mensajero: m })
             }).then(() => location.reload());
         }
+
         function quitarMasivo() {
             const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
             if (ids.length === 0) return alert("Selecciona al menos un pedido.");
@@ -376,32 +410,50 @@
                 body: JSON.stringify({ envio_ids: ids })
             }).then(() => location.reload());
         }
-        function toggleClienteDd() { document.getElementById('clienteDdPanel').classList.toggle('open'); }
+
+        function toggleClienteDd() {
+            document.getElementById('clienteDdPanel').classList.toggle('open');
+        }
+
         function filtrarClientes(q) {
-            document.querySelectorAll('.cliente-dd-opt').forEach(opt => opt.classList.toggle('hidden', !opt.textContent.toLowerCase().includes(q.toLowerCase())));
+            document.querySelectorAll('.cliente-dd-opt').forEach(opt =>
+                opt.classList.toggle('hidden', !opt.textContent.toLowerCase().includes(q.toLowerCase()))
+            );
         }
-        function seleccionarCliente(id, n) {
-            document.getElementById('clienteLabel').textContent = n;
+
+        // ── FILTRO DE CLIENTE → redirige al backend ──
+        function seleccionarCliente(id, nombre) {
             document.getElementById('clienteDdPanel').classList.remove('open');
-            document.querySelectorAll("#tablaEnvios tbody tr").forEach(r => r.style.display = (n==='Todos'||r.innerText.includes(n)) ? "" : "none");
+            const url = new URL(window.location.href);
+            if (id) {
+                url.searchParams.set('cliente_id', id);
+            } else {
+                url.searchParams.delete('cliente_id');
+            }
+            window.location.href = url.toString();
         }
+
         function abrirModalFiltros() { document.getElementById('modalFiltros').classList.add('open'); }
         function cerrarModalFiltros() { document.getElementById('modalFiltros').classList.remove('open'); }
+
         function aplicarFiltrosAvanzados() {
             const e = document.getElementById('filtroEstado').value.toUpperCase();
             document.querySelectorAll("#tablaEnvios tbody tr").forEach(r => r.style.display = (!e || r.innerText.toUpperCase().includes(e)) ? "" : "none");
             cerrarModalFiltros();
         }
+
         function limpiarFiltrosAvanzados() {
             ['filtroFechaDesde','filtroFechaHasta','filtroCiudadOrigen','filtroCiudadDestino'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('filtroEstado').selectedIndex = 0;
             document.querySelectorAll("#tablaEnvios tbody tr").forEach(r => r.style.display = "");
             cerrarModalFiltros();
         }
+
         function descargar(f) {
             const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
             window.location.href = `/envios/reporte?formato=${f}${ids.length ? '&ids='+ids.join(',') : ''}`;
         }
+
         function imprimirGuiasSeleccionadas() {
             const ids = Array.from(document.querySelectorAll('input[name="envio_ids"]:checked')).map(cb => cb.value);
             if (ids.length === 0) return alert("Por favor, seleccione al menos una guía para imprimir.");

@@ -73,6 +73,42 @@
             background: #fafafa;
         }
 
+        /* ── PRODUCTOS EN GUÍA ── */
+        .productos-guia {
+            border: 1px solid #000;
+            border-radius: 3px;
+            margin-bottom: 8px;
+            background: #f5f5f5;
+            font-size: 12px;
+        }
+        .productos-guia .prod-header {
+            background: #000;
+            color: #fff;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            text-transform: uppercase;
+        }
+        .productos-guia table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        .productos-guia table td,
+        .productos-guia table th {
+            padding: 3px 8px;
+            font-size: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .productos-guia table th {
+            font-weight: 700;
+            background: #ebebeb;
+        }
+        .productos-guia table tr:last-child td {
+            border-bottom: none;
+        }
+
         @media print {
             .no-print { display: none; }
             .page-break { 
@@ -166,6 +202,32 @@
             <div class="row border-top border-dark pt-3">
                 <div class="col-7">
                     <p class="fw-bold mb-1 text-uppercase">Contenido / Observaciones:</p>
+
+                    {# ── PRODUCTOS DE INVENTARIO ── #}
+                    {% if envio.items_inventario %}
+                    <div class="productos-guia mb-2">
+                        <div class="prod-header">📦 Productos del pedido</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>SKU</th>
+                                    <th style="text-align:center;">Cant.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in envio.items_inventario %}
+                                <tr>
+                                    <td>{{ item.producto.nombre }}</td>
+                                    <td style="font-family: monospace;">{{ item.producto.sku }}</td>
+                                    <td style="text-align:center; font-weight:700;">{{ item.cantidad }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+
                     <div class="instrucciones-box">
                         {{ envio.instrucciones }}
                     </div>

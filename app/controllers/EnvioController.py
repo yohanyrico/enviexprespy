@@ -193,29 +193,35 @@ def _guardar_items_inventario(db, envio_id, cliente, productos_seleccionados, re
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/")
-def listar(request: Request, db: Session = Depends(get_db)):
+def listar(request: Request, cliente_id: Optional[int] = None, db: Session = Depends(get_db)):
     user_id = request.session.get("user_id")
     if not user_id:
         return RedirectResponse(url="/login", status_code=302)
 
-    envios = db.query(Envio).options(
+    query = db.query(Envio).options(
         joinedload(Envio.cliente), joinedload(Envio.mensajero),
         joinedload(Envio.tarifa), joinedload(Envio.lugar_recogida),
         joinedload(Envio.lugar_entrega)
-    ).order_by(Envio.fecha_creacion.desc()).all()
+    )
 
-    mensajeros          = db.query(Usuario).filter(Usuario.rol == "MENSAJERO").all()
+    # ── FILTRO POR CLIENTE ──
+    if cliente_id:
+        query = query.filter(Envio.usuario_cliente_id == cliente_id)
+
+    envios = query.order_by(Envio.fecha_creacion.desc()).all()
+
+    mensajeros           = db.query(Usuario).filter(Usuario.rol == "MENSAJERO").all()
     clientes_registrados = db.query(Usuario).filter(Usuario.rol.ilike("%CLIENTE%")).all()
 
     response = templates.TemplateResponse("envios.html", {
         "request": request, "envios": envios,
         "mensajeros": mensajeros, "clientes": clientes_registrados,
-        "rol": request.session.get("rol", "ADMIN")
+        "rol": request.session.get("rol", "ADMIN"),
+        "cliente_id_filtro": cliente_id  # para mantener el select activo en el HTML
     })
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     return response
-
 
 @router.get("/mis-guias")
 def listar_mis_guias(request: Request, db: Session = Depends(get_db)):
