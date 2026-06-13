@@ -586,10 +586,9 @@ def imprimir_masivo(request: Request, ids: str, db: Session = Depends(get_db)):
         joinedload(Envio.lugar_recogida), joinedload(Envio.lugar_entrega),
         joinedload(Envio.cliente), joinedload(Envio.items_inventario)
     ).filter(Envio.envio_id.in_(lista_ids)).all()
-    return templates.TemplateResponse("imprimir_masivo.html", {
+    return templates.TemplateResponse("imprimir_masivo.html", {   # ← ¿este nombre es correcto?
         "request": request, "envios": envios
     })
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # REPORTES
