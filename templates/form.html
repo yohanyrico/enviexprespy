@@ -72,6 +72,28 @@
         outline: none;
     }
 
+    /* Ajuste específico para que el botón del ojo combine con el estilo del input */
+    .input-group .btn-outline-secondary {
+        border: 2px solid #e1e8ef;
+        border-left: none;
+        background-color: var(--input-bg);
+        color: #64748b;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .input-group:focus-within .form-control {
+        border-color: var(--rojo-milan);
+    }
+
+    .input-group:focus-within .btn-outline-secondary {
+        border-color: var(--rojo-milan);
+        box-shadow: 0 0 12px rgba(178, 12, 6, 0.15);
+        background-color: var(--blanco-puro);
+        color: var(--rojo-milan);
+    }
+
     .form-control::placeholder { color: #94a3b8; }
 
     option { background-color: var(--blanco-puro); color: var(--negro-puro); }
@@ -195,10 +217,16 @@
                 <label for="password" class="form-label">
                     <i class="bi bi-key-fill"></i> Contraseña*
                 </label>
-                <input type="password" class="form-control" name="password" id="password"
-                       placeholder="Ingrese contraseña segura"
-                       {{ '' if usuario and usuario.id_usuario else 'required' }} />
-                <small class="form-text">
+                <div class="input-group">
+                    <input type="password" class="form-control" name="password" id="password"
+                           placeholder="Ingrese contraseña segura"
+                           {{ '' if usuario and usuario.id_usuario else 'required' }} 
+                           style="border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none;" />
+                    <button class="btn btn-outline-secondary" type="button" id="btnTogglePassword">
+                        <i class="bi bi-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+                <small class="form-text d-block mt-1">
                     {% if usuario and usuario.id_usuario %}
                         <i class="bi bi-info-circle"></i> Deja en blanco para mantener la actual.
                     {% else %}
@@ -399,6 +427,20 @@
 </div>
 
 <script>
+// Funcionalidad para mostrar/ocultar contraseña
+document.getElementById('btnTogglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.className = 'bi bi-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.className = 'bi bi-eye';
+    }
+});
+
 function toggleInventarioVisibility() {
     const rol = document.getElementById('select_rol')?.value;
     const section = document.getElementById('inventario_section');

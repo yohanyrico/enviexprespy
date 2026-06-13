@@ -284,6 +284,10 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse(url="/login")
 
         datos = _cargar_datos_formulario(db)
+        
+        # ── NUEVA CONSULTA: Traer los mensajeros de la base de datos ──
+        mensajeros_db = db.query(Usuario).filter(Usuario.rol == "MENSAJERO").all()
+        
         clientes_con_tarifa = db.query(Usuario).options(
             joinedload(Usuario.tarifa)
         ).filter(Usuario.rol == "CLIENTE").all()
@@ -310,11 +314,17 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
         else:
             saldo = None
 
+        # Al retornar, incluimos "mensajeros" para que Jinja2 lo renderice
         return templates.TemplateResponse("form-envio.html", {
-            "request": request, "envio": None,
-            "rol": usuario_actual.rol, "current_user": usuario_actual,
-            "clientes_tarifas": clientes_tarifas, "saldo_disponible": saldo,
-            **campos, **datos
+            "request": request, 
+            "envio": None,
+            "rol": usuario_actual.rol, 
+            "current_user": usuario_actual,
+            "clientes_tarifas": clientes_tarifas, 
+            "saldo_disponible": saldo,
+            "mensajeros": mensajeros_db,  # <- CLAVE: Aquí se envía la lista al HTML
+            **campos, 
+            **datos
         })
     except Exception as e:
         print(f"Error renderizando formulario: {e}")
