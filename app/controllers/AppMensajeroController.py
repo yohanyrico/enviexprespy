@@ -433,3 +433,40 @@ async def subir_evidencia(
     db.commit()
 
     return JSONResponse({"ok": True, "foto": nombre_archivo})
+
+# --- SUBIR FOTO DE ENTREGA ---
+@router.post("/pedidos/{envio_id}/foto-entrega")
+async def subir_foto_entrega(
+    envio_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "MENSAJERO":
+        raise HTTPException(status_code=403, detail="Solo mensajeros pueden subir fotos")
+
+    envio = db.query(Envio).filter(
+        Envio.envio_id == envio_id,
+        or_(
+            Envio.usuario_mensajero_id == current_user.id_usuario,
+            Envio.usuario_mensajero_entrega_id == current_user.id_usuario
+        )
+    ).first()
+    if not envio:
+        raise HTTPException(status_code=404, detail="Envío no encontrado")
+
+    carpeta = "app/static/fotos_entrega"
+    os.makedirs(carpeta, exist_ok=True)
+
+    extension = file.filename.rsplit(".", 1)[-1].lower() if file.filename else "jpg"
+    if extension not in ["jpg", "jpeg", "png", "webp"]:
+        extension = "jpg"
+
+    nombre_archivo = f"{envio.numero_guia}_entrega.{extension}"
+    with open(f"{carpeta}/{nombre_archivo}", "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    envio.foto_entrega = nombre_archivo
+    db.commit()
+
+    return JSONResponse({"ok": True, "foto": nombre_archivo})
