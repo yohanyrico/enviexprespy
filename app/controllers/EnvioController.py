@@ -302,7 +302,7 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
         clientes_tarifas  = _build_clientes_tarifas(clientes_con_tarifa)
         campos = _campos_edicion_vacios()
 
-        if usuario_actual.rol != 'ADMIN':
+        if usuario_actual.rol not in ('CEO', 'FACTURACION', 'ADMINISTRATIVO'):
             datos['clientes'] = [usuario_actual]
             campos["edit_tel_rec"] = getattr(usuario_actual, 'telefono', '') or ""
             campos["edit_loc_rec"] = getattr(usuario_actual, 'localidad', '') or ""
