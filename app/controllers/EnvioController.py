@@ -8,7 +8,7 @@ import json
 from app.config.database import get_db  # ✅ el que ya tenías antes
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, Form, UploadFile, File
 from fastapi.responses import RedirectResponse, HTMLResponse, StreamingResponse, JSONResponse
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, subqueryload
 from sqlalchemy import text
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
@@ -586,7 +586,7 @@ def imprimir_masivo(request: Request, ids: str, db: Session = Depends(get_db)):
         joinedload(Envio.lugar_recogida),
         joinedload(Envio.lugar_entrega),
         joinedload(Envio.cliente),
-        joinedload(Envio.items_inventario).joinedload(EnvioItemInventario.producto)  # ← corregido
+        subqueryload(Envio.items_inventario).subqueryload(EnvioItemInventario.producto)
     ).filter(Envio.envio_id.in_(lista_ids)).all()
     return templates.TemplateResponse("imprimir_masivo.html", {
         "request": request, "envios": envios
