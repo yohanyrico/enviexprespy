@@ -9,20 +9,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { background: white; color: black; font-family: 'Courier New', Courier, monospace; }
-        
+
         .guia-print {
             border: 2px dashed #000;
-            padding: 30px;
-            max-width: 850px;
-            margin: 20px auto;
+            padding: 10px;
+            max-width: 100%;
+            margin: 10px auto;
             position: relative;
         }
 
-        .header-guia { border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-        
+        .header-guia {
+            border-bottom: 2px solid #000;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+        }
+
         .barcode {
             font-family: 'Libre Barcode 128', cursive;
-            font-size: 75px;
+            font-size: 50px;
             line-height: 1;
             margin: 0;
         }
@@ -30,57 +34,68 @@
         .localidad-box {
             background: #000;
             color: #fff;
-            padding: 10px 20px;
+            padding: 6px 14px;
             font-weight: 900;
             display: inline-block;
-            margin: 10px 0;
+            margin: 5px 0;
             font-family: 'Montserrat', sans-serif;
             text-transform: uppercase;
-            font-size: 24px;
+            font-size: 18px;
             border-radius: 4px;
-            min-width: 250px;
+            min-width: 180px;
             text-align: center;
         }
 
         .cod-stamp {
-            border: 4px double #000;
-            padding: 10px;
+            border: 3px double #000;
+            padding: 5px;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 5px;
             background: #f0f0f0;
         }
 
         .qr-code {
-            width: 130px;
-            height: 130px;
+            width: 90px;
+            height: 90px;
             border: 1px solid #000;
-            padding: 5px;
+            padding: 3px;
             background: white;
         }
 
         .instrucciones-box {
             border: 1px solid #000;
-            padding: 10px;
-            min-height: 100px;
-            font-size: 14px;
+            padding: 6px;
+            min-height: 40px;
+            font-size: 11px;
             background: #fafafa;
         }
+
+        /* Texto general compacto */
+        p { margin-bottom: 2px !important; font-size: 11px; }
+        small { font-size: 9px; }
+        h1.h2 { font-size: 1.1rem !important; margin-bottom: 0 !important; }
+        h2.h4 { font-size: 0.9rem !important; margin-bottom: 2px !important; }
+
+        .row.mb-3 { margin-bottom: 6px !important; }
+        .row.mt-4 { margin-top: 6px !important; }
+        .mt-5 { margin-top: 10px !important; }
+        .pt-4 { padding-top: 6px !important; }
 
         /* ── PRODUCTOS EN GUÍA ── */
         .productos-guia {
             border: 1px solid #000;
             border-radius: 3px;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             background: #f5f5f5;
-            font-size: 12px;
+            font-size: 10px;
         }
         .productos-guia .prod-header {
             background: #000;
             color: #fff;
             font-weight: 700;
-            font-size: 11px;
+            font-size: 10px;
             letter-spacing: 1px;
-            padding: 3px 8px;
+            padding: 2px 6px;
             text-transform: uppercase;
         }
         .productos-guia table {
@@ -90,8 +105,8 @@
         }
         .productos-guia table td,
         .productos-guia table th {
-            padding: 3px 8px;
-            font-size: 12px;
+            padding: 2px 6px;
+            font-size: 10px;
             border-bottom: 1px solid #ddd;
         }
         .productos-guia table th {
@@ -112,8 +127,7 @@
 <body>
     <div class="no-print text-center py-3">
         <button onclick="window.print()" class="btn btn-primary btn-lg">🖨️ IMPRIMIR GUÍA</button>
-        <button onclick="descargarPDF()" class="btn btn-danger btn-lg">📄 DESCARGAR PDF</button>
-        
+        <button onclick="descargarPDF()" class="btn btn-danger btn-lg" id="btnPDF">📄 DESCARGAR PDF</button>
         {% if request.session.rol in ('CEO','FACTURACION','ADMINISTRATIVO') %}
             <a href="/envios/" class="btn btn-secondary btn-lg">VOLVER</a>
         {% else %}
@@ -126,45 +140,40 @@
             <div>
                 <h1 class="h2 fw-bold mb-0" style="font-family: 'Montserrat', sans-serif;">ENVIEXPRESS</h1>
                 <p class="mb-0 text-uppercase fw-bold">Logística Bogotá D.C.</p>
-                
-                <div class="barcode mt-2">{{ envio.numero_guia }}</div>
-                <div class="fw-bold" style="letter-spacing: 5px; font-size: 18px;">{{ envio.numero_guia }}</div>
+                <div class="barcode mt-1">{{ envio.numero_guia }}</div>
+                <div class="fw-bold" style="letter-spacing: 5px; font-size: 13px;">{{ envio.numero_guia }}</div>
             </div>
             <div class="text-end">
                 <h2 class="h4 mb-0 fw-bold">ORDEN DE SERVICIO</h2>
-                <p class="mb-2"><strong>FECHA:</strong> {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ envio.numero_guia }}" 
+                <p class="mb-1"><strong>FECHA:</strong> {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ envio.numero_guia }}"
                      class="qr-code" alt="QR Tracking">
             </div>
         </div>
 
-        <div class="row mb-3 mt-4">
+        <div class="row mb-2 mt-2">
             <div class="col-6 border-end border-dark">
-                <p class="fw-bold text-uppercase border-bottom bg-light p-1">REMITENTE (ORIGEN)</p>
+                <p class="fw-bold text-uppercase border-bottom bg-light p-1" style="font-size:10px;">REMITENTE (ORIGEN)</p>
                 <p class="mb-1"><strong>CLIENTE:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</p>
                 <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_recogida.ciudad }}</p>
                 <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_recogida.direccion }}</p>
             </div>
-
             <div class="col-6">
-                <p class="fw-bold text-uppercase border-bottom bg-light p-1">DESTINATARIO (ENTREGA)</p>
+                <p class="fw-bold text-uppercase border-bottom bg-light p-1" style="font-size:10px;">DESTINATARIO (ENTREGA)</p>
                 {% set ref_ent = envio.lugar_entrega.referencia if envio.lugar_entrega.referencia else "" %}
                 {% set nombre_dest = ref_ent.split('Nombre:')[1].split('|')[0].strip() if 'Nombre:' in ref_ent else '---' %}
                 {% set tel_dest = ref_ent.split('Tel:')[1].split('|')[0].strip() if 'Tel:' in ref_ent else '---' %}
                 <p class="mb-1"><strong>NOMBRE:</strong> {{ nombre_dest }}</p>
                 <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_entrega.ciudad }}</p>
                 <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_entrega.direccion }}</p>
-                <p class="mb-1"><strong>TELÉFONO:</strong> {{ tel_dest }}</p>
-                
+                <p class="mb-1"><strong>TEL:</strong> {{ tel_dest }}</p>
+
                 <div class="localidad-box">
                     {% set ref = envio.lugar_entrega.referencia.upper() if envio.lugar_entrega.referencia else "" %}
                     {% set dir = envio.lugar_entrega.direccion.upper() if envio.lugar_entrega.direccion else "" %}
                     {% set ciudad_dest = envio.lugar_entrega.ciudad.upper() if envio.lugar_entrega.ciudad else "" %}
-                    
-                    {% set localidades = ["USAQUÉN", "CHAPINERO", "SANTA FE", "SAN CRISTÓBAL", "USME", "KENNEDY", "FONTIBÓN", "ENGATIVÁ", "SUBA", "BARRIOS UNIDOS", "TEUSAQUILLO", "LOS MÁRTIRES", "ANTONIO NARIÑO", "PUENTE ARANDA", "LA CANDELARIA", "RAFAEL URIBE", "CIUDAD BOLÍVAR", "SUMAPAZ", "BOSA"] %}
-                    
+                    {% set localidades = ["USAQUÉN","CHAPINERO","SANTA FE","SAN CRISTÓBAL","USME","KENNEDY","FONTIBÓN","ENGATIVÁ","SUBA","BARRIOS UNIDOS","TEUSAQUILLO","LOS MÁRTIRES","ANTONIO NARIÑO","PUENTE ARANDA","LA CANDELARIA","RAFAEL URIBE","CIUDAD BOLÍVAR","SUMAPAZ","BOSA"] %}
                     {% set encontrada = [] %}
-
                     {% if envio.tipo_servicio == 'NACIONAL' %}
                         {{ ciudad_dest.split('(')[0].strip() }}
                     {% else %}
@@ -172,31 +181,23 @@
                             {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim|upper }}
                         {% else %}
                             {% for loc in localidades %}
-                                {% if loc in ref or loc in dir %}
-                                    {% if encontrada.append(loc) %}{% endif %}
-                                {% endif %}
+                                {% if loc in ref or loc in dir %}{% if encontrada.append(loc) %}{% endif %}{% endif %}
                             {% endfor %}
-
-                            {% if encontrada %}
-                                {{ encontrada[0] }}
-                            {% else %}
-                                {{ ciudad_dest.split('(')[0].strip() }}
-                            {% endif %}
+                            {% if encontrada %}{{ encontrada[0] }}{% else %}{{ ciudad_dest.split('(')[0].strip() }}{% endif %}
                         {% endif %}
                     {% endif %}
                 </div>
 
-                <p class="mt-1 mb-1"><strong>CONTACTO:</strong> {{ envio.lugar_entrega.referencia }}</p>
+                <p class="mt-1 mb-0" style="font-size:9px;"><strong>CONTACTO:</strong> {{ envio.lugar_entrega.referencia }}</p>
             </div>
         </div>
 
-        <div class="row border-top border-dark pt-3">
+        <div class="row border-top border-dark pt-2">
             <div class="col-7">
-                <p class="fw-bold mb-1 text-uppercase">Contenido / Observaciones:</p>
+                <p class="fw-bold mb-1 text-uppercase" style="font-size:10px;">Contenido / Observaciones:</p>
 
-                {# ── PRODUCTOS DE INVENTARIO ── #}
                 {% if envio.items_inventario %}
-                <div class="productos-guia mb-2">
+                <div class="productos-guia mb-1">
                     <div class="prod-header">📦 Productos del pedido</div>
                     <table>
                         <thead>
@@ -219,12 +220,10 @@
                 </div>
                 {% endif %}
 
-                <div class="instrucciones-box">
-                    {{ envio.instrucciones }}
-                </div>
+                <div class="instrucciones-box">{{ envio.instrucciones }}</div>
             </div>
             <div class="col-5">
-                <table class="table table-bordered border-dark mb-2">
+                <table class="table table-bordered border-dark mb-1" style="font-size:11px;">
                     <tr>
                         <th class="bg-light">PESO:</th>
                         <td class="text-center">{{ envio.peso }} kg</td>
@@ -237,8 +236,8 @@
 
                 {% if envio.es_cod %}
                 <div class="cod-stamp">
-                    <p class="mb-0 fw-bold" style="font-size: 12px; letter-spacing: 1px;">COBRO CONTRA ENTREGA</p>
-                    <h3 class="mb-0 fw-bold" style="font-family: 'Montserrat', sans-serif;">
+                    <p class="mb-0 fw-bold" style="font-size: 10px; letter-spacing: 1px;">COBRO CONTRA ENTREGA</p>
+                    <h3 class="mb-0 fw-bold" style="font-family: 'Montserrat', sans-serif; font-size: 16px;">
                         $ {{ "{:,.0f}".format(envio.valor_a_cobrar).replace(',', '.') }}
                     </h3>
                 </div>
@@ -246,15 +245,15 @@
             </div>
         </div>
 
-        <div class="mt-5 pt-4 border-top border-dark">
+        <div class="mt-2 pt-2 border-top border-dark">
             <div class="row">
                 <div class="col-8">
-                    <p class="mb-0 fw-bold">Firma de conformidad (Recibido):</p>
-                    <div style="border-bottom: 1px solid #000; width: 85%; height: 45px; margin-bottom: 5px;"></div>
-                    <p class="small">Nombre y C.C: _________________________________________</p>
+                    <p class="mb-0 fw-bold" style="font-size:10px;">Firma de conformidad (Recibido):</p>
+                    <div style="border-bottom: 1px solid #000; width: 85%; height: 30px; margin-bottom: 3px;"></div>
+                    <p style="font-size:9px;">Nombre y C.C: _________________________________</p>
                 </div>
                 <div class="col-4 text-end">
-                    <p class="small opacity-50">Control Operativo<br>Enviexpress S.A.S</p>
+                    <p style="font-size:8px;" class="opacity-50">Control Operativo<br>Enviexpress S.A.S</p>
                 </div>
             </div>
         </div>
@@ -263,16 +262,16 @@
     <script>
         function descargarPDF() {
             const elemento = document.getElementById('guia-contenido');
-            const opciones = {
-                margin:       [5, 5, 5, 5],
-                filename:     'Guia_{{ envio.numero_guia }}.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: [105, 148], orientation: 'portrait' }
-            };
-            const btn = document.querySelector('button[onclick="descargarPDF()"]');
+            const btn = document.getElementById('btnPDF');
             btn.disabled = true;
             btn.textContent = '⏳ Generando PDF...';
+            const opciones = {
+                margin:       [2, 2, 2, 2],
+                filename:     'Guia_{{ envio.numero_guia }}.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 1.5, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: [105, 148], orientation: 'portrait' }
+            };
             html2pdf().set(opciones).from(elemento).save().then(() => {
                 btn.disabled = false;
                 btn.textContent = '📄 DESCARGAR PDF';
