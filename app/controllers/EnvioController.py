@@ -402,7 +402,7 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
 
             costo_total = costo_base + comision_cod
 
-            if cliente.saldo_plan < costo_total:
+            if cliente.saldo_plan < costo_total and request.session.get("rol") not in ("CEO", "FACTURACION", "ADMINISTRATIVO"):
                 return RedirectResponse(url=f"{destino_ok}?error=saldo_insuficiente", status_code=303)
 
             envio = Envio(
@@ -418,7 +418,8 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 es_cod=es_cod,
                 valor_a_cobrar=valor_a_cobrar
             )
-            cliente.saldo_plan -= costo_total
+            if request.session.get("rol") not in ("CEO", "FACTURACION", "ADMINISTRATIVO"):
+                cliente.saldo_plan -= costo_total
             db.add(envio)
             db.flush()
 
@@ -519,7 +520,8 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
 @router.get("/eliminar/{id}")
 def eliminar(id: int, request: Request, db: Session = Depends(get_db)):
     rol        = request.session.get("rol", "CLIENTE")
-    destino_ok = "/envios" if rol == "ADMIN" else "/envios/mis-guias"
+    destino_ok = "/envios" if rol in ("CEO", "FACTURACION", "ADMINISTRATIVO") else "/envios/mis-guias"
+
 
     try:
         envio = db.query(Envio).filter(Envio.envio_id == id).first()
@@ -539,7 +541,8 @@ def eliminar(id: int, request: Request, db: Session = Depends(get_db)):
         cliente = db.query(Usuario).filter(
             Usuario.id_usuario == envio.usuario_cliente_id).first()
         if cliente and envio.costo_envio > 0 and envio.estado == "Registrado":
-            cliente.saldo_plan += envio.costo_envio
+            if request.session.get("rol") not in ("CEO", "FACTURACION", "ADMINISTRATIVO"):
+                cliente.saldo_plan += envio.costo_envio
             db.add(Transaccion(
                 usuario_id=cliente.id_usuario,
                 tipo_movimiento='REEMBOLSO',
