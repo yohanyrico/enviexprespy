@@ -8,96 +8,121 @@
     <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { background: white; color: black; font-family: 'Courier New', Courier, monospace; }
+        body { 
+            background: white; 
+            color: black; 
+            font-family: 'Courier New', Courier, monospace; 
+            margin: 0;
+            padding: 0;
+        }
 
-        guia-print {
-    border: 2px dashed #000;
-    padding: 10px;
-    width: 100mm;        /* ← fija el ancho a 10cm en pantalla también */
-    max-width: 100mm;
-    margin: 10px auto;
-    position: relative;
-    background: white;
-}
+        /* CONFIGURACIÓN ESTRICTA PARA AJUSTAR A 10cm x 5cm */
+        .guia-print {
+            border: 1px dashed #000;
+            padding: 4px 6px;
+            width: 100mm;        
+            height: 50mm;
+            max-width: 100mm;
+            max-height: 50mm;
+            margin: 10px auto;
+            position: relative;
+            background: white;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
 
         .header-guia {
-            border-bottom: 2px solid #000;
-            padding-bottom: 6px;
-            margin-bottom: 8px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            margin-bottom: 3px;
+            height: 12mm;
         }
 
         .barcode {
             font-family: 'Libre Barcode 128', cursive;
-            font-size: 50px;
-            line-height: 1;
+            font-size: 32px; /* Reducido para no desbordar los 5cm de alto */
+            line-height: 0.8;
             margin: 0;
         }
 
         .localidad-box {
             background: #000;
             color: #fff;
-            padding: 6px 14px;
+            padding: 2px 4px;
             font-weight: 900;
             display: inline-block;
-            margin: 5px 0;
+            margin: 2px 0;
             font-family: 'Montserrat', sans-serif;
             text-transform: uppercase;
-            font-size: 18px;
-            border-radius: 4px;
-            min-width: 180px;
+            font-size: 10px; /* Compactado para formato 10x5 */
+            border-radius: 3px;
+            min-width: 100px;
             text-align: center;
         }
 
         .cod-stamp {
-            border: 3px double #000;
-            padding: 5px;
+            border: 2px double #000;
+            padding: 2px;
             text-align: center;
-            margin-top: 5px;
+            margin-top: 2px;
             background: #f0f0f0;
         }
 
         .qr-code {
-            width: 90px;
-            height: 90px;
+            width: 38px; /* Ajustado proporcionalmente al alto de 5cm */
+            height: 38px;
             border: 1px solid #000;
-            padding: 3px;
+            padding: 1px;
             background: white;
         }
 
         .instrucciones-box {
             border: 1px solid #000;
-            padding: 6px;
-            min-height: 40px;
-            font-size: 11px;
+            padding: 2px;
+            min-height: 14px;
+            font-size: 7.5px;
+            line-height: 1.1;
             background: #fafafa;
+            overflow: hidden;
         }
 
-        /* Texto general compacto */
-        p { margin-bottom: 2px !important; font-size: 11px; }
-        small { font-size: 9px; }
-        h1.h2 { font-size: 1.1rem !important; margin-bottom: 0 !important; }
-        h2.h4 { font-size: 0.9rem !important; margin-bottom: 2px !important; }
+        /* Sección de datos de Remitente / Destinatario compactada */
+        .seccion-direcciones {
+            height: 18mm;
+            overflow: hidden;
+        }
 
-        .row.mb-3 { margin-bottom: 6px !important; }
-        .row.mt-4 { margin-top: 6px !important; }
-        .mt-5 { margin-top: 10px !important; }
-        .pt-4 { padding-top: 6px !important; }
+        /* Cuerpo inferior (Contenido, firmas y peso) */
+        .seccion-inferior {
+            height: 16mm;
+            overflow: hidden;
+        }
+
+        /* Texto general ultra compacto para que todo quepa en 5cm */
+        p { margin-bottom: 0px !important; font-size: 8px; line-height: 1.1; }
+        small { font-size: 7px; }
+        h1.h2 { font-size: 0.75rem !important; margin-bottom: 0 !important; }
+        h2.h4 { font-size: 0.65rem !important; margin-bottom: 0px !important; }
+
+        .row.mb-2 { margin-bottom: 0px !important; }
+        .row.mt-2 { margin-top: 0px !important; }
+        .pt-2 { padding-top: 2px !important; }
 
         /* ── PRODUCTOS EN GUÍA ── */
         .productos-guia {
             border: 1px solid #000;
-            border-radius: 3px;
-            margin-bottom: 5px;
+            border-radius: 2px;
+            margin-bottom: 2px;
             background: #f5f5f5;
-            font-size: 10px;
+            font-size: 7.5px;
         }
         .productos-guia .prod-header {
             background: #000;
             color: #fff;
             font-weight: 700;
-            font-size: 10px;
-            letter-spacing: 1px;
-            padding: 2px 6px;
+            font-size: 7.5px;
+            letter-spacing: 0.5px;
+            padding: 1px 4px;
             text-transform: uppercase;
         }
         .productos-guia table {
@@ -107,8 +132,8 @@
         }
         .productos-guia table td,
         .productos-guia table th {
-            padding: 2px 6px;
-            font-size: 10px;
+            padding: 1px 4px;
+            font-size: 7.5px;
             border-bottom: 1px solid #ddd;
         }
         .productos-guia table th {
@@ -120,9 +145,19 @@
         }
 
         @media print {
+            @page {
+                size: 100mm 50mm;
+                margin: 0;
+            }
             .no-print { display: none; }
-            .guia-print { border: 2px solid #000; margin: 0; width: 100%; max-width: 100%; }
-            body { padding: 0; }
+            .guia-print { 
+                border: 1px solid #000; 
+                margin: 0; 
+                width: 100mm; 
+                height: 50mm;
+                box-sizing: border-box;
+            }
+            body { padding: 0; background: white; }
         }
     </style>
 </head>
@@ -141,34 +176,33 @@
         <div class="header-guia d-flex justify-content-between align-items-start">
             <div>
                 <h1 class="h2 fw-bold mb-0" style="font-family: 'Montserrat', sans-serif;">ENVIEXPRESS</h1>
-                <p class="mb-0 text-uppercase fw-bold">Logística Bogotá D.C.</p>
-                <div class="barcode mt-1">{{ envio.numero_guia }}</div>
-                <div class="fw-bold" style="letter-spacing: 5px; font-size: 13px;">{{ envio.numero_guia }}</div>
+                <p class="mb-0 text-uppercase fw-bold" style="font-size: 7px;">Logística Bogotá D.C.</p>
+                <div class="barcode mt-0">{{ envio.numero_guia }}</div>
+                <div class="fw-bold" style="letter-spacing: 2px; font-size: 9px; line-height: 1;">{{ envio.numero_guia }}</div>
             </div>
             <div class="text-end">
                 <h2 class="h4 mb-0 fw-bold">ORDEN DE SERVICIO</h2>
-                <p class="mb-1"><strong>FECHA:</strong> {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</p>
+                <p class="mb-0" style="font-size: 7.5px;"><strong>FECHA:</strong> {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</p>
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ envio.numero_guia }}"
-                     class="qr-code" alt="QR Tracking">
+                     class="qr-code mt-1" alt="QR Tracking">
             </div>
         </div>
 
-        <div class="row mb-2 mt-2">
+        <div class="row mb-2 mt-2 seccion-direcciones">
             <div class="col-6 border-end border-dark">
-                <p class="fw-bold text-uppercase border-bottom bg-light p-1" style="font-size:10px;">REMITENTE (ORIGEN)</p>
-                <p class="mb-1"><strong>CLIENTE:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</p>
-                <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_recogida.ciudad }}</p>
-                <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_recogida.direccion }}</p>
+                <p class="fw-bold text-uppercase border-bottom bg-light p-0" style="font-size:7.5px;">REMITENTE (ORIGEN)</p>
+                <p class="mb-0"><strong>CLIENTE:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</p>
+                <p class="mb-0"><strong>CIUDAD:</strong> {{ envio.lugar_recogida.ciudad }}</p>
+                <p class="mb-0"><strong>DIRECCIÓN:</strong> {{ envio.lugar_recogida.direccion }}</p>
             </div>
             <div class="col-6">
-                <p class="fw-bold text-uppercase border-bottom bg-light p-1" style="font-size:10px;">DESTINATARIO (ENTREGA)</p>
+                <p class="fw-bold text-uppercase border-bottom bg-light p-0" style="font-size:7.5px;">DESTINATARIO (ENTREGA)</p>
                 {% set ref_ent = envio.lugar_entrega.referencia if envio.lugar_entrega.referencia else "" %}
                 {% set nombre_dest = ref_ent.split('Nombre:')[1].split('|')[0].strip() if 'Nombre:' in ref_ent else '---' %}
                 {% set tel_dest = ref_ent.split('Tel:')[1].split('|')[0].strip() if 'Tel:' in ref_ent else '---' %}
-                <p class="mb-1"><strong>NOMBRE:</strong> {{ nombre_dest }}</p>
-                <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_entrega.ciudad }}</p>
-                <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_entrega.direccion }}</p>
-                <p class="mb-1"><strong>TEL:</strong> {{ tel_dest }}</p>
+                <p class="mb-0"><strong>NOMBRE:</strong> {{ nombre_dest }}</p>
+                <p class="mb-0"><strong>DIRECCIÓN:</strong> {{ envio.lugar_entrega.direccion }}</p>
+                <p class="mb-0"><strong>TEL:</strong> {{ tel_dest }}</p>
 
                 <div class="localidad-box">
                     {% set ref = envio.lugar_entrega.referencia.upper() if envio.lugar_entrega.referencia else "" %}
@@ -189,24 +223,20 @@
                         {% endif %}
                     {% endif %}
                 </div>
-
-                <p class="mt-1 mb-0" style="font-size:9px;"><strong>CONTACTO:</strong> {{ envio.lugar_entrega.referencia }}</p>
             </div>
         </div>
 
-        <div class="row border-top border-dark pt-2">
-            <div class="col-7">
-                <p class="fw-bold mb-1 text-uppercase" style="font-size:10px;">Contenido / Observaciones:</p>
-
+        <div class="row border-top border-dark pt-1 seccion-inferior">
+            <div class="col-7 border-end border-dark" style="padding-right: 2px;">
                 {% if envio.items_inventario %}
-                <div class="productos-guia mb-1">
+                <div class="productos-guia mb-0">
                     <div class="prod-header">📦 Productos del pedido</div>
                     <table>
                         <thead>
                             <tr>
                                 <th>Producto</th>
                                 <th>SKU</th>
-                                <th style="text-align:center;">Cant.</th>
+                                style="text-align:center;">Cant.</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -222,63 +252,62 @@
                 </div>
                 {% endif %}
 
-                <div class="instrucciones-box">{{ envio.instrucciones }}</div>
+                <div class="instrucciones-box"><strong>OBS:</strong> {{ envio.instrucciones if envio.instrucciones else 'Ninguna' }}</div>
             </div>
-            <div class="col-5">
-                <table class="table table-bordered border-dark mb-1" style="font-size:11px;">
-                    <tr>
-                        <th class="bg-light">PESO:</th>
-                        <td class="text-center">{{ envio.peso }} kg</td>
+            
+            <div class="col-5" style="padding-left: 4px; display: flex; flex-direction: column; justify-content: space-between;">
+                <table class="table table-bordered border-dark mb-0" style="font-size:7.5px; --bs-table-bg: transparent;">
+                    <tr style="line-height: 1;">
+                        <th class="bg-light" style="padding: 1px 2px;">PESO:</th>
+                        <td class="text-center" style="padding: 1px 2px;">{{ envio.peso }} kg</td>
                     </tr>
-                    <tr>
-                        <th class="bg-light">TIPO:</th>
-                        <td class="text-center fw-bold">{{ envio.tipo_servicio }}</td>
+                    <tr style="line-height: 1;">
+                        <th class="bg-light" style="padding: 1px 2px;">TIPO:</th>
+                        <td class="text-center fw-bold" style="padding: 1px 2px;">{{ envio.tipo_servicio }}</td>
                     </tr>
                 </table>
 
                 {% if envio.es_cod %}
                 <div class="cod-stamp">
-                    <p class="mb-0 fw-bold" style="font-size: 10px; letter-spacing: 1px;">COBRO CONTRA ENTREGA</p>
-                    <h3 class="mb-0 fw-bold" style="font-family: 'Montserrat', sans-serif; font-size: 16px;">
+                    <p class="mb-0 fw-bold" style="font-size: 6.5px; letter-spacing: 0.5px;">COBRO CONTRA ENTREGA</p>
+                    <h3 class="mb-0 fw-bold" style="font-family: 'Montserrat', sans-serif; font-size: 10px;">
                         $ {{ "{:,.0f}".format(envio.valor_a_cobrar).replace(',', '.') }}
                     </h3>
                 </div>
                 {% endif %}
+
+                <div class="text-end">
+                    <p style="font-size:5.5px;" class="opacity-50">Control Operativo<br>Enviexpress S.A.S</p>
+                </div>
             </div>
         </div>
 
-        <div class="mt-2 pt-2 border-top border-dark">
-            <div class="row">
-                <div class="col-8">
-                    <p class="mb-0 fw-bold" style="font-size:10px;">Firma de conformidad (Recibido):</p>
-                    <div style="border-bottom: 1px solid #000; width: 85%; height: 30px; margin-bottom: 3px;"></div>
-                    <p style="font-size:9px;">Nombre y C.C: _________________________________</p>
-                </div>
-                <div class="col-4 text-end">
-                    <p style="font-size:8px;" class="opacity-50">Control Operativo<br>Enviexpress S.A.S</p>
-                </div>
-            </div>
+        <div style="position: absolute; bottom: 1px; left: 6px; width: 55%;">
+            <p class="mb-0 fw-bold" style="font-size:6.5px; line-height: 1;">Firma de conformidad (Recibido):</p>
+            <p class="mb-0" style="font-size:6px; color: #444;">C.C: ___________________________</p>
         </div>
     </div>
 
     <script>
-      function descargarPDF() {
-    const elemento = document.getElementById('guia-contenido');
-    const btn = document.getElementById('btnPDF');
-    btn.disabled = true;
-    btn.textContent = '⏳ Generando PDF...';
-  const opciones = {
-    margin:       [1, 1, 1, 1],
-    filename:     'Guia_{{ envio.numero_guia }}.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, logging: false, windowWidth: 400 },
-    jsPDF:        { unit: 'mm', format: [100, 150], orientation: 'portrait' }
-};
-    html2pdf().set(opciones).from(elemento).save().then(() => {
-        btn.disabled = false;
-        btn.textContent = '📄 DESCARGAR PDF';
-    });
-}
+    function descargarPDF() {
+        const elemento = document.getElementById('guia-contenido');
+        const btn = document.getElementById('btnPDF');
+        btn.disabled = true;
+        btn.textContent = '⏳...';
+
+        const opciones = {
+            margin:       0,
+            filename:     'Guia_{{ envio.numero_guia }}.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 3, useCORS: true, logging: false, windowWidth: 400 },
+            jsPDF:        { unit: 'mm', format: [100, 50], orientation: 'landscape' } // Ajustado exactamente a 100x50mm horizontal
+        };
+
+        html2pdf().set(opciones).from(elemento).save().then(() => {
+            btn.disabled = false;
+            btn.textContent = '📄 DESCARGAR PDF';
+        });
+    }
     </script>
 </body>
 </html>
