@@ -582,16 +582,22 @@ def imprimir_guia(id: int, request: Request, db: Session = Depends(get_db)):
 @router.get("/imprimir-masivo")
 def imprimir_masivo(request: Request, ids: str, db: Session = Depends(get_db)):
     lista_ids = [int(i) for i in ids.split(",")]
+    
     envios = db.query(Envio).options(
         joinedload(Envio.lugar_recogida),
         joinedload(Envio.lugar_entrega),
         joinedload(Envio.cliente),
-        subqueryload(Envio.items_inventario).subqueryload(EnvioItemInventario.producto)
+        joinedload(Envio.items_inventario).joinedload(EnvioItemInventario.producto)
     ).filter(Envio.envio_id.in_(lista_ids)).all()
+
+    # Forzar carga en memoria antes de cerrar sesión
+    for envio in envios:
+        _ = [(item.producto.nombre, item.producto.sku, item.cantidad) 
+             for item in envio.items_inventario]
+
     return templates.TemplateResponse("imprimir_masivo.html", {
         "request": request, "envios": envios
     })
-
 # ─────────────────────────────────────────────────────────────────────────────
 # REPORTES
 # ─────────────────────────────────────────────────────────────────────────────
