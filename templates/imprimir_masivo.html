@@ -294,14 +294,13 @@
             btn.disabled = true;
             btn.textContent = '⏳ Generando PDF...';
 
-           const opciones = {
-    margin:       [2, 2, 2, 2],
-    filename:     'Guia_{{ envio.numero_guia }}.pdf',
-    image:        { type: 'jpeg', quality: 0.95 },
-    html2canvas:  { scale: 1.2, useCORS: true, logging: false },
-    jsPDF:        { unit: 'mm', format: [105, 148], orientation: 'portrait' }
+            const opciones = {
+                margin:       [1, 1, 1, 1],
+                filename:     `Guias_Masivas_${total}_enviexpress.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 1, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: [100, 50], orientation: 'landscape' }
 };
-
             html2pdf().set(opciones).from(elemento).save().then(() => {
                 btn.disabled = false;
                 btn.textContent = `📄 DESCARGAR PDF (${total} guías)`;
