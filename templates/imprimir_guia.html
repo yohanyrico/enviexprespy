@@ -3,432 +3,279 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Impresión de Guía {{ envio.numero_guia }} - Enviexpress</title>
+    <title>Guía Enviexpress - {{ envio.numero_guia }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-    /* RESET DE MÁRGENES */
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
-    body { 
-        background: #f0f2f5; 
-        color: black; 
-        font-family: Arial, sans-serif; 
-    }
-
-    .container-guia {
-        display: flex;
-        justify-content: center;
-        padding-top: 25px;
-    }
-
-    /* CONTENEDOR ESTRICTO DE 10cm x 5cm */
-    .guia-print {
-        width: 100mm;        
-        height: 50mm;
-        max-width: 100mm;
-        max-height: 50mm;
-        background: white;
-        border: 1px dashed #333;
-        padding: 6px;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    /* FILA 1: ENCABEZADO */
-    .header-guia {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        height: 14mm;
-        border-bottom: 1px solid #000;
-        padding-bottom: 2px;
-    }
-    .header-left h1 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 900;
-        font-size: 11pt;
-        line-height: 1;
-        margin: 0;
-    }
-    .header-left .sub {
-        font-size: 6.5pt;
-        font-weight: bold;
-        text-transform: uppercase;
-        color: #444;
-    }
-    .barcode {
-        font-family: 'Libre Barcode 128', cursive;
-        font-size: 26pt;
-        line-height: 0.7;
-        margin-top: 1px;
-    }
-    .barcode-text {
-        font-size: 7.5pt;
-        font-weight: bold;
-        letter-spacing: 2px;
-        line-height: 1;
-    }
-    .header-right {
-        text-align: right;
-    }
-    .header-right h2 {
-        font-size: 7pt;
-        font-weight: 900;
-        margin: 0;
-    }
-    .header-right .fecha {
-        font-size: 6.5pt;
-        margin-bottom: 1px;
-    }
-    .qr-code {
-        width: 28mm;
-        height: 28mm;
-        max-width: 34px;
-        max-height: 34px;
-        border: 1px solid #000;
-    }
-
-    /* FILA 2: DIRECCIONES */
-    .seccion-direcciones {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        height: 16mm;
-        border-bottom: 1px solid #000;
-        font-size: 6.5pt;
-        overflow: hidden;
-    }
-    .bloque-origen {
-        border-right: 1px solid #000;
-        padding-right: 4px;
-    }
-    .bloque-destino {
-        padding-left: 4px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-    .titulo-bloque {
-        font-weight: bold;
-        background: #e1e1e1;
-        padding: 1px 2px;
-        font-size: 6pt;
-        text-transform: uppercase;
-        margin-bottom: 1px;
-    }
-    .text-datos {
-        line-height: 1.1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* INSIGNIA DE LOCALIDAD REFORMADA */
-    .localidad-box {
-        background: #000;
-        color: #fff;
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 900;
-        font-size: 8pt;
-        text-transform: uppercase;
-        text-align: center;
-        padding: 1px 0;
-        border-radius: 2px;
-        margin: 1px 0;
-        width: 100%;
-    }
-
-    /* FILA 3: INFORMACIÓN OPERATIVA */
-    .seccion-operativa {
-        display: grid;
-        grid-template-columns: 58fr 42fr;
-        height: 14mm;
-        font-size: 6pt;
-    }
-    .ops-left {
-        border-right: 1px solid #000;
-        padding-right: 4px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        overflow: hidden;
-    }
-    .ops-right {
-        padding-left: 4px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    /* TABLA DE PRODUCTOS COMPACTA */
-    .productos-guia {
-        border: 1px solid #000;
-        border-radius: 2px;
-        background: #fafafa;
-        overflow: hidden;
-        margin-bottom: 1px;
-    }
-    .productos-guia table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .productos-guia th {
-        background: #000;
-        color: #fff;
-        font-size: 5.5pt;
-        font-weight: bold;
-        padding: 1px 2px;
-        text-transform: uppercase;
-    }
-    .productos-guia td {
-        font-size: 6pt;
-        padding: 1px 2px;
-        border-bottom: 1px solid #ddd;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .instrucciones-box {
-        font-size: 6pt;
-        line-height: 1;
-        max-height: 10mm;
-        overflow: hidden;
-    }
-
-    /* TABLA PESO / TIPO */
-    .table-meta {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 2px;
-    }
-    .table-meta th, .table-meta td {
-        border: 1px solid #000;
-        padding: 1px 3px;
-        font-size: 6pt;
-        line-height: 1;
-    }
-    .table-meta th {
-        background: #f0f0f0;
-        font-weight: bold;
-    }
-
-    /* SELLO CONTRAENTREGA MINIATURA */
-    .cod-stamp {
-        border: 1px solid #000;
-        background: #f4f4f4;
-        text-align: center;
-        padding: 1px;
-    }
-    .cod-stamp p {
-        font-size: 5pt;
-        font-weight: bold;
-        margin: 0 !important;
-    }
-    .cod-stamp h3 {
-        font-family: 'Montserrat', sans-serif;
-        font-weight: 900;
-        font-size: 8pt;
-        margin: 0;
-    }
-
-    /* FILA 4: CONTROL Y FIRMA */
-    .seccion-firma {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        height: 4mm;
-        font-size: 5.5pt;
-        border-top: 1px dotted #444;
-        padding-top: 1px;
-    }
-    .linea-firma {
-        border-bottom: 1px solid #000;
-        width: 32mm;
-        display: inline-block;
-        height: 0px;
-        margin-bottom: 1px;
-    }
-
-    /* ESTILOS DE IMPRESIÓN DIRECTA */
-    @media print {
-        @page {
-            size: 100mm 50mm;
-            margin: 0;
-        }
-        .no-print { display: none; }
-        body { background: white; padding: 0; }
-        .container-guia { padding-top: 0; display: block; }
+        body { background: white; color: black; font-family: 'Courier New', Courier, monospace; }
+        
         .guia-print {
-            border: 1px solid #000;
-            margin: 0;
-            page-break-inside: avoid;
+            border: 2px dashed #000;
+            padding: 30px;
+            max-width: 850px;
+            margin: 20px auto;
+            position: relative;
         }
-    }
-</style>
+
+        .header-guia { border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+        
+        .barcode {
+            font-family: 'Libre Barcode 128', cursive;
+            font-size: 75px;
+            line-height: 1;
+            margin: 0;
+        }
+
+        .localidad-box {
+            background: #000;
+            color: #fff;
+            padding: 10px 20px;
+            font-weight: 900;
+            display: inline-block;
+            margin: 10px 0;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            font-size: 24px;
+            border-radius: 4px;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .cod-stamp {
+            border: 4px double #000;
+            padding: 10px;
+            text-align: center;
+            margin-top: 10px;
+            background: #f0f0f0;
+        }
+
+        .qr-code {
+            width: 130px;
+            height: 130px;
+            border: 1px solid #000;
+            padding: 5px;
+            background: white;
+        }
+
+        .instrucciones-box {
+            border: 1px solid #000;
+            padding: 10px;
+            min-height: 100px;
+            font-size: 14px;
+            background: #fafafa;
+        }
+
+        /* ── PRODUCTOS EN GUÍA ── */
+        .productos-guia {
+            border: 1px solid #000;
+            border-radius: 3px;
+            margin-bottom: 8px;
+            background: #f5f5f5;
+            font-size: 12px;
+        }
+        .productos-guia .prod-header {
+            background: #000;
+            color: #fff;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            text-transform: uppercase;
+        }
+        .productos-guia table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        .productos-guia table td,
+        .productos-guia table th {
+            padding: 3px 8px;
+            font-size: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .productos-guia table th {
+            font-weight: 700;
+            background: #ebebeb;
+        }
+        .productos-guia table tr:last-child td {
+            border-bottom: none;
+        }
+
+        @media print {
+            .no-print { display: none; }
+            .guia-print { border: 2px solid #000; margin: 0; width: 100%; max-width: 100%; }
+            body { padding: 0; }
+        }
+    </style>
 </head>
 <body>
-    {# BARRA DE CONTROL FLOTANTE #}
-    <div class="no-print text-center py-3 sticky-top bg-dark border-bottom">
-        <button onclick="window.print()" class="btn btn-warning btn-lg fw-bold">
-            🖨️ IMPRIMIR GUÍA
-        </button>
-        <button onclick="descargarPDFIndividual()" class="btn btn-danger btn-lg fw-bold" id="btnPDF">
-            📄 DESCARGAR PDF
-        </button>
-        <a href="/envios/" class="btn btn-outline-light btn-lg">VOLVER AL PANEL</a>
+    <div class="no-print text-center py-3">
+        <button onclick="window.print()" class="btn btn-primary btn-lg">🖨️ IMPRIMIR GUÍA</button>
+        <button onclick="descargarPDF()" class="btn btn-danger btn-lg">📄 DESCARGAR PDF</button>
+        
+        {% if request.session.rol in ('CEO','FACTURACION','ADMINISTRATIVO') %}
+            <a href="/envios/" class="btn btn-secondary btn-lg">VOLVER</a>
+        {% else %}
+            <a href="/envios/mis-guias" class="btn btn-secondary btn-lg">VOLVER</a>
+        {% endif %}
     </div>
 
-    {# CONTENEDOR PARA VISTA EN PANTALLA E IMPRESIÓN #}
-    <div class="container-guia">
-        <div class="guia-print" id="guia-contenido">
-            
-            <div class="header-guia">
-                <div class="header-left">
-                    <h1>ENVIEXPRESS</h1>
-                    <div class="sub">Logística Bogotá D.C.</div>
-                    <div class="barcode">{{ envio.numero_guia }}</div>
-                    <div class="barcode-text">{{ envio.numero_guia }}</div>
-                </div>
-                <div class="header-right">
-                    <h2>ORDEN DE SERVICIO</h2>
-                    <div class="fecha"><strong>FECHA:</strong> {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</div>
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ envio.numero_guia }}" class="qr-code" alt="QR">
-                </div>
+    <div class="guia-print" id="guia-contenido">
+        <div class="header-guia d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="h2 fw-bold mb-0" style="font-family: 'Montserrat', sans-serif;">ENVIEXPRESS</h1>
+                <p class="mb-0 text-uppercase fw-bold">Logística Bogotá D.C.</p>
+                
+                <div class="barcode mt-2">{{ envio.numero_guia }}</div>
+                <div class="fw-bold" style="letter-spacing: 5px; font-size: 18px;">{{ envio.numero_guia }}</div>
+            </div>
+            <div class="text-end">
+                <h2 class="h4 mb-0 fw-bold">ORDEN DE SERVICIO</h2>
+                <p class="mb-2"><strong>FECHA:</strong> {{ envio.fecha_creacion.strftime('%d/%m/%Y') }}</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ envio.numero_guia }}" 
+                     class="qr-code" alt="QR Tracking">
+            </div>
+        </div>
+
+        <div class="row mb-3 mt-4">
+            <div class="col-6 border-end border-dark">
+                <p class="fw-bold text-uppercase border-bottom bg-light p-1">REMITENTE (ORIGEN)</p>
+                <p class="mb-1"><strong>CLIENTE:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</p>
+                <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_recogida.ciudad }}</p>
+                <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_recogida.direccion }}</p>
             </div>
 
-            <div class="seccion-direcciones">
-                <div class="bloque-origen">
-                    <div class="titulo-bloque">Remitente (Origen)</div>
-                    <div class="text-datos"><strong>Clt:</strong> {{ envio.cliente.nombre }} {{ envio.cliente.apellido }}</div>
-                    <div class="text-datos"><strong>Ciu:</strong> {{ envio.lugar_recogida.ciudad }}</div>
-                    <div class="text-datos"><strong>Dir:</strong> {{ envio.lugar_recogida.direccion }}</div>
-                </div>
-                <div class="bloque-destino">
-                    <div>
-                        <div class="titulo-bloque">Destinatario (Entrega)</div>
-                        <div class="text-datos"><strong>Dir:</strong> {{ envio.lugar_entrega.direccion }}</div>
-                    </div>
+            <div class="col-6">
+                <p class="fw-bold text-uppercase border-bottom bg-light p-1">DESTINATARIO (ENTREGA)</p>
+                {% set ref_ent = envio.lugar_entrega.referencia if envio.lugar_entrega.referencia else "" %}
+                {% set nombre_dest = ref_ent.split('Nombre:')[1].split('|')[0].strip() if 'Nombre:' in ref_ent else '---' %}
+                {% set tel_dest = ref_ent.split('Tel:')[1].split('|')[0].strip() if 'Tel:' in ref_ent else '---' %}
+                <p class="mb-1"><strong>NOMBRE:</strong> {{ nombre_dest }}</p>
+                <p class="mb-1"><strong>CIUDAD:</strong> {{ envio.lugar_entrega.ciudad }}</p>
+                <p class="mb-1"><strong>DIRECCIÓN:</strong> {{ envio.lugar_entrega.direccion }}</p>
+                <p class="mb-1"><strong>TELÉFONO:</strong> {{ tel_dest }}</p>
+                
+                <div class="localidad-box">
+                    {% set ref = envio.lugar_entrega.referencia.upper() if envio.lugar_entrega.referencia else "" %}
+                    {% set dir = envio.lugar_entrega.direccion.upper() if envio.lugar_entrega.direccion else "" %}
+                    {% set ciudad_dest = envio.lugar_entrega.ciudad.upper() if envio.lugar_entrega.ciudad else "" %}
                     
-                    <div class="localidad-box">
-                        {% set ref = envio.lugar_entrega.referencia.upper() if envio.lugar_entrega.referencia else "" %}
-                        {% set dir = envio.lugar_entrega.direccion.upper() if envio.lugar_entrega.direccion else "" %}
-                        {% set ciudad_dest = envio.lugar_entrega.ciudad.upper() if envio.lugar_entrega.ciudad else "" %}
-                        
-                        {% set localidades = ["USAQUÉN", "CHAPINERO", "SANTA FE", "SAN CRISTÓBAL", "USME", "KENNEDY", "FONTIBÓN", "ENGATIVÁ", "SUBA", "BARRIOS UNIDOS", "TEUSAQUILLO", "LOS MÁRTIRES", "ANTONIO NARIÑO", "PUENTE ARANDA", "LA CANDELARIA", "RAFAEL URIBE", "CIUDAD BOLÍVAR", "SUMAPAZ", "BOSA"] %}
-                        {% set encontrada = [] %}
+                    {% set localidades = ["USAQUÉN", "CHAPINERO", "SANTA FE", "SAN CRISTÓBAL", "USME", "KENNEDY", "FONTIBÓN", "ENGATIVÁ", "SUBA", "BARRIOS UNIDOS", "TEUSAQUILLO", "LOS MÁRTIRES", "ANTONIO NARIÑO", "PUENTE ARANDA", "LA CANDELARIA", "RAFAEL URIBE", "CIUDAD BOLÍVAR", "SUMAPAZ", "BOSA"] %}
+                    
+                    {% set encontrada = [] %}
 
-                        {% if envio.tipo_servicio == 'NACIONAL' %}
-                            {{ ciudad_dest.split('(')[0].strip() }}
+                    {% if envio.tipo_servicio == 'NACIONAL' %}
+                        {{ ciudad_dest.split('(')[0].strip() }}
+                    {% else %}
+                        {% if 'LOCALIDAD:' in ref %}
+                            {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim|upper }}
                         {% else %}
-                            {% if 'LOCALIDAD:' in ref %}
-                                {{ ref.split('LOCALIDAD:')[1].split('|')[0]|trim|upper }}
-                            {% else %}
-                                {% for loc in localidades %}
-                                    {% if loc in ref or loc in dir %}
-                                        {% if encontrada.append(loc) %}{% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                                {% if encontrada %}
-                                    {{ encontrada[0] }}
-                                ]{% else %}
-                                    {{ ciudad_dest.split('(')[0].strip() }}
+                            {% for loc in localidades %}
+                                {% if loc in ref or loc in dir %}
+                                    {% if encontrada.append(loc) %}{% endif %}
                                 {% endif %}
+                            {% endfor %}
+
+                            {% if encontrada %}
+                                {{ encontrada[0] }}
+                            {% else %}
+                                {{ ciudad_dest.split('(')[0].strip() }}
                             {% endif %}
                         {% endif %}
-                    </div>
-                    <div class="text-datos" style="font-size: 5.5pt;"><strong>Tel/Ref:</strong> {{ envio.lugar_entrega.referencia }}</div>
-                </div>
-            </div>
-
-            <div class="seccion-operativa">
-                <div class="ops-left">
-                    {% if envio.items_inventario %}
-                    <div class="productos-guia">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 55%;">Producto</th>
-                                    <th style="width: 30%;">SKU</th>
-                                    <th style="width: 15%; text-align: center;">Cant</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in envio.items_inventario %}
-                                <tr>
-                                    <td>{{ item.producto.nombre }}</td>
-                                    <td style="font-family: monospace; font-size: 5.5pt;">{{ item.producto.sku }}</td>
-                                    <td style="text-align: center; font-weight: bold;">{{ item.cantidad }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
                     {% endif %}
-                    <div class="instrucciones-box">
-                        <strong>OBS:</strong> {{ envio.instrucciones if envio.instrucciones else 'Ninguna' }}
-                    </div>
                 </div>
-                
-                <div class="ops-right">
-                    <table class="table-meta">
-                        <tr>
-                            <th>PESO:</th>
-                            <td style="text-align: center; font-weight: bold;">{{ envio.peso }} kg</td>
-                        </tr>
-                        <tr>
-                            <th>TIPO:</th>
-                            <td style="text-align: center; font-weight: bold;">{{ envio.tipo_servicio }}</td>
-                        </tr>
+
+                <p class="mt-1 mb-1"><strong>CONTACTO:</strong> {{ envio.lugar_entrega.referencia }}</p>
+            </div>
+        </div>
+
+        <div class="row border-top border-dark pt-3">
+            <div class="col-7">
+                <p class="fw-bold mb-1 text-uppercase">Contenido / Observaciones:</p>
+
+                {# ── PRODUCTOS DE INVENTARIO ── #}
+                {% if envio.items_inventario %}
+                <div class="productos-guia mb-2">
+                    <div class="prod-header">📦 Productos del pedido</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>SKU</th>
+                                <th style="text-align:center;">Cant.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in envio.items_inventario %}
+                            <tr>
+                                <td>{{ item.producto.nombre }}</td>
+                                <td style="font-family: monospace;">{{ item.producto.sku }}</td>
+                                <td style="text-align:center; font-weight:700;">{{ item.cantidad }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
                     </table>
+                </div>
+                {% endif %}
 
-                    {% if envio.es_cod %}
-                    <div class="cod-stamp">
-                        <p>CONTRA ENTREGA</p>
-                        <h3>$ {{ "{:,.0f}".format(envio.valor_a_cobrar).replace(',', '.') }}</h3>
-                    </div>
-                    {% endif %}
+                <div class="instrucciones-box">
+                    {{ envio.instrucciones }}
                 </div>
             </div>
+            <div class="col-5">
+                <table class="table table-bordered border-dark mb-2">
+                    <tr>
+                        <th class="bg-light">PESO:</th>
+                        <td class="text-center">{{ envio.peso }} kg</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">TIPO:</th>
+                        <td class="text-center fw-bold">{{ envio.tipo_servicio }}</td>
+                    </tr>
+                </table>
 
-            <div class="seccion-firma">
-                <div>
-                    <span>Firma Recibido: <span class="linea-firma"></span> CC: __________________</span>
+                {% if envio.es_cod %}
+                <div class="cod-stamp">
+                    <p class="mb-0 fw-bold" style="font-size: 12px; letter-spacing: 1px;">COBRO CONTRA ENTREGA</p>
+                    <h3 class="mb-0 fw-bold" style="font-family: 'Montserrat', sans-serif;">
+                        $ {{ "{:,.0f}".format(envio.valor_a_cobrar).replace(',', '.') }}
+                    </h3>
                 </div>
-                <div style="font-size: 5pt; font-weight: bold; opacity: 0.7;">
-                    Control Operativo - Enviexpress S.A.S
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-5 pt-4 border-top border-dark">
+            <div class="row">
+                <div class="col-8">
+                    <p class="mb-0 fw-bold">Firma de conformidad (Recibido):</p>
+                    <div style="border-bottom: 1px solid #000; width: 85%; height: 45px; margin-bottom: 5px;"></div>
+                    <p class="small">Nombre y C.C: _________________________________________</p>
+                </div>
+                <div class="col-4 text-end">
+                    <p class="small opacity-50">Control Operativo<br>Enviexpress S.A.S</p>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        function descargarPDFIndividual() {
+        function descargarPDF() {
             const elemento = document.getElementById('guia-contenido');
-            const btn = document.getElementById('btnPDF');
-            const numGuia = "{{ envio.numero_guia }}";
-
+            const opciones = {
+                margin:       [5, 5, 5, 5],
+                filename:     'Guia_{{ envio.numero_guia }}.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            const btn = document.querySelector('button[onclick="descargarPDF()"]');
             btn.disabled = true;
             btn.textContent = '⏳ Generando PDF...';
-
-            const opciones = {
-                margin:       0,
-                filename:     `Guia_${numGuia}_enviexpress.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 3, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: [100, 50], orientation: 'landscape' }
-            };
-            
             html2pdf().set(opciones).from(elemento).save().then(() => {
                 btn.disabled = false;
-                btn.textContent = `📄 DESCARGAR PDF`;
+                btn.textContent = '📄 DESCARGAR PDF';
             });
         }
     </script>
