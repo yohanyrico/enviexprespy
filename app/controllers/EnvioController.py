@@ -583,10 +583,12 @@ def imprimir_guia(id: int, request: Request, db: Session = Depends(get_db)):
 def imprimir_masivo(request: Request, ids: str, db: Session = Depends(get_db)):
     lista_ids = [int(i) for i in ids.split(",")]
     envios = db.query(Envio).options(
-        joinedload(Envio.lugar_recogida), joinedload(Envio.lugar_entrega),
-        joinedload(Envio.cliente), joinedload(Envio.items_inventario)
+        joinedload(Envio.lugar_recogida),
+        joinedload(Envio.lugar_entrega),
+        joinedload(Envio.cliente),
+        joinedload(Envio.items_inventario).joinedload(EnvioItemInventario.producto)  # ← corregido
     ).filter(Envio.envio_id.in_(lista_ids)).all()
-    return templates.TemplateResponse("imprimir_masivo.html", {   # ← ¿este nombre es correcto?
+    return templates.TemplateResponse("imprimir_masivo.html", {
         "request": request, "envios": envios
     })
 
