@@ -199,6 +199,7 @@
 <body>
 
 <div id="toast"><i class="bi bi-check-circle-fill"></i><span id="toastMsg"></span></div>
+<div id="enviosData" data-json="{{ envios_json|escape }}" style="display:none;"></div>
 
 <div class="main-wrapper">
 
@@ -227,8 +228,8 @@
                     <div class="ruta-card rc-creada">
                         <div class="ruta-card-header" onclick="toggleAcciones('acc-{{ r.ruta_id }}')">
                             <div style="flex:1;min-width:0;">
-                                <div class="ruta-nombre">{{ r.nombre_sector or 'Sin nombre' }}</div>
-                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{{ r.mensajero.nombre ~ ' ' ~ r.mensajero.apellido if r.mensajero else 'Sin mensajero' }}</div>
+                                <div class="ruta-nombre">{% if r.nombre_sector %}{{ r.nombre_sector }}{% else %}Sin nombre{% endif %}</div>
+                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{% if r.mensajero %}{{ r.mensajero.nombre }} {{ r.mensajero.apellido }}{% else %}Sin mensajero{% endif %}</div>
                             </div>
                             <div style="display:flex;align-items:center;gap:6px;">
                                 <span class="envios-count">{{ r.envios|length }} env.</span>
@@ -252,8 +253,8 @@
                     <div class="ruta-card rc-en-curso">
                         <div class="ruta-card-header" onclick="toggleAcciones('acc2-{{ r.ruta_id }}')">
                             <div style="flex:1;min-width:0;">
-                                <div class="ruta-nombre">{{ r.nombre_sector or 'Sin nombre' }}</div>
-                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{{ r.mensajero.nombre ~ ' ' ~ r.mensajero.apellido if r.mensajero else 'Sin mensajero' }}</div>
+                                <div class="ruta-nombre">{% if r.nombre_sector %}{{ r.nombre_sector }}{% else %}Sin nombre{% endif %}</div>
+                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{% if r.mensajero %}{{ r.mensajero.nombre }} {{ r.mensajero.apellido }}{% else %}Sin mensajero{% endif %}</div>
                             </div>
                             <div style="display:flex;align-items:center;gap:6px;">
                                 <span class="envios-count">{{ r.envios|length }} env.</span>
@@ -277,8 +278,8 @@
                     <div class="ruta-card rc-finalizada">
                         <div class="ruta-card-header" onclick="toggleAcciones('acc3-{{ r.ruta_id }}')">
                             <div style="flex:1;min-width:0;">
-                                <div class="ruta-nombre">{{ r.nombre_sector or 'Sin nombre' }}</div>
-                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{{ r.mensajero.nombre ~ ' ' ~ r.mensajero.apellido if r.mensajero else 'Sin mensajero' }}</div>
+                                <div class="ruta-nombre">{% if r.nombre_sector %}{{ r.nombre_sector }}{% else %}Sin nombre{% endif %}</div>
+                                <div class="ruta-mensajero"><i class="bi bi-person-fill"></i>{% if r.mensajero %}{{ r.mensajero.nombre }} {{ r.mensajero.apellido }}{% else %}Sin mensajero{% endif %}</div>
                             </div>
                             <div style="display:flex;align-items:center;gap:6px;">
                                 <span class="envios-count">{{ r.envios|length }} env.</span>
@@ -430,7 +431,6 @@
         </div>
     </div>
 </div>
-
 <script>
 let origenSeleccionadoId = new URLSearchParams(window.location.search).get('origen_id') || null;
 let destinoSeleccionadoId = new URLSearchParams(window.location.search).get('destino_id') || null;
@@ -460,7 +460,7 @@ function getTextColor(tipo, estado) {
     return '#ffffff';
 }
 
-const enviosData = {{ envios_json | safe }};
+const enviosData = JSON.parse(document.getElementById('enviosData').getAttribute('data-json'));
 
 let gmap = null;
 let todosLosMarcadores = [];
@@ -568,19 +568,19 @@ async function consultarUbicacionesMensajeros() {
             }
             const iniciales = m.nombre.split(' ').slice(0, 2).map(p => p[0].toUpperCase()).join('');
 
-const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="130" viewBox="0 0 100 130">
-  <path d="M50 0 C22 0 0 22 0 50 C0 78 50 115 50 115 C50 115 100 78 100 50 C100 22 78 0 50 0Z" fill="#810202" stroke="white" stroke-width="3"/>
-  <rect x="22" y="38" width="56" height="20" rx="7" fill="white"/>
-  <polygon points="64,38 82,44 78,58 64,58" fill="#eeeeee"/>
-  <rect x="70" y="33" width="14" height="4" rx="2" fill="#dddddd"/>
-  <rect x="25" y="32" width="32" height="9" rx="4" fill="#eeeeee"/>
-  <circle cx="26" cy="62" r="12" fill="#333333" stroke="#999999" stroke-width="2"/>
-  <circle cx="26" cy="62" r="5" fill="#555555"/>
-  <circle cx="76" cy="62" r="12" fill="#333333" stroke="#999999" stroke-width="2"/>
-  <circle cx="76" cy="62" r="5" fill="#555555"/>
-  <rect x="14" y="50" width="12" height="4" rx="2" fill="#aaaaaa"/>
-  <text x="50" y="28" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#810202">${iniciales}</text>
-</svg>`;
+const svgIcon = '\x3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="130" viewBox="0 0 100 130">' +
+  '<path d="M50 0 C22 0 0 22 0 50 C0 78 50 115 50 115 C50 115 100 78 100 50 C100 22 78 0 50 0Z" fill="#810202" stroke="white" stroke-width="3"/>' +
+  '<rect x="22" y="38" width="56" height="20" rx="7" fill="white"/>' +
+  '<polygon points="64,38 82,44 78,58 64,58" fill="#eeeeee"/>' +
+  '<rect x="70" y="33" width="14" height="4" rx="2" fill="#dddddd"/>' +
+  '<rect x="25" y="32" width="32" height="9" rx="4" fill="#eeeeee"/>' +
+  '<circle cx="26" cy="62" r="12" fill="#333333" stroke="#999999" stroke-width="2"/>' +
+  '<circle cx="26" cy="62" r="5" fill="#555555"/>' +
+  '<circle cx="76" cy="62" r="12" fill="#333333" stroke="#999999" stroke-width="2"/>' +
+  '<circle cx="76" cy="62" r="5" fill="#555555"/>' +
+  '<rect x="14" y="50" width="12" height="4" rx="2" fill="#aaaaaa"/>' +
+  '<text x="50" y="28" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#810202">' + iniciales + '<' + '/text>' +
+  '<' + '/svg>';
             const marker = new google.maps.Marker({
                 position: pos, map: gmap, title: 'Mensajero: ' + m.nombre,
                 optimized: false, zIndex: 1000,
@@ -593,16 +593,14 @@ const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="130
 
 function crearIconoSVG(letra, color, textColor, sel) {
     const sw = sel ? 3 : 2;
-    const glow = sel ? `<circle cx="20" cy="20" r="17" fill="none" stroke="${color}" stroke-width="6" opacity="0.4"/>` : '';
-    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
-            ${glow}
-            <path d="M20 0 C8.95 0 0 8.95 0 20 C0 35 20 50 20 50 C20 50 40 35 40 20 C40 8.95 31.05 0 20 0Z"
-                  fill="${color}" stroke="white" stroke-width="${sw}"/>
-            <text x="20" y="24" text-anchor="middle" dominant-baseline="middle"
-                  font-family="Montserrat,sans-serif" font-size="16" font-weight="900"
-                  fill="${textColor}">${letra}</text>
-        </svg>`);
+    const glow = sel ? '<circle cx="20" cy="20" r="17" fill="none" stroke="' + color + '" stroke-width="6" opacity="0.4"/>' : '';
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+        '\x3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">' +
+            glow +
+            '<path d="M20 0 C8.95 0 0 8.95 0 20 C0 35 20 50 20 50 C20 50 40 35 40 20 C40 8.95 31.05 0 20 0Z" fill="' + color + '" stroke="white" stroke-width="' + sw + '"/>' +
+            '<text x="20" y="24" text-anchor="middle" dominant-baseline="middle" font-family="Montserrat,sans-serif" font-size="16" font-weight="900" fill="' + textColor + '">' + letra + '<' + '/text>' +
+        '<' + '/svg>'
+    );
 }
 
 function setIconMarcador(item) {
@@ -769,8 +767,13 @@ function actualizarUI() {
                     <span class="tipo-badge ${item.tipo==='c'?'tipo-c':'tipo-d'}">${item.tipo.toUpperCase()}</span>
                 </div>
                 <div class="dir">${item.direccion}</div>
-            </div>
-            <button class="btn-rm" onclick="quitarItem(${item.envioId},'${item.tipo}')"><i class="bi bi-x-circle"></i></button>`;
+            </div>`;
+        const btn = document.createElement('button');
+        btn.className = 'btn-rm';
+        btn.type = 'button';
+        btn.innerHTML = '<i class="bi bi-x-circle"></i>';
+        btn.addEventListener('click', () => quitarItem(item.envioId, item.tipo));
+        div.appendChild(btn);
         lista.appendChild(div);
     });
 }
@@ -808,7 +811,15 @@ function abrirModal() {
     if (hayOrigenes && !hayDestinos) tipoRecomendado = 'c';
     if (!hayOrigenes && hayDestinos) tipoRecomendado = 'd';
     document.getElementById('modalTipo').value = tipoRecomendado;
-    document.getElementById('resumenTexto').innerHTML = `<b style="color:#FFD700;">${count}</b> pedidos listos para asignar.`;
+
+    const resumen = document.getElementById('resumenTexto');
+    resumen.textContent = '';
+    const negrita = document.createElement('b');
+    negrita.style.color = 'gold';
+    negrita.textContent = count;
+    resumen.appendChild(negrita);
+    resumen.appendChild(document.createTextNode(' pedidos listos para asignar.'));
+
     document.getElementById('modalAsignacion').classList.add('open');
 }
 
@@ -823,7 +834,8 @@ function confirmarAsignacion() {
     const nombre   = document.getElementById('modalNombreRuta').value.trim();
     const sel      = document.getElementById('modalMensajero');
     const mId      = sel.value;
-    const mNombre  = sel.options[sel.selectedIndex]?.dataset?.nombre || '';
+    const selectedOption = sel.options[sel.selectedIndex];
+    const mNombre  = selectedOption && selectedOption.dataset ? selectedOption.dataset.nombre : '';
     const tipoAsig = document.getElementById('modalTipo').value;
     if (!nombre) { mostrarToast('Escribe el nombre de la ruta.', true); return; }
     if (!mId)    { mostrarToast('Selecciona un mensajero.', true); return; }
