@@ -6,6 +6,7 @@
     <title>Guía Enviexpress - {{ envio.numero_guia }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+128&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { background: white; color: black; font-family: 'Courier New', Courier, monospace; }
         
@@ -111,15 +112,16 @@
 <body>
     <div class="no-print text-center py-3">
         <button onclick="window.print()" class="btn btn-primary btn-lg">🖨️ IMPRIMIR GUÍA</button>
+        <button onclick="descargarPDF()" class="btn btn-danger btn-lg">📄 DESCARGAR PDF</button>
         
-        {% if request.session.rol == 'ADMIN' %}
+        {% if request.session.rol in ('CEO','FACTURACION','ADMINISTRATIVO') %}
             <a href="/envios/" class="btn btn-secondary btn-lg">VOLVER</a>
         {% else %}
             <a href="/envios/mis-guias" class="btn btn-secondary btn-lg">VOLVER</a>
         {% endif %}
     </div>
 
-    <div class="guia-print">
+    <div class="guia-print" id="guia-contenido">
         <div class="header-guia d-flex justify-content-between align-items-start">
             <div>
                 <h1 class="h2 fw-bold mb-0" style="font-family: 'Montserrat', sans-serif;">ENVIEXPRESS</h1>
@@ -257,5 +259,25 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function descargarPDF() {
+            const elemento = document.getElementById('guia-contenido');
+            const opciones = {
+                margin:       [5, 5, 5, 5],
+                filename:     'Guia_{{ envio.numero_guia }}.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            const btn = document.querySelector('button[onclick="descargarPDF()"]');
+            btn.disabled = true;
+            btn.textContent = '⏳ Generando PDF...';
+            html2pdf().set(opciones).from(elemento).save().then(() => {
+                btn.disabled = false;
+                btn.textContent = '📄 DESCARGAR PDF';
+            });
+        }
+    </script>
 </body>
 </html>
