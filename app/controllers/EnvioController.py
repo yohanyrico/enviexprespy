@@ -343,8 +343,9 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
 
 @router.post("/guardar")
 async def guardar(request: Request, db: Session = Depends(get_db)):
-    rol        = request.session.get("rol", "CLIENTE")
-    destino_ok = "/envios" if rol == "ADMIN" else "/envios/mis-guias"
+    rol = request.session.get("rol", "CLIENTE")
+    print(f"ROL EN SESIÓN: {rol}")  # ← agrega esto temporalmente
+    destino_ok = "/envios" if rol in ("CEO", "FACTURACION", "ADMINISTRATIVO") else "/envios/mis-guias"
 
     try:
         form     = await request.form()
