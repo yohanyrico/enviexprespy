@@ -470,3 +470,31 @@ async def subir_foto_entrega(
     db.commit()
 
     return JSONResponse({"ok": True, "foto": nombre_archivo})
+
+# --- MI RUTA ACTIVA ---
+@router.get("/mi-ruta")
+def obtener_mi_ruta(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    ruta = db.query(Ruta).filter(
+        Ruta.mensajero_id == current_user.id_usuario,
+        Ruta.estado.in_(["Creada", "En curso"])
+    ).order_by(Ruta.ruta_id.desc()).first()
+
+    if not ruta:
+        return {"hay_ruta": False}
+
+    pedidos = db.query(Envio).filter(Envio.ruta_id == ruta.ruta_id).all()
+
+    return {
+        "hay_ruta": True,
+        "ruta_id": ruta.ruta_id,
+        "nombre": ruta.nombre_sector or f"Ruta #{ruta.ruta_id}",
+        "estado": ruta.estado,
+        "tipo_ruta": ruta.tipo_ruta or "ENTREGA",
+        "total_pedidos": len(pedidos),
+        "pedidos_pendientes": sum(1 for p in pedidos if p.estado not in {
+            "Entregado", "C-Colectado", "Cancelado", "Rechazado", "Fallido"
+        }),
+    }
