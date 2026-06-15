@@ -51,8 +51,9 @@ class Envio(Base):
         "Pendiente_Recoger",
         "C-Colectado",
         "En_Bodega",
-        "Pendiente_Entregar",  # <-- agregado
+        "Pendiente_Verificar",
         "En_Ruta",
+        "Pendiente_Entregar",
         "En_Destino",
         "Entregado",
         "Cancelado",
