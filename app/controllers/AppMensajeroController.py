@@ -1,7 +1,7 @@
 import os
 import shutil
 from fastapi.responses import JSONResponse
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from pydantic import BaseModel
@@ -16,13 +16,17 @@ from app.security.SecurityConfig import get_current_user
 
 router = APIRouter(prefix="/api/mensajero", tags=["App Mensajero"])
 
-# --- ESQUEMAS DE PYDANTIC (MODELOS DE ENTRADA) ---
+# --- ESQUEMAS DE PYDANTIC ---
 
 class ActualizarEstadoRequest(BaseModel):
     estado: str
 
 class ActualizacionMasivaRequest(BaseModel):
     guias: List[str]
+    estado: str
+
+class ActualizarEstadoPorGuiaRequest(BaseModel):
+    guia: str
     estado: str
 
 class GestionEntregaRequest(BaseModel):
@@ -40,7 +44,7 @@ class IniciarRutaRequest(BaseModel):
 
 
 # ─────────────────────────────────────────────────────────────
-# HELPER — FUNCIONES DE APOYO INTERNAS
+# HELPER
 # ─────────────────────────────────────────────────────────────
 
 def _verificar_y_auto_finalizar(ruta_id: int, db: Session) -> bool:
@@ -71,7 +75,7 @@ def _verificar_y_auto_finalizar(ruta_id: int, db: Session) -> bool:
 
 
 # ─────────────────────────────────────────────────────────────
-# ENDPOINTS DEL CONTROLADOR
+# ENDPOINTS
 # ─────────────────────────────────────────────────────────────
 
 # --- OBTENER PEDIDOS PENDIENTES ---
@@ -91,7 +95,6 @@ def obtener_pedidos_app(
             "En_Destino"
         ]
 
-        # ✅ FIX: busca por mensajero recolector O mensajero entregador
         pedidos = db.query(Envio).filter(
             or_(
                 Envio.usuario_mensajero_id == current_user.id_usuario,
@@ -167,7 +170,7 @@ def iniciar_ruta(
     }
 
 
-# --- ACTUALIZAR UBICACIÓN DESDE FLUTTER ---
+# --- ACTUALIZAR UBICACIÓN GPS ---
 @router.post("/ubicacion")
 def actualizar_ubicacion(
     body: UbicacionRequest,
@@ -195,19 +198,19 @@ def actualizar_ubicacion(
         db.add(nueva_coordenada)
         db.commit()
 
-        print(f"[GPS] Mensajero ID {current_user.id_usuario} ({current_user.nombre}): [{body.latitud}, {body.longitud}]")
+        print(f"[GPS] Mensajero {current_user.id_usuario} ({current_user.nombre}): [{body.latitud}, {body.longitud}]")
         return {"ok": True, "mensaje": "Coordenadas actualizadas de manera exitosa."}
 
     except Exception as e:
         db.rollback()
-        print(f"Error al actualizar ubicación en DB: {e}")
+        print(f"Error al actualizar ubicación: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error interno al guardar la geolocalización."
         )
 
 
-# --- UBICACIONES ACTIVAS (Para el Mapa Web) ---
+# --- UBICACIONES ACTIVAS (mapa web) ---
 @router.get("/ubicaciones-activas", response_model=List[Dict[str, Any]])
 def obtener_ubicaciones_activas(db: Session = Depends(get_db)):
     hace_5_min = datetime.now() - timedelta(minutes=5)
@@ -240,10 +243,7 @@ def actualizacion_masiva(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "MENSAJERO":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acceso denegado."
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acceso denegado.")
 
     estados_validos = [
         "Registrado", "Pendiente_Recoger", "C-Colectado",
@@ -262,7 +262,6 @@ def actualizacion_masiva(
     rutas_afectadas = set()
 
     for guia in body.guias:
-        # ✅ FIX: busca por mensajero recolector O entregador
         envio = db.query(Envio).filter(
             Envio.numero_guia == guia,
             or_(
@@ -297,7 +296,7 @@ def actualizacion_masiva(
     }
 
 
-# --- ACTUALIZAR ESTADO SIMPLE (un envío individual) ---
+# --- ACTUALIZAR ESTADO INDIVIDUAL (por ID numérico) ---
 @router.put("/pedidos/{envio_id}/estado")
 def actualizar_estado_envio(
     envio_id: int,
@@ -317,7 +316,6 @@ def actualizar_estado_envio(
             detail="El estado proporcionado es inválido."
         )
 
-    # ✅ FIX: busca por mensajero recolector O entregador
     envio = db.query(Envio).filter(
         Envio.envio_id == envio_id,
         or_(
@@ -327,10 +325,7 @@ def actualizar_estado_envio(
     ).first()
 
     if not envio:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Envío no encontrado."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Envío no encontrado.")
 
     envio.estado = body.estado
     db.commit()
@@ -339,7 +334,60 @@ def actualizar_estado_envio(
     ruta_finalizada = _verificar_y_auto_finalizar(envio.ruta_id, db)
 
     return {
-        "mensaje": f"Estado del envío actualizado a '{body.estado}' exitosamente.",
+        "mensaje": f"Estado actualizado a '{body.estado}' exitosamente.",
+        "estado": envio.estado,
+        "ruta_finalizada": ruta_finalizada
+    }
+
+
+# --- ACTUALIZAR ESTADO POR NÚMERO DE GUÍA ---
+# Usado por EscaneoScreen y CamaraEvidenciaScreen (flujo individual por guía)
+@router.put("/pedidos/estado-por-guia")
+def actualizar_estado_por_guia(
+    body: ActualizarEstadoPorGuiaRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "MENSAJERO":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acceso denegado.")
+
+    estados_validos = [
+        "Registrado", "Pendiente_Recoger", "C-Colectado",
+        "En_Bodega", "Pendiente_Entregar", "En_Ruta", "En_Destino",
+        "Entregado", "Cancelado", "Devolucion", "Retorno",
+        "Rechazado", "Fallido"
+    ]
+    if body.estado not in estados_validos:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Estado '{body.estado}' no es válido."
+        )
+
+    envio = db.query(Envio).filter(
+        Envio.numero_guia == body.guia,
+        or_(
+            Envio.usuario_mensajero_id == current_user.id_usuario,
+            Envio.usuario_mensajero_entrega_id == current_user.id_usuario
+        )
+    ).first()
+
+    if not envio:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Envío con guía '{body.guia}' no encontrado o no pertenece a este mensajero."
+        )
+
+    envio.estado = body.estado
+    db.commit()
+    db.refresh(envio)
+
+    ruta_finalizada = _verificar_y_auto_finalizar(envio.ruta_id, db)
+
+    print(f"[GUIA] Mensajero {current_user.id_usuario} actualizó guía '{body.guia}' → '{body.estado}'")
+
+    return {
+        "ok": True,
+        "mensaje": f"Guía '{body.guia}' actualizada a '{body.estado}'.",
         "estado": envio.estado,
         "ruta_finalizada": ruta_finalizada
     }
@@ -360,7 +408,6 @@ def gestionar_entrega(
             detail="Estado de gestión no permitido."
         )
 
-    # ✅ FIX: busca por mensajero recolector O entregador
     envio = db.query(Envio).filter(
         Envio.envio_id == envio_id,
         or_(
@@ -370,10 +417,7 @@ def gestionar_entrega(
     ).first()
 
     if not envio:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Envío no encontrado."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Envío no encontrado.")
 
     envio.estado = body.estado
     if body.nombre_receptor:
@@ -388,13 +432,13 @@ def gestionar_entrega(
     ruta_finalizada = _verificar_y_auto_finalizar(envio.ruta_id, db)
 
     return {
-        "mensaje": f"Gestión de entrega registrada bajo el estado: '{body.estado}'",
+        "mensaje": f"Gestión de entrega registrada: '{body.estado}'",
         "estado": envio.estado,
         "ruta_finalizada": ruta_finalizada
     }
 
 
-# --- SUBIR EVIDENCIA (foto de recogida o entrega) ---
+# --- SUBIR EVIDENCIA POR ID (método original — mantener para gestion_entrega) ---
 @router.post("/pedidos/{envio_id}/evidencia")
 async def subir_evidencia(
     envio_id: int,
@@ -405,7 +449,6 @@ async def subir_evidencia(
     if current_user.rol != "MENSAJERO":
         raise HTTPException(status_code=403, detail="Solo mensajeros pueden subir fotos")
 
-    # ✅ FIX: busca por mensajero recolector O entregador
     envio = db.query(Envio).filter(
         Envio.envio_id == envio_id,
         or_(
@@ -424,9 +467,7 @@ async def subir_evidencia(
         extension = "jpg"
 
     nombre_archivo = f"{envio.numero_guia}_recogida.{extension}"
-    ruta_disco = f"{carpeta}/{nombre_archivo}"
-
-    with open(ruta_disco, "wb") as f:
+    with open(f"{carpeta}/{nombre_archivo}", "wb") as f:
         shutil.copyfileobj(file.file, f)
 
     envio.foto_recogida = nombre_archivo
@@ -434,7 +475,8 @@ async def subir_evidencia(
 
     return JSONResponse({"ok": True, "foto": nombre_archivo})
 
-# --- SUBIR FOTO DE ENTREGA ---
+
+# --- SUBIR FOTO DE ENTREGA POR ID (método original) ---
 @router.post("/pedidos/{envio_id}/foto-entrega")
 async def subir_foto_entrega(
     envio_id: int,
@@ -470,6 +512,69 @@ async def subir_foto_entrega(
     db.commit()
 
     return JSONResponse({"ok": True, "foto": nombre_archivo})
+
+
+# --- SUBIR EVIDENCIA POR NÚMERO DE GUÍA ---
+# Usado por CamaraEvidenciaScreen — guarda foto y registra en el campo correcto
+# según el estado_destino (recolección o entrega)
+@router.post("/pedidos/evidencia-por-guia")
+async def subir_evidencia_por_guia(
+    guia: str = Form(...),
+    estado_destino: str = Form(...),
+    foto: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "MENSAJERO":
+        raise HTTPException(status_code=403, detail="Solo mensajeros pueden subir fotos")
+
+    envio = db.query(Envio).filter(
+        Envio.numero_guia == guia,
+        or_(
+            Envio.usuario_mensajero_id == current_user.id_usuario,
+            Envio.usuario_mensajero_entrega_id == current_user.id_usuario
+        )
+    ).first()
+
+    if not envio:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Envío con guía '{guia}' no encontrado o no pertenece a este mensajero."
+        )
+
+    # Elegir carpeta y campo según el estado
+    es_entrega = estado_destino in ("Entregado", "Rechazado", "Fallido", "En_Destino")
+    carpeta = "app/static/fotos_entrega" if es_entrega else "app/static/fotos_recogida"
+    os.makedirs(carpeta, exist_ok=True)
+
+    extension = foto.filename.rsplit(".", 1)[-1].lower() if foto.filename else "jpg"
+    if extension not in ["jpg", "jpeg", "png", "webp"]:
+        extension = "jpg"
+
+    sufijo = "entrega" if es_entrega else "recogida"
+    nombre_archivo = f"{guia}_{sufijo}_{estado_destino}.{extension}"
+    ruta_disco = f"{carpeta}/{nombre_archivo}"
+
+    with open(ruta_disco, "wb") as f:
+        shutil.copyfileobj(foto.file, f)
+
+    # Guardar en el campo correcto del envío
+    if es_entrega:
+        envio.foto_entrega = nombre_archivo
+    else:
+        envio.foto_recogida = nombre_archivo
+
+    db.commit()
+
+    print(f"[FOTO] Guía '{guia}' | estado '{estado_destino}' | archivo '{nombre_archivo}'")
+
+    return JSONResponse({
+        "ok": True,
+        "foto": nombre_archivo,
+        "guia": guia,
+        "estado_destino": estado_destino
+    })
+
 
 # --- MI RUTA ACTIVA ---
 @router.get("/mi-ruta")
