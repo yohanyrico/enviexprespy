@@ -1,485 +1,546 @@
 {# templates/ver_ruta.html #}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ruta del Mensajero – EnviExpress</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
     <style>
-        :root {
-            --rojo-milan: #B20C06;
-            --rojo-hover: #8a0a05;
-            --negro-puro: #000000;
-            --blanco-puro: #ffffff;
-            --fondo-gris: #f4f4f4;
-            --card-bg: #ffffff; 
-            --texto-gris: #4a5568;
-        }
-
-        body {
-            background-color: var(--fondo-gris);
-            min-height: 100vh; 
-            color: var(--negro-puro);
-            font-family: 'Montserrat', sans-serif; 
-            padding-top: 100px;
-            margin: 0;
-        }
-
-        /* NAVBAR */
-        .navbar {
-            backdrop-filter: blur(12px);
-            background: rgba(0, 0, 0, 0.9);
-            border-bottom: 3px solid var(--rojo-milan);
-        }
-        .navbar-brand { color: var(--rojo-milan) !important; font-weight: 800; }
-
-        /* CARD EN FONDO CLARO */
-        .card-custom {
-            background: var(--card-bg);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-            color: var(--negro-puro);
-        }
-
-        /* Banner ruta */
-        .ruta-banner {
-            background: var(--blanco-puro);
-            border: 2px solid var(--rojo-milan);
-            border-radius: 16px;
-            padding: 18px 24px;
-            margin-bottom: 20px;
-            display: flex; 
-            align-items: center; 
-            gap: 16px;
-            color: var(--negro-puro);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-        .ruta-icon {
-            width: 52px; height: 52px;
-            background: var(--rojo-milan); border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; flex-shrink: 0; color: var(--blanco-puro);
-        }
-        .ruta-info h5 { margin: 0; font-weight: 800; font-size: 1.1rem; color: var(--negro-puro); }
-        .ruta-info small { color: var(--texto-gris); font-size: 0.85rem; font-weight: 500; }
-
-        /* Banner mensajero */
-        .mensajero-banner {
-            background: var(--blanco-puro);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 16px;
-            padding: 16px 22px;
-            display: flex; align-items: center; gap: 16px;
-            margin-bottom: 20px;
-            color: var(--negro-puro);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-        .mensajero-avatar {
-            width: 56px; height: 56px;
-            background: var(--rojo-milan); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; font-weight: 900; color: white; flex-shrink: 0;
-        }
-        .mensajero-info h4 { margin: 0; font-weight: 800; font-size: 1.2rem; }
-        .mensajero-info small { color: var(--texto-gris); font-size: 0.85rem; }
-
-        /* Stats */
-        .stat-pill {
-            background: var(--fondo-gris);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 50px; padding: 7px 16px;
-            font-size: 0.8rem; font-weight: 700;
-            display: inline-flex; align-items: center; gap: 7px;
-            color: var(--negro-puro);
-        }
-        .stat-pill .num { color: var(--rojo-milan); font-size: 1rem; font-weight: 800; }
-
-        /* Tabla */
-        .table { color: var(--negro-puro); background: transparent; margin-bottom: 0; }
-        .table thead th {
-            color: var(--rojo-milan);
-            border-bottom: 2px solid var(--rojo-milan) !important;
-            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700;
-            padding: 12px 8px;
-        }
-        .table tbody tr { transition: background 0.2s; border-bottom: 1px solid #eee; }
-        .table tbody tr:hover { background: rgba(0, 0, 0, 0.02); }
-        .table td { vertical-align: middle; padding: 12px 8px; border: none; }
-
-        /* Badges de estado */
-        .badge-estado { border-radius: 50px; padding: 5px 14px; font-size: 0.75rem; font-weight: 700; }
-        .bg-en-ruta    { background: #7B2FBE; color: white; }
-        .bg-colectado  { background: #00BFFF; color: #000; }
-        .bg-entregado  { background: #28a745; color: white; }
-        .bg-cancelado  { background: var(--rojo-milan); color: white; }
-        .bg-registrado { background: #6c757d; color: white; }
-
-        /* Guía */
-        .guia-tag {
-            color: var(--rojo-milan); font-weight: 800; font-size: 0.85rem;
-            background: rgba(178, 12, 6, 0.08); padding: 4px 10px;
-            border-radius: 6px; border: 1px solid rgba(178, 12, 6, 0.2);
-        }
-
-        /* Info origen/destino */
-        .dir-block small { font-size: 0.75rem; color: var(--texto-gris); display: block; font-weight: 500; }
-        .dir-block span  { font-size: 0.82rem; font-weight: 600; color: var(--negro-puro); }
-
-        /* Botón quitar */
-        .btn-quitar {
-            background-color: var(--rojo-milan); 
-            border: none;
-            color: var(--blanco-puro) !important; 
-            border-radius: 8px; 
-            padding: 6px 12px;
-            font-size: 0.75rem; font-weight: 700; cursor: pointer;
-            transition: 0.2s; font-family: 'Montserrat', sans-serif;
-            display: inline-flex; align-items: center; gap: 5px;
-            text-decoration: none;
-        }
-        .btn-quitar:hover { background-color: var(--rojo-hover); transform: scale(1.03); }
-
-        /* Mapa */
-        #mapa-ruta {
-            height: 380px; border-radius: 14px;
-            border: 1px solid rgba(0, 0, 0, 0.15); overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-        }
-
-        /* Leyenda del mapa */
-        .map-leyenda {
-            display: flex; gap: 14px; flex-wrap: wrap;
-            margin-top: 10px; justify-content: center;
-            font-size: 0.72rem; font-weight: 700; color: var(--texto-gris);
-        }
-        .map-leyenda span { display: inline-flex; align-items: center; gap: 5px; }
-        .ley-dot {
-            width: 14px; height: 14px; border-radius: 50%;
-            border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            flex-shrink: 0;
-        }
-
-        /* Botones nav */
-        .btn-volver {
-            background: transparent; border: 2px solid rgba(255,255,255,0.4);
-            color: white; border-radius: 50px; padding: 7px 18px;
-            font-weight: 700; transition: 0.3s; text-decoration: none; font-size: 0.82rem;
-        }
-        .btn-volver:hover { background: rgba(255,255,255,0.1); color: white; border-color: var(--rojo-milan); }
-
-        /* Modal confirmación */
-        .modal-confirm .modal-content {
-            background: var(--blanco-puro); color: var(--negro-puro);
-            border: 1px solid rgba(0,0,0,0.2); border-radius: 16px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-        }
-        .modal-confirm .modal-header { border-bottom: 1px solid #eee; }
-        .modal-confirm .modal-footer { border-top: 1px solid #eee; }
+      :root {
+        --rojo-milan: #b20c06;
+        --rojo-hover: #8a0a05;
+        --negro-puro: #000000;
+        --blanco-puro: #ffffff;
+        --fondo-gris: #f4f4f4;
+        --card-bg: #ffffff;
+        --texto-gris: #4a5568;
+      }
+      body {
+        background-color: var(--fondo-gris);
+        min-height: 100vh;
+        color: var(--negro-puro);
+        font-family: 'Montserrat', sans-serif;
+        padding-top: 100px;
+        margin: 0;
+      }
+      .navbar {
+        backdrop-filter: blur(12px);
+        background: rgba(0, 0, 0, 0.9);
+        border-bottom: 3px solid var(--rojo-milan);
+      }
+      .navbar-brand {
+        color: var(--rojo-milan) !important;
+        font-weight: 800;
+      }
+      .card-custom {
+        background: var(--card-bg);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        color: var(--negro-puro);
+      }
+      .ruta-banner {
+        background: var(--blanco-puro);
+        border: 2px solid var(--rojo-milan);
+        border-radius: 16px;
+        padding: 18px 24px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: var(--negro-puro);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+      .ruta-icon {
+        width: 52px;
+        height: 52px;
+        background: var(--rojo-milan);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        color: var(--blanco-puro);
+      }
+      .ruta-info h5 {
+        margin: 0;
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--negro-puro);
+      }
+      .ruta-info small {
+        color: var(--texto-gris);
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+      .mensajero-banner {
+        background: var(--blanco-puro);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        padding: 16px 22px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        color: var(--negro-puro);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+      .mensajero-avatar {
+        width: 56px;
+        height: 56px;
+        background: var(--rojo-milan);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: white;
+        flex-shrink: 0;
+      }
+      .mensajero-info h4 {
+        margin: 0;
+        font-weight: 800;
+        font-size: 1.2rem;
+      }
+      .mensajero-info small {
+        color: var(--texto-gris);
+        font-size: 0.85rem;
+      }
+      .stat-pill {
+        background: var(--fondo-gris);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 50px;
+        padding: 7px 16px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--negro-puro);
+      }
+      .stat-pill .num {
+        color: var(--rojo-milan);
+        font-size: 1rem;
+        font-weight: 800;
+      }
+      .table {
+        color: var(--negro-puro);
+        background: transparent;
+        margin-bottom: 0;
+      }
+      .table thead th {
+        color: var(--rojo-milan);
+        border-bottom: 2px solid var(--rojo-milan) !important;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        font-weight: 700;
+        padding: 12px 8px;
+      }
+      .table tbody tr {
+        transition: background 0.2s;
+        border-bottom: 1px solid #eee;
+      }
+      .table tbody tr:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
+      .table td {
+        vertical-align: middle;
+        padding: 12px 8px;
+        border: none;
+      }
+      .badge-estado {
+        border-radius: 50px;
+        padding: 5px 14px;
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+      .bg-en-ruta {
+        background: #7b2fbe;
+        color: white;
+      }
+      .bg-colectado {
+        background: #00bfff;
+        color: #000;
+      }
+      .bg-entregado {
+        background: #28a745;
+        color: white;
+      }
+      .bg-cancelado {
+        background: var(--rojo-milan);
+        color: white;
+      }
+      .bg-registrado {
+        background: #6c757d;
+        color: white;
+      }
+      .guia-tag {
+        color: var(--rojo-milan);
+        font-weight: 800;
+        font-size: 0.85rem;
+        background: rgba(178, 12, 6, 0.08);
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(178, 12, 6, 0.2);
+      }
+      .dir-block small {
+        font-size: 0.75rem;
+        color: var(--texto-gris);
+        display: block;
+        font-weight: 500;
+      }
+      .dir-block span {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--negro-puro);
+      }
+      .btn-quitar {
+        background-color: var(--rojo-milan);
+        border: none;
+        color: var(--blanco-puro) !important;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+        font-family: 'Montserrat', sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+      }
+      .btn-quitar:hover {
+        background-color: var(--rojo-hover);
+        transform: scale(1.03);
+      }
+      #mapa-ruta {
+        height: 380px;
+        border-radius: 14px;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+      }
+      .map-leyenda {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--texto-gris);
+      }
+      .map-leyenda span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .ley-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        flex-shrink: 0;
+      }
+      .btn-volver {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        border-radius: 50px;
+        padding: 7px 18px;
+        font-weight: 700;
+        transition: 0.3s;
+        text-decoration: none;
+        font-size: 0.82rem;
+      }
+      .btn-volver:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-color: var(--rojo-milan);
+      }
+      .modal-confirm .modal-content {
+        background: var(--blanco-puro);
+        color: var(--negro-puro);
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+      }
+      .modal-confirm .modal-header {
+        border-bottom: 1px solid #eee;
+      }
+      .modal-confirm .modal-footer {
+        border-top: 1px solid #eee;
+      }
     </style>
-</head>
-<body>
-
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top px-4 py-2">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold fs-3" href="#">
-            ENVI<span class="text-white">EXPRESS</span>
-        </a>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top px-4 py-2">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold fs-3" href="#">ENVI<span class="text-white">EXPRESS</span></a>
         <div class="d-flex align-items-center gap-3">
-            <a href="/envios/planificar-ruta" class="btn-volver">
-                <i class="bi bi-arrow-left-circle me-1"></i> Volver al Mapa
-            </a>
-            <form action="/logout" method="post" class="m-0">
-                <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold">Salir</button>
-            </form>
+          <a href="/envios/planificar-ruta" class="btn-volver"><i class="bi bi-arrow-left-circle me-1"></i> Volver al Mapa</a>
+          <form action="/logout" method="post" class="m-0">
+            <button class="btn btn-danger btn-sm rounded-pill px-3 fw-bold">Salir</button>
+          </form>
         </div>
-    </div>
-</nav>
+      </div>
+    </nav>
 
-<div class="container py-3">
+    <div class="container py-3">
+      {% if ruta %}
+        {# ── Color del ícono de estado: se calcula ANTES de usarlo en el style ── #}
+        {% if ruta.estado == 'En curso' %}
+          {% set color_estado_ruta = '#ff8c00' %}
+        {% elif ruta.estado == 'Finalizada' %}
+          {% set color_estado_ruta = '#28a745' %}
+        {% else %}
+          {% set color_estado_ruta = '#6c757d' %}
+        {% endif %}
 
-    {% if ruta %}
-    <div class="ruta-banner">
-        <div class="ruta-icon"><i class="bi bi-signpost-2-fill"></i></div>
-        <div class="ruta-info flex-grow-1">
+        <div class="ruta-banner">
+          <div class="ruta-icon">
+            <i class="bi bi-signpost-2-fill"></i>
+          </div>
+          <div class="ruta-info flex-grow-1">
             <h5>{{ ruta.nombre_sector or 'Sin nombre' }}</h5>
             <small>
-                <i class="bi bi-circle-fill me-1"
-                    style="color:{% if ruta.estado == 'En curso' %}#ff8c00{% elif ruta.estado == 'Finalizada' %}#28a745{% else %}#6c757d{% endif %};font-size:0.6rem;"></i>
-                {{ ruta.estado }} &nbsp;·&nbsp;
-                <i class="bi bi-box-seam me-1"></i>{{ envios|length }} pedido(s) asignado(s)
+              <i class="bi bi-circle-fill me-1" style="color:{{ color_estado_ruta }};font-size:0.6rem;"></i>
+              {{ ruta.estado }} &nbsp;·&nbsp;
+              <i class="bi bi-box-seam me-1"></i>{{ envios|length }} pedido(s) asignado(s)
             </small>
-        </div>
-        <div class="d-flex gap-2">
+          </div>
+          <div class="d-flex gap-2">
             {% if ruta.estado == 'Creada' %}
-            <button onclick="cambiarEstadoRuta({{ ruta.ruta_id }}, 'En curso')"
-                class="btn btn-sm btn-warning fw-bold rounded-pill px-4">
-                <i class="bi bi-play-fill"></i> Iniciar
-            </button>
+              <button onclick="cambiarEstadoRuta({{ ruta.ruta_id }}, 'En curso')" class="btn btn-sm btn-warning fw-bold rounded-pill px-4"><i class="bi bi-play-fill"></i> Iniciar</button>
             {% elif ruta.estado == 'En curso' %}
-            <button onclick="cambiarEstadoRuta({{ ruta.ruta_id }}, 'Finalizada')"
-                class="btn btn-sm btn-success fw-bold rounded-pill px-4">
-                <i class="bi bi-check-circle-fill"></i> Finalizar
-            </button>
+              <button onclick="cambiarEstadoRuta({{ ruta.ruta_id }}, 'Finalizada')" class="btn btn-sm btn-success fw-bold rounded-pill px-4"><i class="bi bi-check-circle-fill"></i> Finalizar</button>
             {% endif %}
+          </div>
         </div>
-    </div>
-    {% endif %}
+      {% endif %}
 
-    <div class="mensajero-banner">
-        <div class="mensajero-avatar">
-            {{ mensajero.nombre[0] }}{{ mensajero.apellido[0] }}
-        </div>
+      <div class="mensajero-banner">
+        <div class="mensajero-avatar">{{ mensajero.nombre.0 }}{{ mensajero.apellido.0 }}</div>
         <div class="mensajero-info flex-grow-1">
-            <h4>{{ mensajero.nombre }} {{ mensajero.apellido }}</h4>
-            <small><i class="bi bi-envelope me-1"></i>{{ mensajero.correo or 'Sin correo' }}</small>
+          <h4>{{ mensajero.nombre }} {{ mensajero.apellido }}</h4>
+          <small><i class="bi bi-envelope me-1"></i>{{ mensajero.correo or 'Sin correo' }}</small>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-            <div class="stat-pill">
-                <i class="bi bi-box-seam" style="color:var(--rojo-milan);"></i>
-                <span class="num">{{ envios|length }}</span> total
-            </div>
-            <div class="stat-pill">
-                <i class="bi bi-check-circle" style="color:#28a745;"></i>
-                <span class="num">{{ envios|selectattr('estado','equalto','Entregado')|list|length }}</span> entregados
-            </div>
-            <div class="stat-pill">
-                <i class="bi bi-truck" style="color:#7B2FBE;"></i>
-                <span class="num">{{ envios|selectattr('estado','equalto','En_Ruta')|list|length }}</span> en ruta
-            </div>
+          <div class="stat-pill">
+            <i class="bi bi-box-seam" style="color:var(--rojo-milan);"></i>
+            <span class="num">{{ envios|length }}</span> total
+          </div>
+          <div class="stat-pill">
+            <i class="bi bi-check-circle" style="color:#28a745;"></i>
+            <span class="num">{{ envios|selectattr('estado', 'equalto', 'Entregado')|list|length }}</span> entregados
+          </div>
+          <div class="stat-pill">
+            <i class="bi bi-truck" style="color:#7B2FBE;"></i>
+            <span class="num">{{ envios|selectattr('estado', 'equalto', 'En_Ruta')|list|length }}</span> en ruta
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div class="row g-4">
-
+      <div class="row g-4">
         <div class="col-lg-7">
-            <div class="card-custom p-4">
-                <h5 class="fw-bold mb-3" style="color:var(--rojo-milan);">
-                    <i class="bi bi-list-ul me-2"></i>Pedidos Asignados
-                </h5>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Guía</th>
-                                <th>Origen</th>
-                                <th>Destino</th>
-                                <th>Estado</th>
-                                <th class="text-end">Costo</th>
-                                <th class="text-center">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for e in envios %}
-                            <tr id="fila-{{ e.envio_id }}">
-                                <td class="opacity-50 small">{{ loop.index }}</td>
-                                <td>
-                                    <span class="guia-tag">{{ e.numero_guia }}</span>
-                                </td>
-                                <td class="dir-block">
-                                    <small>{{ e.lugar_recogida.ciudad if e.lugar_recogida else '---' }}</small>
-                                    <span>{{ (e.lugar_recogida.direccion or '')[:25] if e.lugar_recogida else 'N/A' }}</span>
-                                </td>
-                                <td class="dir-block">
-                                    <small>{{ e.lugar_entrega.ciudad if e.lugar_entrega else '---' }}</small>
-                                    <span>{{ (e.lugar_entrega.direccion or '')[:25] if e.lugar_entrega else 'N/A' }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-estado
-                                        {% if e.estado == 'Registrado' %}bg-registrado
-                                        {% if e.estado == 'Registrado' %}bg-registrado
-                                        {% elif e.estado == 'Pendiente_Recoger' %}bg-registrado
-                                        {% elif e.estado == 'C-Colectado' %}bg-colectado
-                                        {% elif e.estado == 'En_Bodega' %}bg-en_bodega
-                                        {% elif e.estado == 'Pendiente_Entregar' %}bg-registrado
-                                        {% elif e.estado == 'En_Ruta' %}bg-en-ruta
-                                        {% elif e.estado == 'Entregado' %}bg-entregado
-                                        {% elif e.estado in ['Cancelado','Rechazado','Devolucion','Retorno'] %}bg-cancelado
-                                        {% else %}bg-registrado{% endif %}">
-                                        {% if e.estado == 'Pendiente_Recoger' %}PENDIENTE RECOGER
-                                        {% elif e.estado == 'C-Colectado' %}C-COLECTADO
-                                        {% elif e.estado == 'En_Bodega' %}EN BODEGA
-                                        {% elif e.estado == 'Pendiente_Entregar' %}PENDIENTE ENTREGAR
-                                        {% elif e.estado == 'En_Ruta' %}EN RUTA
-                                        {% elif e.estado == 'Entregado' %}ENTREGADO
-                                        {% elif e.estado == 'Cancelado' %}CANCELADO
-                                        {% elif e.estado == 'Rechazado' %}RECHAZADO
-                                        {% elif e.estado == 'Devolucion' %}DEVOLUCIÓN
-                                        {% elif e.estado == 'Retorno' %}RETORNO
-                                        {% else %}{{ e.estado }}{% endif %}
-                                    </span>
-                                </td>
-                                <td class="text-end fw-bold" style="color: var(--negro-puro);">
-                                    ${{ "{:,.0f}".format(e.costo_envio).replace(',', '.') }}
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn-quitar"
-                                        onclick="confirmarQuitar({{ e.envio_id }}, '{{ e.numero_guia }}')"
-                                        title="Quitar de ruta">
-                                        <i class="bi bi-x-circle-fill"></i> Quitar
-                                    </button>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="7" class="text-center py-4 opacity-50">
-                                    <i class="bi bi-inbox" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>
-                                    No hay pedidos en esta ruta.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+          <div class="card-custom p-4">
+            <h5 class="fw-bold mb-3" style="color:var(--rojo-milan);"><i class="bi bi-list-ul me-2"></i>Pedidos Asignados</h5>
+            <div class="table-responsive">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Guía</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Estado</th>
+                    <th class="text-end">Costo</th>
+                    <th class="text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for e in envios %}
+                    {# ── Mapas de badge: calculados fuera de cualquier atributo HTML ── #}
+                    {% set badge_class = { Registrado: 'bg-registrado', Pendiente_Verificar: 'bg-registrado', Pendiente_Recoger: 'bg-registrado', 'C-Colectado': 'bg-colectado', En_Bodega: 'bg-registrado', Pendiente_Entregar: 'bg-registrado', En_Ruta: 'bg-en-ruta', Entregado: 'bg-entregado', Cancelado: 'bg-cancelado', Rechazado: 'bg-cancelado', Devolucion: 'bg-cancelado', Retorno: 'bg-cancelado' } %}
+                    {% set badge_label = { Pendiente_Verificar: 'PENDIENTE VERIFICAR', Pendiente_Recoger: 'PENDIENTE RECOGER', 'C-Colectado': 'C-COLECTADO', En_Bodega: 'EN BODEGA', Pendiente_Entregar: 'PENDIENTE ENTREGAR', En_Ruta: 'EN RUTA', Entregado: 'ENTREGADO', Cancelado: 'CANCELADO', Rechazado: 'RECHAZADO', Devolucion: 'DEVOLUCIÓN', Retorno: 'RETORNO' } %}
+
+                    <tr id="fila-{{ e.envio_id }}">
+                      <td class="opacity-50 small">{{ loop.index }}</td>
+                      <td>
+                        <span class="guia-tag">{{ e.numero_guia }}</span>
+                      </td>
+                      <td class="dir-block">
+                        <small>
+                          {% if e.lugar_recogida %}
+                            {{ e.lugar_recogida.ciudad }}
+                          {% else %}
+                            ---
+                          {% endif %}
+                        </small>
+                        <span>
+                          {% if e.lugar_recogida and e.lugar_recogida.direccion %}
+                            {{ e.lugar_recogida.direccion[:25] }}
+                          {% else %}
+                            N/A
+                          {% endif %}
+                        </span>
+                      </td>
+                      <td class="dir-block">
+                        <small>
+                          {% if e.lugar_entrega %}
+                            {{ e.lugar_entrega.ciudad }}
+                          {% else %}
+                            ---
+                          {% endif %}
+                        </small>
+                        <span>
+                          {% if e.lugar_entrega and e.lugar_entrega.direccion %}
+                            {{ e.lugar_entrega.direccion[:25] }}
+                          {% else %}
+                            N/A
+                          {% endif %}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge badge-estado {{ badge_class.get(e.estado, 'bg-registrado') }}">{{ badge_label.get(e.estado, e.estado) }}</span>
+                      </td>
+                      <td class="text-end fw-bold" style="color:var(--negro-puro);">${{ '{:,.0f}'.format(e.costo_envio).replace(',', '.') }}</td>
+                      <td class="text-center">
+                        <button class="btn-quitar" onclick="confirmarQuitar({{ e.envio_id }}, '{{ e.numero_guia }}')" title="Quitar de ruta"><i class="bi bi-x-circle-fill"></i> Quitar</button>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td colspan="7" class="text-center py-4 opacity-50">
+                        <i class="bi bi-inbox" style="font-size:1.5rem;display:block;margin-bottom:6px;"></i>
+                        No hay pedidos en esta ruta.
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
+          </div>
         </div>
 
         <div class="col-lg-5">
-            <div class="card-custom p-4">
-                <h5 class="fw-bold mb-3" style="color:var(--rojo-milan);">
-                    <i class="bi bi-geo-alt me-2"></i>Mapa de Entregas
-                </h5>
-                <div id="mapa-ruta"></div>
-                <div class="map-leyenda">
-                    <span><div class="ley-dot" style="background:#B20C06;"></div> D · Punto de entrega</span>
-                </div>
-                <small class="opacity-50 mt-1 d-block text-center">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Haz clic en un marcador para ver el detalle
-                </small>
+          <div class="card-custom p-4">
+            <h5 class="fw-bold mb-3" style="color:var(--rojo-milan);"><i class="bi bi-geo-alt me-2"></i>Mapa de Entregas</h5>
+            <div id="mapa-ruta"></div>
+            <div class="map-leyenda">
+              <span><div class="ley-dot" style="background:#B20C06;"></div>D · Punto de entrega</span>
             </div>
+            <small class="opacity-50 mt-1 d-block text-center">
+              <i class="bi bi-info-circle me-1"></i>
+              Haz clic en un marcador para ver el detalle
+            </small>
+          </div>
         </div>
-
+      </div>
     </div>
-</div>
 
-<div class="modal fade modal-confirm" id="modalQuitar" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+    {# ── MODAL QUITAR ── #}
+    <div class="modal fade modal-confirm" id="modalQuitar" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold">
-                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-                    Quitar pedido de la ruta
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>¿Estás seguro de quitar el pedido <b id="guiaModal" style="color:var(--rojo-milan);"></b> de esta ruta?</p>
-                <p class="small text-muted">El pedido volverá al estado <b>Registrado</b> y quedará disponible para reasignación.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" id="btnConfirmarQuitar">
-                    <i class="bi bi-x-circle-fill me-1"></i> Sí, quitar
-                </button>
-            </div>
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">
+              <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+              Quitar pedido de la ruta
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              ¿Estás seguro de quitar el pedido
+              <b id="guiaModal" style="color:var(--rojo-milan);"></b> de esta ruta?
+            </p>
+            <p class="small text-muted">
+              El pedido volverá al estado <b>Registrado</b> y quedará disponible para reasignación.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger btn-sm rounded-pill px-3 fw-bold" id="btnConfirmarQuitar"><i class="bi bi-x-circle-fill me-1"></i> Sí, quitar</button>
+          </div>
         </div>
+      </div>
     </div>
-</div>
 
-<div class="position-fixed top-0 end-0 p-3" style="z-index:9999;">
-    <div id="toastMsg" class="toast align-items-center text-white border-0" role="alert">
+    {# ── TOAST ── #}
+    <div class="position-fixed top-0 end-0 p-3" style="z-index:9999;">
+      <div id="toastMsg" class="toast align-items-center text-white border-0" role="alert">
         <div class="d-flex">
-            <div class="toast-body fw-bold" id="toastText"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          <div class="toast-body fw-bold" id="toastText"></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
+      </div>
     </div>
-</div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<script>
-    // ── MAPA ENVIEXPRESS CORREGIDO ──
+    <script>
+    // ── MAPA ──
     const map = L.map('mapa-ruta').setView([4.65, -74.10], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; EnviExpress'
     }).addTo(map);
 
     const puntosLimites = [];
-    const idMensajeroActual = {{ mensajero.id_usuario }};
+    const idMensajeroActual = {{ mensajero.id_usuario|default('0') }};
 
     {% for e in envios %}
     (function() {
-        // Variables de rol desde el backend
         const esRecolector = {{ 'true' if e.usuario_mensajero_id == mensajero.id_usuario else 'false' }};
         const esEntregador = {{ 'true' if e.usuario_mensajero_entrega_id == mensajero.id_usuario else 'false' }};
-        
-        // Estados generales del envío
-        const estadoEnvio = "{{ e.estado }}";
+        const estadoEnvio   = "{{ e.estado }}";
         const estadoRecogida = "{{ e.estado_recogida }}";
-        const estadoEntrega = "{{ e.estado_entrega }}";
+        const estadoEntrega  = "{{ e.estado_entrega }}";
 
-        let coordOrigen = null;
+        let coordOrigen  = null;
         let coordDestino = null;
 
-        // 1. Ocultado: Ya no se muestra el PUNTO VERDE (P)
-        {% if e.lugar_recogida and e.lugar_recogida.latitud %}
-            /* COMENTADO PARA OCULTAR EL ORIGEN
-            if (esRecolector && (estadoEnvio === 'Pendiente_Recoger' || estadoRecogida === 'En_Ruta' || estadoRecogida === 'Pendiente')) {
-                coordOrigen = [{{ e.lugar_recogida.latitud }}, {{ e.lugar_recogida.longitud }}];
-                
-                const iconP = L.divIcon({
-                    className: '',
-                    html: `<div style="background:#28a745;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;border:2px solid white;box-shadow:2px 2px 5px rgba(0,0,0,0.3);">P</div>`,
-                    iconSize: [32, 32], iconAnchor: [16, 16]
-                });
-
-                L.marker(coordOrigen, { icon: iconP }).addTo(map)
-                    .bindPopup(`
-                        <b style="color:#000000;">📍 ORIGEN (P) - Recogida</b><br>
-                        <b>Guía: {{ e.numero_guia }}</b><br>
-                        <small style="color:#4a5568;">{{ e.lugar_recogida.direccion }}</small><br>
-                        <span style="font-weight:700;color:#28a745;">Estado: ${estadoEnvio}</span>
-                    `);
-                
-                puntosLimites.push(coordOrigen);
-            }
-            */
-        {% endif %}
-
-        // 2. Mostrar PUNTO ROJO (D) - CORREGIDO: Se elimina la restricción de 'Pendiente_Recoger' para que dibuje las entregas siempre.
         {% if e.lugar_entrega and e.lugar_entrega.latitud %}
-            if (esEntregador || esRecolector) {
-                coordDestino = [{{ e.lugar_entrega.latitud }}, {{ e.lugar_entrega.longitud }}];
-                
-                const iconD = L.divIcon({
-                    className: '',
-                    html: `<div style="background:#B20C06;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;border:2px solid white;box-shadow:2px 2px 5px rgba(0,0,0,0.3);">D</div>`,
-                    iconSize: [32, 32], iconAnchor: [16, 16]
-                });
+        if (esEntregador || esRecolector) {
+            coordDestino = [{{ e.lugar_entrega.latitud }}, {{ e.lugar_entrega.longitud }}];
 
-                L.marker(coordDestino, { icon: iconD }).addTo(map)
-                    .bindPopup(`
-                        <b style="color:#000000;">🎯 DESTINO (D) - Entrega</b><br>
-                        <b>Guía: {{ e.numero_guia }}</b><br>
-                        <small style="color:#4a5568;">{{ e.lugar_entrega.direccion }}</small><br>
-                        <span style="font-weight:700;color:#7B2FBE;">Estado total: ${estadoEnvio}</span>
-                    `);
-                
-                puntosLimites.push(coordDestino);
-            }
+            const iconD = L.divIcon({
+                className: '',
+                html: `<div style="background:#B20C06;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:900;font-size:12px;border:2px solid white;box-shadow:2px 2px 5px rgba(0,0,0,0.3);">D</div>`,
+                iconSize: [32, 32], iconAnchor: [16, 16]
+            });
+
+            L.marker(coordDestino, { icon: iconD }).addTo(map)
+                .bindPopup(`
+                    <b style="color:#000;">🎯 DESTINO (D) - Entrega</b><br>
+                    <b>Guía: {{ e.numero_guia }}</b><br>
+                    <small style="color:#4a5568;">{{ e.lugar_entrega.direccion }}</small><br>
+                    <span style="font-weight:700;color:#7B2FBE;">Estado: ${estadoEnvio}</span>
+                `);
+
+            puntosLimites.push(coordDestino);
+        }
         {% endif %}
 
-        // 3. Dibujar la línea entre origen y destino SOLO si ambos existen en el mapa simultáneamente
         if (coordOrigen && coordDestino) {
-            L.polyline([coordOrigen, coordDestino], { 
-                color: '#B20C06', 
-                weight: 3, 
-                opacity: 0.6, 
-                dashArray: '6, 6' 
+            L.polyline([coordOrigen, coordDestino], {
+                color: '#B20C06', weight: 3, opacity: 0.6, dashArray: '6, 6'
             }).addTo(map);
         }
     })();
     {% endfor %}
 
-    // Auto-ajuste de pantalla dinámico
     if (puntosLimites.length > 0) {
         map.fitBounds(puntosLimites, { padding: [50, 50] });
     }
@@ -522,7 +583,8 @@
     // ── CAMBIAR ESTADO RUTA ──
     function cambiarEstadoRuta(rutaId, nuevoEstado) {
         fetch('/rutas/cambiar-estado', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ruta_id: rutaId, estado: nuevoEstado })
         })
         .then(r => r.json())
@@ -530,7 +592,9 @@
             if (data.status === 'success') {
                 mostrarToast(`Ruta actualizada a: ${nuevoEstado}`, 'success');
                 setTimeout(() => location.reload(), 1200);
-            } else mostrarToast('Error al cambiar estado.', 'danger');
+            } else {
+                mostrarToast('Error al cambiar estado.', 'danger');
+            }
         });
     }
 
@@ -541,6 +605,6 @@
         document.getElementById('toastText').textContent = msg;
         new bootstrap.Toast(el, { delay: 3500 }).show();
     }
-</script>
-</body>
+    </script>
+  </body>
 </html>
