@@ -85,15 +85,15 @@ def obtener_pedidos_app(
     current_user: Usuario = Depends(get_current_user)
 ):
     try:
-       estados_activos = [
-    "Registrado",
-    "Pendiente_Verificar",   # ← AGREGAR ESTA LÍNEA
-    "Pendiente_Recoger",
-    "C-Colectado",
-    "En_Bodega",
-    "Pendiente_Entregar",
-    "En_Ruta",
-    "En_Destino"
+        estados_activos = [
+        "Registrado",
+        "Pendiente_Verificar",   # ← AGREGAR ESTA LÍNEA
+        "Pendiente_Recoger",
+        "C-Colectado",
+        "En_Bodega",
+        "Pendiente_Entregar",
+        "En_Ruta",
+        "En_Destino"
 ]
         pedidos = db.query(Envio).filter(
             or_(
