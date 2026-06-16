@@ -392,9 +392,10 @@
                                             {% if envio.foto_recogida %}
                                             <div class="mt-2">
                                                 <span class="foto-badge recogida"><i class="bi bi-camera-fill me-1"></i>Foto Recogida</span><br>
-                                                <img src="/static/fotos_recogida/{{ envio.foto_recogida }}"
+                                                {# ✅ CLOUDINARY: src es la URL completa guardada en BD #}
+                                                <img src="{{ envio.foto_recogida }}"
                                                      class="foto-thumb mt-1"
-                                                     onclick="abrirFoto('/static/fotos_recogida/{{ envio.foto_recogida }}')"
+                                                     onclick="abrirFoto('{{ envio.foto_recogida }}')"
                                                      title="Ver foto de recogida">
                                             </div>
                                             {% endif %}
@@ -444,9 +445,10 @@
                                             {% if envio.foto_entrega %}
                                             <div class="mt-2">
                                                 <span class="foto-badge entrega"><i class="bi bi-camera-fill me-1"></i>Foto Entrega</span><br>
-                                                <img src="/static/fotos_entrega/{{ envio.foto_entrega }}"
+                                                {# ✅ CLOUDINARY: src es la URL completa guardada en BD #}
+                                                <img src="{{ envio.foto_entrega }}"
                                                      class="foto-thumb mt-1"
-                                                     onclick="abrirFoto('/static/fotos_entrega/{{ envio.foto_entrega }}')"
+                                                     onclick="abrirFoto('{{ envio.foto_entrega }}')"
                                                      title="Ver foto de entrega">
                                             </div>
                                             {% endif %}
@@ -534,9 +536,10 @@
                                         <td>Mensajero</td>
                                         <td style="text-align:center;">
                                             <span class="foto-badge recogida d-block mb-1"><i class="bi bi-camera-fill me-1"></i>Recogida</span>
-                                            <img src="/static/fotos_recogida/{{ envio.foto_recogida }}"
+                                            {# ✅ CLOUDINARY: URL completa directa #}
+                                            <img src="{{ envio.foto_recogida }}"
                                                  class="foto-thumb"
-                                                 onclick="abrirFoto('/static/fotos_recogida/{{ envio.foto_recogida }}')"
+                                                 onclick="abrirFoto('{{ envio.foto_recogida }}')"
                                                  title="Ver foto de recogida">
                                         </td>
                                     </tr>
@@ -569,9 +572,10 @@
                                         <td>Mensajero</td>
                                         <td style="text-align:center;">
                                             {% if seg.foto %}
-                                                <img src="/static/fotos_entrega/{{ seg.foto }}"
+                                                {# ✅ CLOUDINARY: si seg.foto también migra a URL completa #}
+                                                <img src="{{ seg.foto }}"
                                                      class="foto-thumb"
-                                                     onclick="abrirFoto('/static/fotos_entrega/{{ seg.foto }}')"
+                                                     onclick="abrirFoto('{{ seg.foto }}')"
                                                      title="Ver foto">
                                             {% else %}
                                                 <span class="text-muted">—</span>
@@ -591,10 +595,11 @@
                                         <td>Mensajero</td>
                                         <td style="text-align:center;">
                                             <span class="foto-badge entrega d-block mb-1"><i class="bi bi-camera-fill me-1"></i>Entrega</span>
-                                            <img src="/static/fotos_entrega/{{ envio.foto_entrega }}"
+                                            {# ✅ CLOUDINARY: URL completa directa #}
+                                            <img src="{{ envio.foto_entrega }}"
                                                  class="foto-thumb"
                                                  style="border-color:var(--milano-red);"
-                                                 onclick="abrirFoto('/static/fotos_entrega/{{ envio.foto_entrega }}')"
+                                                 onclick="abrirFoto('{{ envio.foto_entrega }}')"
                                                  title="Ver foto de entrega">
                                         </td>
                                     </tr>

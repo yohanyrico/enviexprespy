@@ -1,5 +1,7 @@
 import os
-import shutil
+import cloudinary
+import cloudinary.uploader
+from app.config.cloudinary_config import *
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form
 from sqlalchemy.orm import Session
@@ -439,6 +441,7 @@ def gestionar_entrega(
 
 
 # --- SUBIR EVIDENCIA POR ID (método original — mantener para gestion_entrega) ---
+# --- SUBIR EVIDENCIA POR ID ---
 @router.post("/pedidos/{envio_id}/evidencia")
 async def subir_evidencia(
     envio_id: int,
@@ -459,24 +462,24 @@ async def subir_evidencia(
     if not envio:
         raise HTTPException(status_code=404, detail="Envío no encontrado")
 
-    carpeta = "app/static/fotos_recogida"
-    os.makedirs(carpeta, exist_ok=True)
+    try:
+        resultado = cloudinary.uploader.upload(
+            file.file,
+            folder="enviexpress/recogidas",
+            public_id=f"{envio.numero_guia}_recogida",
+            overwrite=True,
+            resource_type="image"
+        )
+        envio.foto_recogida = resultado["secure_url"]
+    except Exception as e:
+        print(f"[CLOUDINARY ERROR] {e}")
+        raise HTTPException(status_code=500, detail="Error al subir foto a Cloudinary.")
 
-    extension = file.filename.rsplit(".", 1)[-1].lower() if file.filename else "jpg"
-    if extension not in ["jpg", "jpeg", "png", "webp"]:
-        extension = "jpg"
-
-    nombre_archivo = f"{envio.numero_guia}_recogida.{extension}"
-    with open(f"{carpeta}/{nombre_archivo}", "wb") as f:
-        shutil.copyfileobj(file.file, f)
-
-    envio.foto_recogida = nombre_archivo
     db.commit()
+    return JSONResponse({"ok": True, "foto": envio.foto_recogida})
 
-    return JSONResponse({"ok": True, "foto": nombre_archivo})
 
-
-# --- SUBIR FOTO DE ENTREGA POR ID (método original) ---
+# --- SUBIR FOTO DE ENTREGA POR ID ---
 @router.post("/pedidos/{envio_id}/foto-entrega")
 async def subir_foto_entrega(
     envio_id: int,
@@ -497,26 +500,24 @@ async def subir_foto_entrega(
     if not envio:
         raise HTTPException(status_code=404, detail="Envío no encontrado")
 
-    carpeta = "app/static/fotos_entrega"
-    os.makedirs(carpeta, exist_ok=True)
+    try:
+        resultado = cloudinary.uploader.upload(
+            file.file,
+            folder="enviexpress/entregas",
+            public_id=f"{envio.numero_guia}_entrega",
+            overwrite=True,
+            resource_type="image"
+        )
+        envio.foto_entrega = resultado["secure_url"]
+    except Exception as e:
+        print(f"[CLOUDINARY ERROR] {e}")
+        raise HTTPException(status_code=500, detail="Error al subir foto a Cloudinary.")
 
-    extension = file.filename.rsplit(".", 1)[-1].lower() if file.filename else "jpg"
-    if extension not in ["jpg", "jpeg", "png", "webp"]:
-        extension = "jpg"
-
-    nombre_archivo = f"{envio.numero_guia}_entrega.{extension}"
-    with open(f"{carpeta}/{nombre_archivo}", "wb") as f:
-        shutil.copyfileobj(file.file, f)
-
-    envio.foto_entrega = nombre_archivo
     db.commit()
-
-    return JSONResponse({"ok": True, "foto": nombre_archivo})
+    return JSONResponse({"ok": True, "foto": envio.foto_entrega})
 
 
 # --- SUBIR EVIDENCIA POR NÚMERO DE GUÍA ---
-# Usado por CamaraEvidenciaScreen — guarda foto y registra en el campo correcto
-# según el estado_destino (recolección o entrega)
 @router.post("/pedidos/evidencia-por-guia")
 async def subir_evidencia_por_guia(
     guia: str = Form(...),
@@ -535,42 +536,37 @@ async def subir_evidencia_por_guia(
             Envio.usuario_mensajero_entrega_id == current_user.id_usuario
         )
     ).first()
-
     if not envio:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Envío con guía '{guia}' no encontrado o no pertenece a este mensajero."
-        )
+        raise HTTPException(status_code=404, detail=f"Guía '{guia}' no encontrada.")
 
-    # Elegir carpeta y campo según el estado
     es_entrega = estado_destino in ("Entregado", "Rechazado", "Fallido", "En_Destino")
-    carpeta = "app/static/fotos_entrega" if es_entrega else "app/static/fotos_recogida"
-    os.makedirs(carpeta, exist_ok=True)
-
-    extension = foto.filename.rsplit(".", 1)[-1].lower() if foto.filename else "jpg"
-    if extension not in ["jpg", "jpeg", "png", "webp"]:
-        extension = "jpg"
-
+    carpeta_cloud = "enviexpress/entregas" if es_entrega else "enviexpress/recogidas"
     sufijo = "entrega" if es_entrega else "recogida"
-    nombre_archivo = f"{guia}_{sufijo}_{estado_destino}.{extension}"
-    ruta_disco = f"{carpeta}/{nombre_archivo}"
 
-    with open(ruta_disco, "wb") as f:
-        shutil.copyfileobj(foto.file, f)
+    try:
+        resultado = cloudinary.uploader.upload(
+            foto.file,
+            folder=carpeta_cloud,
+            public_id=f"{guia}_{sufijo}",
+            overwrite=True,
+            resource_type="image"
+        )
+        url_foto = resultado["secure_url"]
+    except Exception as e:
+        print(f"[CLOUDINARY ERROR] {e}")
+        raise HTTPException(status_code=500, detail="Error al subir foto a Cloudinary.")
 
-    # Guardar en el campo correcto del envío
     if es_entrega:
-        envio.foto_entrega = nombre_archivo
+        envio.foto_entrega = url_foto
     else:
-        envio.foto_recogida = nombre_archivo
+        envio.foto_recogida = url_foto
 
     db.commit()
-
-    print(f"[FOTO] Guía '{guia}' | estado '{estado_destino}' | archivo '{nombre_archivo}'")
+    print(f"[FOTO] Guía '{guia}' | '{estado_destino}' | URL: {url_foto}")
 
     return JSONResponse({
         "ok": True,
-        "foto": nombre_archivo,
+        "foto": url_foto,
         "guia": guia,
         "estado_destino": estado_destino
     })
