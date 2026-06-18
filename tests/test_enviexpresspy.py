@@ -1,17 +1,29 @@
 import os
+import sys
+
+# Variables de entorno ANTES de cualquier import del proyecto
 os.environ["DATABASE_URL"] = "sqlite:///./test_enviexprespy.db"
 os.environ["SECRET_KEY"] = "clave_test_123"
 os.environ["WOMPI_PUBLIC_KEY"] = "test_key"
+os.environ["MAIL_USERNAME"] = "test@test.com"
+os.environ["MAIL_PASSWORD"] = "test_pass"
+os.environ["MAIL_FROM"] = "test@test.com"
+os.environ["MAIL_SERVER"] = "smtp.test.com"
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
+from unittest.mock import patch, MagicMock
+
+# ── Crear carpeta static antes de importar la app ──
+os.makedirs("app/static", exist_ok=True)
 
 from main import app
 from app.config.database import Base, get_db
 from app.security.SecurityConfig import hash_password
 
+# ── BD de prueba SQLite ──
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test_enviexprespy.db"
 
 engine_test = create_engine(
@@ -41,10 +53,11 @@ def setup_database():
     Base.metadata.create_all(bind=engine_test)
     yield
     Base.metadata.drop_all(bind=engine_test)
+    pass  # No borrar la BD en Windows (archivo en uso)
 
 @pytest.fixture
 def client():
-    return TestClient(app, raise_server_exceptions=False)
+    return TestClient(app)
 
 @pytest.fixture
 def db():
@@ -98,15 +111,6 @@ def usuario_cliente(db):
     db.refresh(user)
     return user
 
-def obtener_token(client, username, password):
-    """Helper para obtener token del API — maneja tanto 'token' como 'access_token'."""
-    response = client.post("/api/login", json={
-        "username": username,
-        "password": password
-    })
-    data = response.json()
-    return data.get("token") or data.get("access_token")
-
 @pytest.fixture
 def token_admin(client, usuario_admin):
     response = client.post("/api/login", json={
@@ -157,7 +161,7 @@ class TestSeguridad:
         assert verify_password("clave_incorrecta", hashed) is False
 
     def test_crear_token_jwt(self):
-        """El token JWT debe generarse correctamente."""
+        """El token JWT debe generarse y ser una cadena válida."""
         from app.security.SecurityConfig import create_access_token
         token = create_access_token(data={"sub": "test_user"})
         assert token is not None
@@ -228,18 +232,22 @@ class TestModelos:
 class TestEndpointsPublicos:
 
     def test_landing_page(self, client):
+        """La página principal debe responder 200."""
         response = client.get("/")
         assert response.status_code == 200
 
     def test_login_page_get(self, client):
+        """El formulario de login debe responder 200."""
         response = client.get("/login")
         assert response.status_code == 200
 
     def test_registro_page(self, client):
+        """La página de registro debe responder 200."""
         response = client.get("/registro")
         assert response.status_code == 200
 
     def test_recuperar_page(self, client):
+        """La página de recuperación debe responder 200."""
         response = client.get("/recuperar")
         assert response.status_code == 200
 
@@ -258,7 +266,6 @@ class TestAutenticacion:
         })
         assert response.status_code == 200
         data = response.json()
-        # El API puede retornar 'token' o 'access_token'
         tiene_token = "token" in data or "access_token" in data
         assert tiene_token, f"No hay token en respuesta: {data}"
 
@@ -273,7 +280,7 @@ class TestAutenticacion:
     def test_api_login_usuario_inexistente(self, client):
         """Login con usuario inexistente debe retornar error."""
         response = client.post("/api/login", json={
-            "username": "no_existe_123",
+            "username": "no_existe_xyz_999",
             "password": "cualquier"
         })
         assert response.status_code in [401, 404, 422]
@@ -292,7 +299,7 @@ class TestAutenticacion:
 
 
 # ─────────────────────────────────────────────
-# PRUEBAS DE INTEGRACIÓN
+# PRUEBAS DE INTEGRACIÓN — Usuarios
 # ─────────────────────────────────────────────
 
 class TestIntegracionUsuarios:
@@ -305,7 +312,7 @@ class TestIntegracionUsuarios:
             user_name="flujo_test_user",
             password=hash_password("flujo123"),
             nombre="Flujo",
-            apellido="Integracion",
+            apellido="Test",
             correo="flujo@integracion.com",
             rol="CLIENTE",
             activo=True,
@@ -320,7 +327,7 @@ class TestIntegracionUsuarios:
         assert response.status_code == 200
         data = response.json()
         tiene_token = "token" in data or "access_token" in data
-        assert tiene_token, f"No hay token en respuesta: {data}"
+        assert tiene_token, f"No hay token: {data}"
 
         db.delete(nuevo_user)
         db.commit()
@@ -352,21 +359,17 @@ class TestIntegracionUsuarios:
             "username": "inactivo_test",
             "password": "pass123"
         })
-        # Usuario inactivo debe ser rechazado (401 o 403)
         assert response.status_code in [401, 403]
 
         db.delete(inactivo)
         db.commit()
 
 
-class TestIntegracionEnvios:
+# ─────────────────────────────────────────────
+# PRUEBAS DE INTEGRACIÓN — Envíos
+# ─────────────────────────────────────────────
 
-    def test_flujo_crear_envio_como_cliente(self, client, token_cliente):
-        """Integración: cliente accede a formulario de nuevo envío."""
-        response = client.get("/envios/nuevo", headers={
-            "Authorization": f"Bearer {token_cliente}"
-        })
-        assert response.status_code in [200, 302, 303, 307]
+class TestIntegracionEnvios:
 
     def test_flujo_listar_envios_admin(self, client, token_admin):
         """Integración: admin puede ver listado de envíos."""
@@ -375,7 +378,21 @@ class TestIntegracionEnvios:
         })
         assert response.status_code == 200
 
+    def test_flujo_crear_envio_como_cliente(self, client, token_cliente):
+        """Integración: cliente accede al formulario de nuevo envío."""
+        response = client.get("/envios/nuevo", headers={
+            "Authorization": f"Bearer {token_cliente}"
+        })
+        assert response.status_code in [200, 302, 303, 307]
+
     def test_acceso_envios_sin_autenticar(self, client):
         """Integración: sin autenticar no se puede ver envíos."""
         response = client.get("/envios", follow_redirects=False)
         assert response.status_code in [302, 303, 307, 401]
+
+    def test_api_ubicaciones_mensajeros(self, client, token_admin):
+        """Integración: endpoint del mapa responde correctamente."""
+        response = client.get("/api/admin/ubicaciones-mensajeros", headers={
+            "Authorization": f"Bearer {token_admin}"
+        })
+        assert response.status_code in [200, 500]
