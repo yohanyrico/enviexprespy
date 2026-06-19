@@ -37,6 +37,7 @@ import app.repositories.VehiculoRepository as vehiculo_repo
 import app.repositories.TarifaRepository as tarifa_repo
 import app.repositories.RutaRepository as ruta_repo
 import app.repositories.LugarRepository as lugar_repo
+import app.repositories.seguimiento_repository as seg_repo
 from app.config.templates import templates
 
 router = APIRouter(prefix="/envios", tags=["Envíos"])
@@ -204,7 +205,6 @@ def listar(request: Request, cliente_id: Optional[int] = None, db: Session = Dep
         joinedload(Envio.lugar_entrega)
     )
 
-    # ── FILTRO POR CLIENTE ──
     if cliente_id:
         query = query.filter(Envio.usuario_cliente_id == cliente_id)
 
@@ -217,11 +217,12 @@ def listar(request: Request, cliente_id: Optional[int] = None, db: Session = Dep
         "request": request, "envios": envios,
         "mensajeros": mensajeros, "clientes": clientes_registrados,
         "rol": request.session.get("rol", "ADMIN"),
-        "cliente_id_filtro": cliente_id  # para mantener el select activo en el HTML
+        "cliente_id_filtro": cliente_id
     })
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     return response
+
 
 @router.get("/mis-guias")
 def listar_mis_guias(request: Request, db: Session = Depends(get_db)):
@@ -290,10 +291,7 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse(url="/login")
 
         datos = _cargar_datos_formulario(db)
-        
-        # ── NUEVA CONSULTA: Traer los mensajeros de la base de datos ──
         mensajeros_db = db.query(Usuario).filter(Usuario.rol == "MENSAJERO").all()
-        
         clientes_con_tarifa = db.query(Usuario).options(
             joinedload(Usuario.tarifa)
         ).filter(Usuario.rol == "CLIENTE").all()
@@ -320,16 +318,15 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
         else:
             saldo = None
 
-        # Al retornar, incluimos "mensajeros" para que Jinja2 lo renderice
         return templates.TemplateResponse("form-envio.html", {
-            "request": request, 
+            "request": request,
             "envio": None,
-            "rol": usuario_actual.rol, 
+            "rol": usuario_actual.rol,
             "current_user": usuario_actual,
-            "clientes_tarifas": clientes_tarifas, 
+            "clientes_tarifas": clientes_tarifas,
             "saldo_disponible": saldo,
-            "mensajeros": mensajeros_db,  # <- CLAVE: Aquí se envía la lista al HTML
-            **campos, 
+            "mensajeros": mensajeros_db,
+            **campos,
             **datos
         })
     except Exception as e:
@@ -344,7 +341,7 @@ def nuevo(request: Request, db: Session = Depends(get_db)):
 @router.post("/guardar")
 async def guardar(request: Request, db: Session = Depends(get_db)):
     rol = request.session.get("rol", "CLIENTE")
-    print(f"ROL EN SESIÓN: {rol}")  # ← agrega esto temporalmente
+    print(f"ROL EN SESIÓN: {rol}")
     destino_ok = "/envios" if rol in ("CEO", "FACTURACION", "ADMINISTRATIVO") else "/envios/mis-guias"
 
     try:
@@ -352,7 +349,6 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
         envio_id = form.get("envio_id")
         es_nuevo = not (envio_id and envio_id.strip())
 
-        # Obtener cliente
         if rol == "ADMIN":
             cliente_id = form.get("usuario_cliente_id")
             if not cliente_id:
@@ -376,15 +372,12 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
         obs_cliente = form.get("instrucciones_especiales", "").strip()
         instrucciones_finales = f"CONTENIDO: {contenido} | OBS: {obs_cliente}"
 
-        # Parsear productos
         try:
             productos_seleccionados = json.loads(form.get("productos_inventario", "[]"))
         except Exception:
             productos_seleccionados = []
 
-       # The code snippet provided is not complete and contains syntax errors. It seems to be a Python if statement, but it is missing the condition that should be checked after the "if" keyword. Additionally, the indentation is incorrect. To provide a more accurate explanation, please provide the complete and correctly formatted code snippet.
         if es_nuevo:
-            # Tarifa y costo
             if not es_bogota:
                 tarifa_db  = db.query(Tarifa).filter(
                     Tarifa.nombre.ilike("%Nacional%") | Tarifa.nombre.ilike("%Raíces%")
@@ -432,7 +425,7 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 concepto=f"Pago {'Nacional' if not es_bogota else 'Urbano'} Guía {envio.numero_guia}",
                 fecha_creacion=datetime.now()
             ))
-            
+
             db.add(Seguimiento(
                 envio_id=envio.envio_id,
                 estado="Registrado",
@@ -440,7 +433,6 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
                 fecha=datetime.now()
             ))
 
-            # Guardar items de inventario (sin revertir previos, es nuevo)
             _guardar_items_inventario(db, envio.envio_id, cliente, productos_seleccionados, revertir_previos=False)
 
         else:
@@ -453,12 +445,10 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
             envio.valor_a_cobrar = valor_a_cobrar
             envio.peso           = Decimal(form.get("peso", "1.0"))
 
-            # Actualizar items (revertir stock viejo y aplicar nuevo)
             if productos_seleccionados:
                 _guardar_items_inventario(
                     db, envio.envio_id, cliente, productos_seleccionados, revertir_previos=True)
 
-        # Guardar lugares
         for tipo in ["recogida", "entrega"]:
             ciudad    = form.get(f"ciudad_{tipo}", "")
             depto     = form.get(f"depto_{tipo}", "")
@@ -515,7 +505,7 @@ async def guardar(request: Request, db: Session = Depends(get_db)):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ELIMINAR
+# ELIMINAR ENVÍO  ✅ FIXED: limpia FKs antes de borrar
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/eliminar/{id}")
@@ -523,13 +513,12 @@ def eliminar(id: int, request: Request, db: Session = Depends(get_db)):
     rol        = request.session.get("rol", "CLIENTE")
     destino_ok = "/envios" if rol in ("CEO", "FACTURACION", "ADMINISTRATIVO") else "/envios/mis-guias"
 
-
     try:
         envio = db.query(Envio).filter(Envio.envio_id == id).first()
         if not envio:
             return RedirectResponse(url=destino_ok)
 
-        # Devolver stock si el envío estaba registrado
+        # Devolver stock si aplica
         if envio.estado == "Registrado":
             for item in db.query(EnvioItemInventario).filter(
                     EnvioItemInventario.envio_id == envio.envio_id).all():
@@ -539,10 +528,11 @@ def eliminar(id: int, request: Request, db: Session = Depends(get_db)):
                     if hasattr(prod, 'stock_comprometido') and prod.stock_comprometido >= item.cantidad:
                         prod.stock_comprometido -= item.cantidad
 
+        # Reembolso si aplica
         cliente = db.query(Usuario).filter(
             Usuario.id_usuario == envio.usuario_cliente_id).first()
         if cliente and envio.costo_envio > 0 and envio.estado == "Registrado":
-            if request.session.get("rol") not in ("CEO", "FACTURACION", "ADMINISTRATIVO"):
+            if rol not in ("CEO", "FACTURACION", "ADMINISTRATIVO"):
                 cliente.saldo_plan += envio.costo_envio
             db.add(Transaccion(
                 usuario_id=cliente.id_usuario,
@@ -552,13 +542,50 @@ def eliminar(id: int, request: Request, db: Session = Depends(get_db)):
                 fecha_creacion=datetime.now()
             ))
 
+        # ✅ 1. Eliminar seguimientos (FK hacia envio)
+        db.query(Seguimiento).filter(
+            Seguimiento.envio_id == id
+        ).delete(synchronize_session=False)
+
+        # ✅ 2. Eliminar items de inventario (FK hacia envio)
+        db.query(EnvioItemInventario).filter(
+            EnvioItemInventario.envio_id == id
+        ).delete(synchronize_session=False)
+
+        # ✅ 3. Desvincular ruta (FK hacia ruta desde envio)
+        envio.ruta_id = None
+        db.flush()
+
+        # ✅ 4. Ahora sí eliminar el envío
         db.delete(envio)
         db.commit()
         return RedirectResponse(url=destino_ok, status_code=303)
+
     except Exception as e:
         db.rollback()
         print(f"Error en eliminación: {e}")
         return RedirectResponse(url=f"{destino_ok}?error=delete_fail")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ELIMINAR SEGUIMIENTO INDIVIDUAL  ✅ NUEVO
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/seguimiento/{seg_id}/eliminar")
+def eliminar_seguimiento(seg_id: int, request: Request, db: Session = Depends(get_db)):
+    rol = request.session.get("rol", "")
+    if rol not in ("CEO", "FACTURACION", "ADMINISTRATIVO"):
+        return JSONResponse(status_code=403, content={"ok": False, "msg": "Sin permiso"})
+    try:
+        seg = seg_repo.find_by_id(db, seg_id)
+        if not seg:
+            return JSONResponse(status_code=404, content={"ok": False, "msg": "Seguimiento no encontrado"})
+        seg_repo.delete(db, seg)
+        return JSONResponse({"ok": True})
+    except Exception as e:
+        db.rollback()
+        print(f"Error eliminando seguimiento {seg_id}: {e}")
+        return JSONResponse(status_code=500, content={"ok": False, "msg": str(e)})
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -571,7 +598,7 @@ def imprimir_guia(id: int, request: Request, db: Session = Depends(get_db)):
         joinedload(Envio.lugar_recogida),
         joinedload(Envio.lugar_entrega),
         joinedload(Envio.cliente),
-        joinedload(Envio.items_inventario)   # lazy="joined" en el modelo carga .producto automáticamente
+        joinedload(Envio.items_inventario)
     ).filter(Envio.envio_id == id).first()
 
     if not envio:
@@ -586,7 +613,7 @@ def imprimir_guia(id: int, request: Request, db: Session = Depends(get_db)):
 @router.get("/imprimir-masivo")
 def imprimir_masivo(request: Request, ids: str, db: Session = Depends(get_db)):
     lista_ids = [int(i) for i in ids.split(",")]
-    
+
     envios = db.query(Envio).options(
         joinedload(Envio.lugar_recogida),
         joinedload(Envio.lugar_entrega),
@@ -594,14 +621,15 @@ def imprimir_masivo(request: Request, ids: str, db: Session = Depends(get_db)):
         joinedload(Envio.items_inventario).joinedload(EnvioItemInventario.producto)
     ).filter(Envio.envio_id.in_(lista_ids)).all()
 
-    # Forzar carga en memoria antes de cerrar sesión
     for envio in envios:
-        _ = [(item.producto.nombre, item.producto.sku, item.cantidad) 
+        _ = [(item.producto.nombre, item.producto.sku, item.cantidad)
              for item in envio.items_inventario]
 
     return templates.TemplateResponse("imprimir_masivo.html", {
         "request": request, "envios": envios
     })
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # REPORTES
 # ─────────────────────────────────────────────────────────────────────────────
@@ -667,7 +695,7 @@ def generar_reporte(formato: str = Query("csv"), ids: Optional[str] = None, db: 
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# EDITAR — una sola definición
+# EDITAR
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/editar/{id}")
@@ -804,8 +832,8 @@ async def ver_ruta(request: Request, mensajero_id: int, db: Session = Depends(ge
     ids_vistos = set()
     envios = []
     for e in envios_c + envios_d:
-            ids_vistos.add(e.envio_id)
-            envios.append(e)
+        ids_vistos.add(e.envio_id)
+        envios.append(e)
 
     return templates.TemplateResponse("ver_ruta.html", {
         "request": request, "mensajero": mensajero, "ruta": ruta, "envios": envios
@@ -929,7 +957,9 @@ async def recargar_saldo(request: Request, db: Session = Depends(get_db)):
 def gestionar_envio_erp(id: int, request: Request, db: Session = Depends(get_db)):
     envio = db.query(Envio).options(
         joinedload(Envio.cliente), joinedload(Envio.mensajero), joinedload(Envio.tarifa),
-        joinedload(Envio.lugar_recogida), joinedload(Envio.lugar_entrega), joinedload(Envio.seguimientos)
+        joinedload(Envio.lugar_recogida), joinedload(Envio.lugar_entrega),
+        joinedload(Envio.seguimientos),
+        joinedload(Envio.mensajero_entrega)
     ).filter(Envio.envio_id == id).first()
 
     if not envio:
@@ -939,6 +969,8 @@ def gestionar_envio_erp(id: int, request: Request, db: Session = Depends(get_db)
     ciudad_ent, depto_ent = _extraer_ciudad_depto(envio.lugar_entrega)
     descripcion, obs      = _extraer_descripcion_obs(envio)
 
+    mensajeros = db.query(Usuario).filter(Usuario.rol == "MENSAJERO").all()
+
     return templates.TemplateResponse("gestionar_detalle.html", {
         "request": request, "envio": envio,
         "ciudad_rec": ciudad_rec, "depto_rec": depto_rec,
@@ -946,7 +978,8 @@ def gestionar_envio_erp(id: int, request: Request, db: Session = Depends(get_db)
         "tel_rec": _extraer_localidad_telefono(envio.lugar_recogida)[1],
         "tel_ent": _extraer_localidad_telefono(envio.lugar_entrega)[1],
         "descripcion": descripcion, "observaciones": obs,
-        "rol": request.session.get("rol", "ADMIN")
+        "rol": request.session.get("rol", "ADMIN"),
+        "mensajeros": mensajeros,
     })
 
 
@@ -963,16 +996,24 @@ async def actualizar_gestion_envio(id: int, request: Request, db: Session = Depe
         if envio.lugar_entrega and form.get("dir_ent"):
             envio.lugar_entrega.direccion = form.get("dir_ent")
 
-        nuevo_estado = form.get("nuevo_estado", "").strip()
+        nuevo_estado      = form.get("nuevo_estado", "").strip()
+        comentario_novedad = form.get("comentario_novedad", "").strip()
+
         if nuevo_estado and nuevo_estado != envio.estado:
             envio.estado = nuevo_estado
-            descripcion = form.get("observacion_estado", "").strip()
-            if not descripcion:
-                descripcion = f"Estado actualizado a: {nuevo_estado}"
+            descripcion = comentario_novedad or f"Estado actualizado a: {nuevo_estado}"
             db.add(Seguimiento(
                 envio_id=id,
                 estado=nuevo_estado,
                 descripcion=descripcion,
+                fecha=datetime.now()
+            ))
+        elif comentario_novedad:
+            # Solo comentario sin cambio de estado
+            db.add(Seguimiento(
+                envio_id=id,
+                estado=envio.estado,
+                descripcion=comentario_novedad,
                 fecha=datetime.now()
             ))
 
@@ -981,6 +1022,8 @@ async def actualizar_gestion_envio(id: int, request: Request, db: Session = Depe
     except Exception as e:
         db.rollback()
         return RedirectResponse(url=f"/envios/gestion/{id}?error=true", status_code=303)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # FOTO DE ENTREGA
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1014,21 +1057,16 @@ async def subir_foto_entrega(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 🛠️ API ENDPOINT: RASTREO PÚBLICO DE GUÍAS CON HISTORIAL
+# API PÚBLICA: RASTREO DE GUÍAS
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/api/rastreo/{numero_guia}")
 def rastrear_guia_publica(numero_guia: str, db: Session = Depends(get_db)):
-    """
-    Busca un envío por su número de guía y retorna sus datos junto con el 
-    historial completo de seguimientos para pintar en el Timeline del Frontend.
-    """
-    # Se usa el módulo importado envio_repo (mapeado desde app.repositories.EnvioRepository)
     envio = envio_repo.find_by_numero_guia(db, numero_guia)
-    
+
     if not envio:
         raise HTTPException(status_code=404, detail="Número de guía no encontrado")
-    
+
     return {
         "envio_id": envio.envio_id,
         "numero_guia": envio.numero_guia,
@@ -1040,7 +1078,8 @@ def rastrear_guia_publica(numero_guia: str, db: Session = Depends(get_db)):
                 "seguimiento_id": s.seguimiento_id,
                 "estado": s.estado,
                 "descripcion": s.descripcion if s.descripcion else "Sin observaciones.",
-                "fecha": s.fecha.isoformat() if s.fecha else None            }
+                "fecha": s.fecha.isoformat() if s.fecha else None
+            }
             for s in envio.seguimientos
         ] if envio.seguimientos else []
     }
