@@ -190,9 +190,45 @@
     .pipeline-step.current { background: var(--milano-red); color: white; }
     .pipeline-step.pending { background: #f0f0f0; color: #aaa; }
     .pipeline-arrow { color: #aaa; font-size: 0.7rem; }
+
+    /* ── BOTÓN ELIMINAR SEGUIMIENTO ── */
+    .btn-del-seg {
+        background: none;
+        border: none;
+        color: #ccc;
+        cursor: pointer;
+        padding: 3px 6px;
+        border-radius: 4px;
+        transition: color 0.2s, background 0.2s;
+        font-size: 0.85rem;
+        line-height: 1;
+    }
+    .btn-del-seg:hover {
+        color: var(--milano-red);
+        background: #fff0f0;
+    }
+
+    /* ── TOAST NOTIFICACIÓN ── */
+    .toast-erp {
+        position: fixed; bottom: 24px; right: 24px;
+        background: var(--chinese-black); color: var(--white);
+        padding: 12px 20px; border-radius: 8px; font-size: 0.82rem;
+        font-weight: 700; z-index: 9998; display: none;
+        border-left: 4px solid var(--milano-red);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        animation: slideInToast 0.3s ease;
+    }
+    .toast-erp.show { display: block; }
+    @keyframes slideInToast {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
     </style>
 </head>
 <body>
+
+<!-- ══ TOAST ══ -->
+<div class="toast-erp" id="toastErp"></div>
 
 <!-- ══ MODAL AGREGAR SEGUIMIENTO ══ -->
 <div class="tracking-modal-overlay" id="trackingModalOverlay">
@@ -308,9 +344,9 @@
                                 {% elif envio.estado == 'Pendiente_Recoger' %}
                                     <span class="st-box bg-pendiente">Pend. Recoger</span>
                                 {% elif envio.estado == 'C-Colectado' %}
-                                    <span class="st-box bg-C-Colectado">C-Colectado</span>
+                                    <span class="st-box bg-colectado">C-Colectado</span>
                                 {% elif envio.estado == 'En_Bodega' %}
-                                    <span class="st-box bg-bodega">En Bodega</span>
+                                    <span class="st-box bg-pendiente">En Bodega</span>
                                 {% elif envio.estado == 'Pendiente_Verificar' %}
                                     <span class="st-box bg-pendiente">Pend. Verificar</span>
                                 {% elif envio.estado == 'En_Ruta' %}
@@ -392,7 +428,6 @@
                                             {% if envio.foto_recogida %}
                                             <div class="mt-2">
                                                 <span class="foto-badge recogida"><i class="bi bi-camera-fill me-1"></i>Foto Recogida</span><br>
-                                                {# ✅ CLOUDINARY: src es la URL completa guardada en BD #}
                                                 <img src="{{ envio.foto_recogida }}"
                                                      class="foto-thumb mt-1"
                                                      onclick="abrirFoto('{{ envio.foto_recogida }}')"
@@ -445,7 +480,6 @@
                                             {% if envio.foto_entrega %}
                                             <div class="mt-2">
                                                 <span class="foto-badge entrega"><i class="bi bi-camera-fill me-1"></i>Foto Entrega</span><br>
-                                                {# ✅ CLOUDINARY: src es la URL completa guardada en BD #}
                                                 <img src="{{ envio.foto_entrega }}"
                                                      class="foto-thumb mt-1"
                                                      onclick="abrirFoto('{{ envio.foto_entrega }}')"
@@ -509,11 +543,15 @@
                                         <th>Comentario</th>
                                         <th>Usuario</th>
                                         <th style="text-align:center;">POD / Foto</th>
+                                        {# ✅ Columna acciones solo para admins #}
+                                        {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
+                                        <th style="text-align:center;width:50px;"></th>
+                                        {% endif %}
                                     </tr>
                                 </thead>
                                 <tbody id="trackingBody">
 
-                                    {# Fila inicial — creación #}
+                                    {# ── Fila inicial — creación (sin botón eliminar, es del sistema) ── #}
                                     <tr>
                                         <td>
                                             <div class="fw-bold">{{ envio.fecha_creacion.strftime('%d %b, %Y') }}</div>
@@ -523,32 +561,35 @@
                                         <td>Guía registrada exitosamente por el cliente.</td>
                                         <td>Sistema</td>
                                         <td style="text-align:center;">—</td>
+                                        {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
+                                        <td></td>
+                                        {% endif %}
                                     </tr>
 
-                                    {# Foto de recogida #}
+                                    {# ── Foto de recogida ── #}
                                     {% if envio.foto_recogida %}
                                     <tr class="foto-recogida-row">
-                                        <td>
-                                            <div class="fw-bold">—</div>
-                                        </td>
+                                        <td><div class="fw-bold">—</div></td>
                                         <td><span class="status-badge status-collected"><i class="bi bi-box-seam me-1"></i>Colectado</span></td>
                                         <td>Foto de recogida tomada por el mensajero.</td>
                                         <td>Mensajero</td>
                                         <td style="text-align:center;">
                                             <span class="foto-badge recogida d-block mb-1"><i class="bi bi-camera-fill me-1"></i>Recogida</span>
-                                            {# ✅ CLOUDINARY: URL completa directa #}
                                             <img src="{{ envio.foto_recogida }}"
                                                  class="foto-thumb"
                                                  onclick="abrirFoto('{{ envio.foto_recogida }}')"
                                                  title="Ver foto de recogida">
                                         </td>
+                                        {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
+                                        <td></td>
+                                        {% endif %}
                                     </tr>
                                     {% endif %}
 
-                                    {# Seguimientos reales #}
+                                    {# ── Seguimientos reales ── #}
                                     {% for seg in envio.seguimientos | sort(attribute='fecha') %}
                                     {% set estado_val = seg.estado.value if seg.estado.value is defined else seg.estado %}
-                                    <tr>
+                                    <tr id="seg-row-{{ seg.seguimiento_id }}">
                                         <td>
                                             <div class="fw-bold">{{ seg.fecha.strftime('%d %b, %Y') }}</div>
                                             <div class="text-muted" style="font-size:0.75rem;">{{ seg.fecha.strftime('%H:%M') }}</div>
@@ -572,7 +613,6 @@
                                         <td>Mensajero</td>
                                         <td style="text-align:center;">
                                             {% if seg.foto %}
-                                                {# ✅ CLOUDINARY: si seg.foto también migra a URL completa #}
                                                 <img src="{{ seg.foto }}"
                                                      class="foto-thumb"
                                                      onclick="abrirFoto('{{ seg.foto }}')"
@@ -581,27 +621,38 @@
                                                 <span class="text-muted">—</span>
                                             {% endif %}
                                         </td>
+                                        {# ✅ BOTÓN ELIMINAR SEGUIMIENTO #}
+                                        {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
+                                        <td style="text-align:center;">
+                                            <button type="button"
+                                                    class="btn-del-seg"
+                                                    title="Eliminar este seguimiento"
+                                                    onclick="eliminarSeguimiento({{ seg.seguimiento_id }}, this)">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </td>
+                                        {% endif %}
                                     </tr>
                                     {% endfor %}
 
-                                    {# Foto de entrega #}
+                                    {# ── Foto de entrega ── #}
                                     {% if envio.foto_entrega %}
                                     <tr class="foto-entrega-row">
-                                        <td>
-                                            <div class="fw-bold">—</div>
-                                        </td>
+                                        <td><div class="fw-bold">—</div></td>
                                         <td><span class="status-badge status-entregado"><i class="bi bi-patch-check-fill me-1"></i>Entregado</span></td>
                                         <td>Foto de entrega subida desde la app.</td>
                                         <td>Mensajero</td>
                                         <td style="text-align:center;">
                                             <span class="foto-badge entrega d-block mb-1"><i class="bi bi-camera-fill me-1"></i>Entrega</span>
-                                            {# ✅ CLOUDINARY: URL completa directa #}
                                             <img src="{{ envio.foto_entrega }}"
                                                  class="foto-thumb"
                                                  style="border-color:var(--milano-red);"
                                                  onclick="abrirFoto('{{ envio.foto_entrega }}')"
                                                  title="Ver foto de entrega">
                                         </td>
+                                        {% if rol in ('CEO', 'FACTURACION', 'ADMINISTRATIVO') %}
+                                        <td></td>
+                                        {% endif %}
                                     </tr>
                                     {% endif %}
 
@@ -766,7 +817,6 @@
         const hora       = document.getElementById('tm_hora').value;
         const estado     = document.getElementById('tm_estado').value;
         const comentario = document.getElementById('tm_comentario').value.trim();
-        const pod        = document.getElementById('tm_pod').checked;
 
         if (!fecha || !hora || !estado) {
             alert('Completa la fecha, hora y estado.');
@@ -795,34 +845,49 @@
         });
     }
 
-    function getBadgeClass(estado) {
-        const map = {
-            'Entregado':           'status-entregado',
-            'Colectado':           'status-collected',
-            'En_Ruta':             'status-en-ruta',
-            'En_Destino':          'status-en-ruta',
-            'Pendiente_Recoger':   'status-pendiente',
-            'Pendiente_Verificar': 'status-pendiente',
-            'Fallido':             'status-exception',
-            'Cancelado':           'status-exception',
-            'Devolucion':          'status-exception',
-            'Rechazado':           'status-exception',
-        };
-        return map[estado] || 'status-booking';
+    // ── ✅ ELIMINAR SEGUIMIENTO ──
+    function eliminarSeguimiento(segId, btn) {
+        if (!confirm('¿Eliminar este seguimiento? Esta acción no se puede deshacer.')) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+        fetch(`/envios/seguimiento/${segId}/eliminar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.ok) {
+                // Eliminar fila del DOM con animación
+                const fila = document.getElementById(`seg-row-${segId}`);
+                if (fila) {
+                    fila.style.transition = 'opacity 0.3s, transform 0.3s';
+                    fila.style.opacity = '0';
+                    fila.style.transform = 'translateX(12px)';
+                    setTimeout(() => fila.remove(), 300);
+                }
+                mostrarToast('Seguimiento eliminado correctamente.');
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-trash3"></i>';
+                mostrarToast('Error al eliminar. Intenta de nuevo.', true);
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-trash3"></i>';
+            mostrarToast('Error de conexión.', true);
+        });
     }
 
-    function getBadgeIcon(estado) {
-        const map = {
-            'Entregado':           '<i class="bi bi-check-circle-fill me-1"></i>',
-            'Colectado':           '<i class="bi bi-box-seam me-1"></i>',
-            'En_Ruta':             '<i class="bi bi-truck me-1"></i>',
-            'En_Destino':          '<i class="bi bi-geo-alt-fill me-1"></i>',
-            'Pendiente_Recoger':   '<i class="bi bi-hourglass-split me-1"></i>',
-            'Pendiente_Verificar': '<i class="bi bi-hourglass-split me-1"></i>',
-            'Fallido':             '<i class="bi bi-x-circle-fill me-1"></i>',
-            'Cancelado':           '<i class="bi bi-x-circle-fill me-1"></i>',
-        };
-        return map[estado] || '<i class="bi bi-bookmark-fill me-1"></i>';
+    // ── Toast ──
+    function mostrarToast(msg, esError = false) {
+        const t = document.getElementById('toastErp');
+        t.textContent = msg;
+        t.style.borderLeftColor = esError ? '#dc3545' : 'var(--milano-red)';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
     }
 
     // ── Foto fullscreen ──
@@ -833,15 +898,6 @@
         overlay.onclick = () => overlay.remove();
         document.body.appendChild(overlay);
     }
-
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeInRow {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-    `;
-    document.head.appendChild(style);
 </script>
 </body>
 </html>
