@@ -911,7 +911,7 @@
               <div class="tarifa-item">
                 <i class="bi bi-check-circle-fill"></i> Gestor de cuenta dedicado
               </div>
-              <a href="https://wa.me/573203460836" target="_blank" class="btn-tarifa">Cotizar ahora</a>
+              <a href="https://wa.me/573202854256" target="_blank" class="btn-tarifa">Cotizar ahora</a>
             </div>
           </div>
         </div>
@@ -964,7 +964,7 @@
 
         <p class="tarifa-nota mt-4">
           ¿Envíos fuera de Bogotá o necesitas algo especial?
-          <a href="https://wa.me/573203460836" target="_blank"><i class="bi bi-whatsapp"></i> Contáctanos</a>
+          <a href="https://wa.me/573202854256" target="_blank"><i class="bi bi-whatsapp"></i> Contáctanos</a>
           y te damos una cotización en minutos.
         </p>
       </div>
@@ -1155,7 +1155,7 @@
           <a href="/registro">Registrarse</a>
         </div>
         <div class="social-icons mb-4">
-          <a href="https://wa.me/573203460836" target="_blank"><i class="bi bi-whatsapp"></i></a>
+          <a href="https://wa.me/573202854256" target="_blank"><i class="bi bi-whatsapp"></i></a>
           <a href="#" target="_blank"><i class="bi bi-facebook"></i></a>
           <a href="#" target="_blank"><i class="bi bi-instagram"></i></a>
           <a href="#" target="_blank"><i class="bi bi-twitter"></i></a>
@@ -1168,7 +1168,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       /* ── LÓGICA COTIZADOR ──────────────────────────────────────────────
-             Tarifas base por peso (COP) */
+                   Tarifas base por peso (COP) */
       const TARIFAS = {
         express: { hasta1: 12000, hasta3: 16000, hasta5: 21000, hasta10: 28000, extra: 3500 },
         estandar: { hasta1: 8500, hasta3: 11000, hasta5: 14500, hasta10: 19000, extra: 2500 }
@@ -1240,7 +1240,7 @@
       
         /* Link de WhatsApp con resumen */
         const msg = encodeURIComponent(`Hola EnviExpress 👋 Quiero cotizar un envío:\n` + `• Servicio: ${nombreServicio}\n` + `• Ruta: ${nombreOrigen} → ${nombreDestino}\n` + `• Peso: ${peso} kg\n` + `• Valor declarado: ${fmt(valor)}\n` + `• Recogida en domicilio: ${recogida ? 'Sí' : 'No'}\n` + `• Total estimado: ${fmt(total)} COP\n\n` + `¿Pueden confirmarme la disponibilidad?`)
-        document.getElementById('res-whatsapp').href = `https://wa.me/573203460836?text=${msg}`
+        document.getElementById('res-whatsapp').href = `https://wa.me/573202854256?text=${msg}`
       
         const result = document.getElementById('cot-result')
         result.classList.add('visible')
