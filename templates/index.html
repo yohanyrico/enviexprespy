@@ -520,6 +520,147 @@
         transform: scale(1.2);
       }
       
+      /* ── COTIZADOR ──────────────────────────────────────────────────── */
+      .cotizador {
+        padding: 100px 20px;
+        background: var(--white);
+      }
+      .cotizador-card {
+        background: var(--white);
+        border: 2px solid var(--chinese-black);
+        border-radius: 24px;
+        padding: 50px 45px;
+        max-width: 820px;
+        margin: 0 auto;
+        box-shadow: 0 15px 50px rgba(11, 1, 46, 0.08);
+      }
+      .cotizador-card label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--slate-gray);
+        margin-bottom: 6px;
+        display: block;
+      }
+      .cotizador-card .form-control,
+      .cotizador-card .form-select {
+        border: 2px solid #dde0e5;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.95rem;
+        color: var(--chinese-black);
+        background: #fafafa;
+        transition: 0.2s;
+      }
+      .cotizador-card .form-control:focus,
+      .cotizador-card .form-select:focus {
+        border-color: var(--milano-red);
+        box-shadow: 0 0 0 3px rgba(178, 12, 6, 0.1);
+        outline: none;
+        background: #fff;
+      }
+      .btn-cotizar {
+        background: var(--milano-red);
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        padding: 14px 36px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+        width: 100%;
+      }
+      .btn-cotizar:hover {
+        background: var(--milano-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(178, 12, 6, 0.25);
+      }
+      .cotizador-result {
+        display: none;
+        margin-top: 30px;
+        border-top: 2px dashed #eee;
+        padding-top: 30px;
+      }
+      .cotizador-result.visible {
+        display: block;
+      }
+      .result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.95rem;
+      }
+      .result-row:last-child {
+        border-bottom: none;
+      }
+      .result-label {
+        color: var(--slate-gray);
+        font-weight: 500;
+      }
+      .result-value {
+        font-weight: 700;
+        color: var(--chinese-black);
+      }
+      .result-total {
+        background: var(--chinese-black);
+        color: #fff;
+        border-radius: 14px;
+        padding: 18px 24px;
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .result-total .label {
+        font-size: 0.9rem;
+        opacity: 0.7;
+      }
+      .result-total .precio {
+        font-size: 1.8rem;
+        font-weight: 900;
+      }
+      .result-total .precio span {
+        font-size: 0.9rem;
+        font-weight: 400;
+        opacity: 0.7;
+      }
+      .result-badge {
+        display: inline-block;
+        background: rgba(178, 12, 6, 0.12);
+        color: var(--milano-red);
+        border-radius: 20px;
+        padding: 4px 14px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        margin-left: 10px;
+      }
+      .result-whatsapp {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #25d366;
+        color: #fff;
+        border-radius: 12px;
+        padding: 12px 20px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-top: 16px;
+        transition: 0.3s;
+        justify-content: center;
+      }
+      .result-whatsapp:hover {
+        background: #1da851;
+        color: #fff;
+        transform: translateY(-2px);
+      }
+      
       @media (max-width: 768px) {
         .hero-title {
           font-size: 2.5rem;
@@ -529,6 +670,9 @@
         }
         .tarifa-card {
           margin-bottom: 30px;
+        }
+        .cotizador-card {
+          padding: 30px 20px;
         }
       }
     </style>
@@ -549,6 +693,9 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#tarifas">Tarifas</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#cotizador">Cotizar</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#nosotros">Nosotros</a>
@@ -823,6 +970,127 @@
       </div>
     </section>
 
+    <!-- ── COTIZADOR ──────────────────────────────────────────────────────── -->
+    <section class="cotizador" id="cotizador">
+      <div class="container">
+        <h2 class="section-title">Cotiza tu Envío</h2>
+        <p class="section-subtitle">Obtén el precio en segundos, sin registrarte.</p>
+
+        <div class="cotizador-card">
+          <div class="row g-3">
+            <!-- Tipo de servicio -->
+            <div class="col-md-6">
+              <label for="cot-servicio">Tipo de servicio</label>
+              <select id="cot-servicio" class="form-select">
+                <option value="express">Express (24 h)</option>
+                <option value="estandar" selected>Estándar (24–48 h)</option>
+              </select>
+            </div>
+
+            <!-- Peso -->
+            <div class="col-md-6">
+              <label for="cot-peso">Peso del paquete (kg)</label>
+              <input type="number" id="cot-peso" class="form-control" placeholder="Ej: 2.5" min="0.1" max="500" step="0.1" value="1" />
+            </div>
+
+            <!-- Ciudad origen -->
+            <div class="col-md-6">
+              <label for="cot-origen">Ciudad de origen</label>
+              <select id="cot-origen" class="form-select">
+                <option value="bogota" selected>Bogotá</option>
+                <option value="medellin">Medellín</option>
+                <option value="cali">Cali</option>
+                <option value="barranquilla">Barranquilla</option>
+                <option value="bucaramanga">Bucaramanga</option>
+                <option value="cartagena">Cartagena</option>
+                <option value="otra">Otra ciudad</option>
+              </select>
+            </div>
+
+            <!-- Ciudad destino -->
+            <div class="col-md-6">
+              <label for="cot-destino">Ciudad de destino</label>
+              <select id="cot-destino" class="form-select">
+                <option value="bogota" selected>Bogotá</option>
+                <option value="medellin">Medellín</option>
+                <option value="cali">Cali</option>
+                <option value="barranquilla">Barranquilla</option>
+                <option value="bucaramanga">Bucaramanga</option>
+                <option value="cartagena">Cartagena</option>
+                <option value="otra">Otra ciudad</option>
+              </select>
+            </div>
+
+            <!-- Valor declarado -->
+            <div class="col-md-6">
+              <label for="cot-valor">Valor declarado del paquete (COP)</label>
+              <input type="number" id="cot-valor" class="form-control" placeholder="Ej: 150000" min="0" step="1000" value="50000" />
+            </div>
+
+            <!-- Recogida -->
+            <div class="col-md-6 d-flex align-items-end pb-1">
+              <div class="form-check form-switch" style="padding-left:2.5rem">
+                <input class="form-check-input" type="checkbox" id="cot-recogida" role="switch" />
+                <label class="form-check-label" for="cot-recogida" style="text-transform:none;letter-spacing:0;font-size:0.9rem;color:var(--chinese-black);">Incluir recogida en domicilio</label>
+              </div>
+            </div>
+
+            <!-- Botón -->
+            <div class="col-12 mt-2">
+              <button class="btn-cotizar" onclick="calcularCotizacion()"><i class="bi bi-calculator me-2"></i> Calcular precio</button>
+            </div>
+          </div>
+
+          <!-- Resultado -->
+          <div class="cotizador-result" id="cot-result">
+            <h5 class="fw-bold mb-3"><i class="bi bi-receipt-cutoff text-danger me-2"></i>Resumen de cotización</h5>
+
+            <div class="result-row">
+              <span class="result-label">Servicio</span>
+              <span class="result-value" id="res-servicio">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Ruta</span>
+              <span class="result-value" id="res-ruta">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Peso / tarifa base</span>
+              <span class="result-value" id="res-peso">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Cargo por distancia</span>
+              <span class="result-value" id="res-distancia">—</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Seguro de envío (0.3%)</span>
+              <span class="result-value" id="res-seguro">—</span>
+            </div>
+            <div class="result-row" id="row-recogida" style="display:none">
+              <span class="result-label">Recogida en domicilio</span>
+              <span class="result-value" id="res-recogida">—</span>
+            </div>
+
+            <div class="result-total">
+              <div>
+                <div class="label">Total estimado</div>
+                <div class="precio" id="res-total">
+                  —<span>COP</span>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:0.8rem;opacity:0.6">Tiempo de entrega</div>
+                <div style="font-size:1rem;font-weight:700" id="res-tiempo">—</div>
+              </div>
+            </div>
+
+            <p style="font-size:0.8rem;color:var(--slate-gray);margin-top:12px">* Precio estimado. El valor final puede variar según peso volumétrico y condiciones del servicio.</p>
+
+            <a id="res-whatsapp" href="#" target="_blank" class="result-whatsapp"><i class="bi bi-whatsapp"></i> Confirmar pedido por WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── VISIÓN Y MISIÓN ─────────────────────────────────────────────────── -->
     <section class="vision-mision" id="nosotros">
       <div class="container">
@@ -880,6 +1148,7 @@
           <a href="#servicios">Servicios</a>
           <a href="#caracteristicas">Características</a>
           <a href="#tarifas">Tarifas</a>
+          <a href="#cotizador">Cotizador</a>
           <a href="#nosotros">Nosotros</a>
           <a href="/seguimiento">Rastrear Envío</a>
           <a href="/login">Iniciar Sesión</a>
@@ -897,5 +1166,86 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      /* ── LÓGICA COTIZADOR ──────────────────────────────────────────────
+             Tarifas base por peso (COP) */
+      const TARIFAS = {
+        express: { hasta1: 12000, hasta3: 16000, hasta5: 21000, hasta10: 28000, extra: 3500 },
+        estandar: { hasta1: 8500, hasta3: 11000, hasta5: 14500, hasta10: 19000, extra: 2500 }
+      }
+      
+      /* Cargo adicional por ruta (COP) */
+      const CARGO_RUTA = {
+        local: 0, // misma ciudad
+        cercana: 4500, // ciudades principales entre sí
+        lejana: 9000 // destinos alejados / "otra"
+      }
+      
+      function clasificarRuta(origen, destino) {
+        if (origen === destino) return 'local'
+        if (origen === 'otra' || destino === 'otra') return 'lejana'
+        return 'cercana'
+      }
+      
+      function tarifaPorPeso(servicio, kg) {
+        const t = TARIFAS[servicio]
+        if (kg <= 1) return { base: t.hasta1, label: 'hasta 1 kg' }
+        if (kg <= 3) return { base: t.hasta3, label: 'hasta 3 kg' }
+        if (kg <= 5) return { base: t.hasta5, label: 'hasta 5 kg' }
+        if (kg <= 10) return { base: t.hasta10, label: 'hasta 10 kg' }
+        /* más de 10 kg: base 10 kg + extra por kg adicional */
+        const extra = Math.ceil(kg - 10) * t.extra
+        return { base: t.hasta10 + extra, label: `${kg} kg` }
+      }
+      
+      function fmt(n) {
+        return '$' + Math.round(n).toLocaleString('es-CO')
+      }
+      
+      function calcularCotizacion() {
+        const servicio = document.getElementById('cot-servicio').value
+        const peso = parseFloat(document.getElementById('cot-peso').value) || 1
+        const origen = document.getElementById('cot-origen').value
+        const destino = document.getElementById('cot-destino').value
+        const valor = parseFloat(document.getElementById('cot-valor').value) || 0
+        const recogida = document.getElementById('cot-recogida').checked
+      
+        const { base, label } = tarifaPorPeso(servicio, peso)
+        const tipoRuta = clasificarRuta(origen, destino)
+        const cargoRuta = CARGO_RUTA[tipoRuta]
+        const seguro = Math.max(Math.round(valor * 0.003), 500)
+        const costoRecogida = recogida ? 5000 : 0
+        const total = base + cargoRuta + seguro + costoRecogida
+        const tiempo = servicio === 'express' ? '24 h' : '24–48 h hábiles'
+      
+        const nombreOrigen = document.getElementById('cot-origen').options[document.getElementById('cot-origen').selectedIndex].text
+        const nombreDestino = document.getElementById('cot-destino').options[document.getElementById('cot-destino').selectedIndex].text
+        const nombreServicio = servicio === 'express' ? 'Express ⚡' : 'Estándar 🚚'
+      
+        document.getElementById('res-servicio').textContent = nombreServicio
+        document.getElementById('res-ruta').textContent = `${nombreOrigen} → ${nombreDestino}`
+        document.getElementById('res-peso').textContent = `${label} — ${fmt(base)}`
+        document.getElementById('res-distancia').textContent = cargoRuta > 0 ? fmt(cargoRuta) : 'Incluido'
+        document.getElementById('res-seguro').textContent = fmt(seguro)
+        document.getElementById('res-total').innerHTML = fmt(total) + '<span> COP</span>'
+        document.getElementById('res-tiempo').textContent = tiempo
+      
+        const rowRecogida = document.getElementById('row-recogida')
+        if (recogida) {
+          rowRecogida.style.display = 'flex'
+          document.getElementById('res-recogida').textContent = fmt(costoRecogida)
+        } else {
+          rowRecogida.style.display = 'none'
+        }
+      
+        /* Link de WhatsApp con resumen */
+        const msg = encodeURIComponent(`Hola EnviExpress 👋 Quiero cotizar un envío:\n` + `• Servicio: ${nombreServicio}\n` + `• Ruta: ${nombreOrigen} → ${nombreDestino}\n` + `• Peso: ${peso} kg\n` + `• Valor declarado: ${fmt(valor)}\n` + `• Recogida en domicilio: ${recogida ? 'Sí' : 'No'}\n` + `• Total estimado: ${fmt(total)} COP\n\n` + `¿Pueden confirmarme la disponibilidad?`)
+        document.getElementById('res-whatsapp').href = `https://wa.me/573203460836?text=${msg}`
+      
+        const result = document.getElementById('cot-result')
+        result.classList.add('visible')
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    </script>
   </body>
 </html>
