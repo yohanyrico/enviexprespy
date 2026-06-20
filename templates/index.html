@@ -1,70 +1,70 @@
 {# templates/index.html #}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EnviExpress – Envíos Rápidos y Seguros</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@3.x/dist/maplibre-gl.js"></script>
-<style>
-    /* ── VARIABLES DE COLOR (ACTUALIZADAS CON IMAGEN) ─────────────────── */
-    :root {
-        --milano-red:   #B20C06;  /* Rojo para botones y acentos */
-        --milano-hover: #8E0A05;
-        --white:        #FDFFFF;  /* Fondo principal */
-        --chinese-black: #0b012e; /* Títulos y textos principales */
-        --slate-gray:    #738589; /* Subtítulos y detalles */
-        --text-light:    #ffffff; /* Letra blanca en fondos oscuros */
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    /* ── BODY ─────────────────────────────────────────────────────────── */
-    body {
+    <style>
+      /* ── VARIABLES DE COLOR ─────────────────────────────────────────── */
+      :root {
+        --milano-red: #b20c06;
+        --milano-hover: #8e0a05;
+        --white: #fdffff;
+        --chinese-black: #0b012e;
+        --slate-gray: #738589;
+        --text-light: #ffffff;
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
         background-color: var(--white);
         color: var(--chinese-black);
         font-family: 'Montserrat', sans-serif;
         overflow-x: hidden;
-    }
-
-    /* ── NAVBAR ───────────────────────────────────────────────────────── */
-    .navbar {
+      }
+      
+      /* ── NAVBAR ─────────────────────────────────────────────────────── */
+      .navbar {
         backdrop-filter: blur(15px);
-        background: rgba(16, 16, 16, 0.95); /* Fondo Negro Chino para contraste */
+        background: rgba(16, 16, 16, 0.95);
         border-bottom: 2px solid var(--milano-red);
         padding: 10px 0;
-    }
-
-    /* ── LOGO ─────────────────────────────────────────────────────────── */
-    .navbar-brand {
+      }
+      .navbar-brand {
         display: flex;
         align-items: center;
         gap: 12px;
         font-size: 1.9rem;
         font-weight: 800;
         color: var(--text-light) !important;
-    }
-    .navbar-brand img {
+      }
+      .navbar-brand img {
         height: 100px;
         width: auto;
         border-radius: 8px;
-    }
-    /* Clase añadida para el logo transparente */
-    .logo-hero {
-        width: 200px;           /* Ajusta el tamaño al que prefieras */
-        height: auto;           /* Esto evita que la imagen se estire */
-        background: transparent; /* Fuerza a que no tenga color de fondo */
-        object-fit: contain;    /* Asegura que el logo se ajuste dentro de su contenedor */
-    }
-    /* Acento Rojo en el nombre */
-    .navbar-brand span { color: var(--milano-red); }
-
-    /* ── BOTONES NAVBAR ───────────────────────────────────────────────── */
-    .btn-login {
+      }
+      .logo-hero {
+        width: 200px;
+        height: auto;
+        background: transparent;
+        object-fit: contain;
+      }
+      .navbar-brand span {
+        color: var(--milano-red);
+      }
+      
+      .btn-login {
         background: transparent;
         border: 2px solid var(--text-light);
         color: var(--text-light);
@@ -72,10 +72,14 @@
         border-radius: 25px;
         font-weight: 600;
         transition: 0.3s;
-    }
-    .btn-login:hover { background: var(--text-light); color: var(--chinese-black); transform: scale(1.05); }
-
-    .btn-registro {
+      }
+      .btn-login:hover {
+        background: var(--text-light);
+        color: var(--chinese-black);
+        transform: scale(1.05);
+      }
+      
+      .btn-registro {
         background: var(--milano-red);
         border: none;
         color: var(--text-light);
@@ -83,11 +87,15 @@
         border-radius: 25px;
         font-weight: 700;
         transition: 0.3s;
-    }
-    .btn-registro:hover { background: var(--milano-hover); transform: scale(1.05); box-shadow: 0 0 15px rgba(178,12,6,0.35); }
-
-    /* ── HERO ─────────────────────────────────────────────────────────── */
-    .hero {
+      }
+      .btn-registro:hover {
+        background: var(--milano-hover);
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(178, 12, 6, 0.35);
+      }
+      
+      /* ── HERO ───────────────────────────────────────────────────────── */
+      .hero {
         min-height: 100vh;
         display: flex;
         align-items: center;
@@ -96,257 +104,798 @@
         position: relative;
         padding: 120px 20px 50px;
         background: var(--white);
-    }
-    .hero-title {
+      }
+      .hero-title {
         font-size: 4rem;
         font-weight: 900;
-        color: var(--chinese-black); /* Títulos negros */
+        color: var(--chinese-black);
         margin-bottom: 10px;
-    }
-    .hero-title span { color: var(--milano-red); }
-
-    .hero-tagline {
+      }
+      .hero-title span {
+        color: var(--milano-red);
+      }
+      .hero-tagline {
         font-size: 1.1rem;
         font-weight: 500;
-        color: var(--slate-gray); /* Slate Gray para jerarquía */
+        color: var(--slate-gray);
         margin-bottom: 20px;
         text-transform: uppercase;
         letter-spacing: 3px;
-    }
-    .hero-subtitle {
+      }
+      .hero-subtitle {
         font-size: 1.5rem;
         color: var(--slate-gray);
         margin-bottom: 40px;
         font-weight: 300;
-    }
-
-    /* ── BOTONES HERO ─────────────────────────────────────────────────── */
-    .btn-hero { padding: 15px 40px; font-size: 1.1rem; border-radius: 30px; font-weight: 700; transition: 0.3s; text-decoration: none; display: inline-block; }
-    .btn-primary-hero { background: var(--milano-red); color: var(--text-light); border: none; } /* Botón Rojo Letra Blanca */
-    .btn-primary-hero:hover { background: var(--milano-hover); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(178,12,6,0.3); }
-    .btn-secondary-hero { background: var(--chinese-black); color: var(--text-light); border: none; }
-    .btn-secondary-hero:hover { background: #333; transform: translateY(-5px); }
-
-    /* ── QUICK TRACK ──────────────────────────────────────────────────── */
-    .quick-track {
+      }
+      
+      .btn-hero {
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        border-radius: 30px;
+        font-weight: 700;
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-block;
+      }
+      .btn-primary-hero {
+        background: var(--milano-red);
+        color: var(--text-light);
+        border: none;
+      }
+      .btn-primary-hero:hover {
+        background: var(--milano-hover);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(178, 12, 6, 0.3);
+      }
+      .btn-secondary-hero {
+        background: var(--chinese-black);
+        color: var(--text-light);
+        border: none;
+      }
+      .btn-secondary-hero:hover {
+        background: #333;
+        transform: translateY(-5px);
+      }
+      
+      /* ── QUICK TRACK ────────────────────────────────────────────────── */
+      .quick-track {
         max-width: 600px;
         margin: 0 auto;
         background: var(--white);
         padding: 30px;
         border-radius: 20px;
         border: 2px solid var(--chinese-black);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    }
-    .track-input:focus { outline: none; border-color: var(--milano-red); }
-    .btn-track { padding: 15px 30px; background: var(--milano-red); border: none; border-radius: 15px; color: var(--text-light); font-weight: 700; cursor: pointer; transition: 0.3s; }
-    .btn-track:hover { background: var(--milano-hover); }
-
-    /* ── SERVICIOS ────────────────────────────────────────────────────── */
-    .servicios { padding: 100px 20px; background: #f9f9f9; color: var(--chinese-black); }
-    .section-title { text-align: center; font-size: 2.5rem; font-weight: 800; color: var(--chinese-black); margin-bottom: 60px; }
-    .servicio-card {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      }
+      .track-input:focus {
+        outline: none;
+        border-color: var(--milano-red);
+      }
+      .btn-track {
+        padding: 15px 30px;
+        background: var(--milano-red);
+        border: none;
+        border-radius: 15px;
+        color: var(--text-light);
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .btn-track:hover {
+        background: var(--milano-hover);
+      }
+      
+      /* ── SERVICIOS ──────────────────────────────────────────────────── */
+      .servicios {
+        padding: 100px 20px;
+        background: #f9f9f9;
+        color: var(--chinese-black);
+      }
+      .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--chinese-black);
+        margin-bottom: 60px;
+      }
+      .section-subtitle {
+        text-align: center;
+        color: var(--slate-gray);
+        font-size: 1.1rem;
+        margin-top: -40px;
+        margin-bottom: 60px;
+      }
+      .servicio-card {
         background: var(--white);
         border: 1px solid var(--slate-gray);
         border-radius: 20px;
         padding: 40px;
         transition: 0.3s;
-    }
-    .servicio-card:hover { transform: translateY(-10px); border-color: var(--milano-red); }
-    .servicio-icon { font-size: 4rem; color: var(--slate-gray); margin-bottom: 20px; transition: 0.3s; } 
-    .servicio-card:hover .servicio-icon { color: var(--milano-red); }
-
-    /* ── CARACTERÍSTICAS ──────────────────────────────────────────────── */
-    .caracteristicas { padding: 100px 20px; background: var(--white); color: var(--chinese-black); }
-    .feature-item {
+      }
+      .servicio-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--milano-red);
+      }
+      .servicio-icon {
+        font-size: 4rem;
+        color: var(--slate-gray);
+        margin-bottom: 20px;
+        transition: 0.3s;
+      }
+      .servicio-card:hover .servicio-icon {
+        color: var(--milano-red);
+      }
+      
+      /* ── CARACTERÍSTICAS ────────────────────────────────────────────── */
+      .caracteristicas {
+        padding: 100px 20px;
+        background: var(--white);
+        color: var(--chinese-black);
+      }
+      .feature-item {
         background: #fdfdfd;
-        border-left: 4px solid var(--milano-red); 
-    }
-    .feature-icon { font-size: 2.5rem; color: var(--chinese-black); min-width: 60px; }
-    .feature-content h5 { color: var(--chinese-black); font-weight: 600; }
-
-    /* ── CTA SECTION ──────────────────────────────────────────────────── */
-    .cta-section {
+        border-left: 4px solid var(--milano-red);
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 0 10px 10px 0;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      .feature-icon {
+        font-size: 2.5rem;
+        color: var(--chinese-black);
+        min-width: 60px;
+      }
+      .feature-content h5 {
+        color: var(--chinese-black);
+        font-weight: 600;
+      }
+      
+      /* ── VISIÓN Y MISIÓN ────────────────────────────────────────────── */
+      .vision-mision {
+        padding: 100px 20px;
+        background: var(--chinese-black);
+        color: var(--text-light);
+      }
+      .vision-mision .section-title {
+        color: var(--text-light);
+      }
+      .vm-card {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(178, 12, 6, 0.4);
+        border-radius: 20px;
+        padding: 45px 40px;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: 0.3s;
+      }
+      .vm-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: var(--milano-red);
+      }
+      .vm-card:hover {
+        background: rgba(255, 255, 255, 0.09);
+        transform: translateY(-6px);
+        box-shadow: 0 15px 40px rgba(178, 12, 6, 0.15);
+      }
+      .vm-icon {
+        font-size: 3rem;
+        color: var(--milano-red);
+        margin-bottom: 20px;
+        display: block;
+      }
+      .vm-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: var(--milano-red);
+        margin-bottom: 8px;
+      }
+      .vm-card h3 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--text-light);
+        margin-bottom: 20px;
+      }
+      .vm-card p {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 1rem;
+        line-height: 1.8;
+        font-weight: 300;
+      }
+      .vm-valores {
+        margin-top: 60px;
+        text-align: center;
+      }
+      .vm-valores h4 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin-bottom: 30px;
+      }
+      .valor-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(178, 12, 6, 0.15);
+        border: 1px solid rgba(178, 12, 6, 0.4);
+        color: var(--text-light);
+        border-radius: 30px;
+        padding: 8px 22px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 6px;
+        transition: 0.2s;
+      }
+      .valor-badge:hover {
+        background: rgba(178, 12, 6, 0.35);
+      }
+      .valor-badge i {
+        color: var(--milano-red);
+      }
+      
+      /* ── TARIFAS ────────────────────────────────────────────────────── */
+      .tarifas {
+        padding: 100px 20px;
+        background: #f4f6f9;
+        color: var(--chinese-black);
+      }
+      .tarifa-card {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 40px 35px;
+        height: 100%;
+        border: 2px solid transparent;
+        transition: 0.3s;
+        position: relative;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+      .tarifa-card:hover {
+        border-color: var(--milano-red);
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(178, 12, 6, 0.1);
+      }
+      .tarifa-card.destacado {
+        border-color: var(--milano-red);
+        background: var(--chinese-black);
+        color: var(--text-light);
+      }
+      .tarifa-card.destacado .tarifa-precio,
+      .tarifa-card.destacado .tarifa-nombre,
+      .tarifa-card.destacado .tarifa-desc {
+        color: var(--text-light);
+      }
+      .tarifa-card.destacado .tarifa-item {
+        color: rgba(255, 255, 255, 0.8);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+      .tarifa-card.destacado .tarifa-item i {
+        color: #4ade80;
+      }
+      .badge-popular {
+        position: absolute;
+        top: -14px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--milano-red);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 5px 20px;
+        border-radius: 20px;
+      }
+      .tarifa-nombre {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--chinese-black);
+        margin-bottom: 8px;
+      }
+      .tarifa-desc {
+        font-size: 0.9rem;
+        color: var(--slate-gray);
+        margin-bottom: 25px;
+        min-height: 40px;
+      }
+      .tarifa-precio {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--chinese-black);
+        margin-bottom: 5px;
+      }
+      .tarifa-precio span {
+        font-size: 1rem;
+        font-weight: 400;
+      }
+      .tarifa-desde {
+        font-size: 0.8rem;
+        color: var(--slate-gray);
+        margin-bottom: 25px;
+      }
+      .tarifa-divider {
+        border: none;
+        border-top: 1px solid #eee;
+        margin: 20px 0;
+      }
+      .tarifa-card.destacado .tarifa-divider {
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+      .tarifa-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        color: #444;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .tarifa-item i {
+        color: var(--milano-red);
+        font-size: 1rem;
+        min-width: 18px;
+      }
+      .btn-tarifa {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-top: 25px;
+        text-decoration: none;
+        transition: 0.3s;
+        border: 2px solid var(--milano-red);
+        color: var(--milano-red);
+        background: transparent;
+      }
+      .btn-tarifa:hover {
+        background: var(--milano-red);
+        color: white;
+      }
+      .tarifa-card.destacado .btn-tarifa {
+        background: var(--milano-red);
+        color: white;
+        border-color: var(--milano-red);
+      }
+      .tarifa-card.destacado .btn-tarifa:hover {
+        background: var(--milano-hover);
+      }
+      .tarifa-nota {
+        text-align: center;
+        margin-top: 40px;
+        color: var(--slate-gray);
+        font-size: 0.9rem;
+      }
+      .tarifa-nota a {
+        color: var(--milano-red);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      
+      /* ── CTA SECTION ────────────────────────────────────────────────── */
+      .cta-section {
         padding: 80px 20px;
         text-align: center;
-        background: var(--chinese-black); 
-        color: var(--text-light); /* Letra blanca en fondo negro */
-    }
-
-    /* ── FOOTER ───────────────────────────────────────────────────────── */
-    .footer {
+        background: var(--chinese-black);
+        color: var(--text-light);
+      }
+      
+      /* ── FOOTER ─────────────────────────────────────────────────────── */
+      .footer {
         padding: 40px 20px;
-        background: var(--chinese-black); 
-        border-top: 3px solid var(--milano-red); 
+        background: var(--chinese-black);
+        border-top: 3px solid var(--milano-red);
         text-align: center;
         color: var(--text-light);
-    }
-    .footer-links a:hover { color: var(--milano-red); }
-    .social-icons a:hover { color: var(--milano-red); transform: scale(1.2); }
-
-    /* ── RESPONSIVE ───────────────────────────────────────────────────── */
-    @media (max-width: 768px) {
-        .hero-title { font-size: 2.5rem; }
-    }
-</style>
-</head>
-<body>
-
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <div class="container">
-        <a class="navbar-brand" href="#">
-    <!-- Nota el cambio de .jpg a .png -->
-    <img src="static/img/hero-enviexpress.png" alt="EnviExpress Logo" class="logo-hero">
-</a>
-        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+      }
+      .footer-links a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        margin: 0 12px;
+        font-size: 0.9rem;
+      }
+      .footer-links a:hover {
+        color: var(--milano-red);
+      }
+      .social-icons a {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.5rem;
+        margin: 0 10px;
+        transition: 0.3s;
+        display: inline-block;
+      }
+      .social-icons a:hover {
+        color: var(--milano-red);
+        transform: scale(1.2);
+      }
+      
+      @media (max-width: 768px) {
+        .hero-title {
+          font-size: 2.5rem;
+        }
+        .vm-card {
+          margin-bottom: 20px;
+        }
+        .tarifa-card {
+          margin-bottom: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ── NAVBAR ─────────────────────────────────────────────────────────── -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#"><img src="static/img/hero-enviexpress.png" alt="EnviExpress Logo" class="logo-hero" /></a>
+        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center gap-3">
-                <li class="nav-item"><a class="nav-link" href="#servicios">Servicios</a></li>
-                <li class="nav-item"><a class="nav-link" href="#caracteristicas">Características</a></li>
-                <li class="nav-item"><a class="nav-link" href="/seguimiento">Rastrear</a></li>
-                <li class="nav-item">
-                    <a href="/login" class="btn btn-login">
-                        <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/registro" class="btn btn-registro">
-                        <i class="bi bi-person-plus"></i> Registrarse
-                    </a>
-                </li>
-            </ul>
+          <ul class="navbar-nav ms-auto align-items-center gap-3">
+            <li class="nav-item">
+              <a class="nav-link" href="#servicios">Servicios</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#caracteristicas">Características</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#tarifas">Tarifas</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#nosotros">Nosotros</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/seguimiento">Rastrear</a>
+            </li>
+            <li class="nav-item">
+              <a href="/login" class="btn btn-login"><i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión</a>
+            </li>
+            <li class="nav-item">
+              <a href="/registro" class="btn btn-registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+            </li>
+          </ul>
         </div>
-    </div>
-</nav>
+      </div>
+    </nav>
 
-<section class="hero">
-    <div class="container">
-        <p class="hero-tagline">Tu mejor aliado</p>
-        <h1 class="hero-title"><i class="bi bi-lightning-fill"></i> EnviExpress</h1>
+    <!-- ── HERO ───────────────────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="container">
+        <p class="hero-tagline">Tu mejor aliado logístico</p>
+        <h1 class="hero-title"><i class="bi bi-lightning-fill"></i> Envi<span>Express</span></h1>
         <p class="hero-subtitle">Envíos rápidos, seguros y confiables en toda Colombia</p>
 
         <div class="hero-buttons mb-5">
-            <a href="/registro" class="btn-hero btn-primary-hero me-md-3">
-                <i class="bi bi-rocket-takeoff"></i> Comenzar Ahora
-            </a>
-            <a href="#servicios" class="btn-hero btn-secondary-hero">
-                <i class="bi bi-info-circle"></i> Conocer Más
-            </a>
+          <a href="/registro" class="btn-hero btn-primary-hero me-md-3"><i class="bi bi-rocket-takeoff"></i> Comenzar Ahora</a>
+          <a href="#tarifas" class="btn-hero btn-secondary-hero"><i class="bi bi-tag"></i> Ver Tarifas</a>
         </div>
 
         <div class="quick-track">
-            <h4><i class="bi bi-search"></i> Rastrear mi Envío</h4>
-            <form action="/seguimiento" method="get">
-                <div class="track-input-group">
-                    <input type="text" name="numero_guia" class="track-input"
-                        placeholder="Ej: ENV000001 o ENV-00011"
-                        required maxlength="20" pattern="[A-Za-z0-9\-]+"
-                        title="Letras, números y guiones. Ej: ENV000001" />
-                    <button type="submit" class="btn-track">
-                        <i class="bi bi-search"></i> Buscar
-                    </button>
-                </div>
-            </form>
+          <h4><i class="bi bi-search"></i> Rastrear mi Envío</h4>
+          <form action="/seguimiento" method="get">
+            <div class="track-input-group">
+              <input type="text" name="numero_guia" class="track-input form-control my-3" placeholder="Ej: ENV000001 o ENV-00011" required maxlength="20" pattern="[A-Za-z0-9\-]+" title="Letras, números y guiones. Ej: ENV000001" />
+              <button type="submit" class="btn-track w-100"><i class="bi bi-search"></i> Buscar Envío</button>
+            </div>
+          </form>
         </div>
-    </div>
-</section>
+      </div>
+    </section>
 
-<section class="servicios" id="servicios">
-    <div class="container">
+    <!-- ── SERVICIOS ──────────────────────────────────────────────────────── -->
+    <section class="servicios" id="servicios">
+      <div class="container">
         <h2 class="section-title">Nuestros Servicios</h2>
         <div class="row g-4">
-            <div class="col-md-4">
-                <div class="servicio-card">
-                    <i class="bi bi-lightning-charge servicio-icon"></i>
-                    <h3>Express</h3>
-                    <p>Entrega urgente en 24 horas. Ideal para envíos que no pueden esperar.</p>
-                </div>
+          <div class="col-md-4">
+            <div class="servicio-card text-center">
+              <i class="bi bi-lightning-charge servicio-icon"></i>
+              <h3>Express</h3>
+              <p>Entrega urgente en 24 horas. Ideal para envíos que no pueden esperar.</p>
             </div>
-            <div class="col-md-4">
-                <div class="servicio-card">
-                    <i class="bi bi-truck servicio-icon"></i>
-                    <h3>Estándar</h3>
-                    <p>Envíos confiables 24 horas hábiles a precios accesibles.</p>
-                </div>
+          </div>
+          <div class="col-md-4">
+            <div class="servicio-card text-center">
+              <i class="bi bi-truck servicio-icon"></i>
+              <h3>Estándar</h3>
+              <p>Envíos confiables en 24 horas hábiles a precios accesibles.</p>
             </div>
-            <div class="col-md-4">
-                <div class="servicio-card">
-                    <i class="bi bi-building servicio-icon"></i>
-                    <h3>Empresarial</h3>
-                    <p>Soluciones logísticas personalizadas para tu negocio.</p>
-                </div>
+          </div>
+          <div class="col-md-4">
+            <div class="servicio-card text-center">
+              <i class="bi bi-building servicio-icon"></i>
+              <h3>Empresarial</h3>
+              <p>Soluciones logísticas personalizadas para tu negocio con tarifas preferenciales.</p>
             </div>
+          </div>
         </div>
-    </div>
-</section>
+      </div>
+    </section>
 
-<section class="caracteristicas" id="caracteristicas">
-    <div class="container">
+    <!-- ── CARACTERÍSTICAS ────────────────────────────────────────────────── -->
+    <section class="caracteristicas" id="caracteristicas">
+      <div class="container">
         <h2 class="section-title">¿Por qué EnviExpress?</h2>
         <div class="row">
-            <div class="col-md-6">
-                <div class="feature-item">
-                    <i class="bi bi-shield-check feature-icon"></i>
-                    <div class="feature-content"><h5>Seguridad Garantizada</h5><p>Tus envíos protegidos con seguros y rastreo en tiempo real</p></div>
-                </div>
-                <div class="feature-item">
-                    <i class="bi bi-clock-history feature-icon"></i>
-                    <div class="feature-content"><h5>Entregas Puntuales</h5><p>Cumplimos con los tiempos prometidos, sin retrasos</p></div>
-                </div>
-                <div class="feature-item">
-                    <i class="bi bi-geo-alt feature-icon"></i>
-                    <div class="feature-content"><h5>Cobertura Nacional</h5><p>Llegamos a más de 900 destinos en todo Colombia</p></div>
-                </div>
+          <div class="col-md-6">
+            <div class="feature-item">
+              <i class="bi bi-shield-check feature-icon"></i>
+              <div class="feature-content">
+                <h5>Seguridad Garantizada</h5><p>Tus envíos protegidos con seguros y rastreo en tiempo real.</p>
+              </div>
             </div>
-            <div class="col-md-6">
-                <div class="feature-item">
-                    <i class="bi bi-headset feature-icon"></i>
-                    <div class="feature-content"><h5>Soporte 24/7</h5><p>Atención al cliente siempre disponible para ayudarte</p></div>
-                </div>
-                <div class="feature-item">
-                    <i class="bi bi-currency-dollar feature-icon"></i>
-                    <div class="feature-content"><h5>Precios Competitivos</h5><p>Tarifas justas y transparentes sin cargos ocultos</p></div>
-                </div>
-                <div class="feature-item">
-                    <i class="bi bi-phone feature-icon"></i>
-                    <div class="feature-content"><h5>Tecnología Avanzada</h5><p>Plataforma moderna para gestionar tus envíos fácilmente</p></div>
-                </div>
+            <div class="feature-item">
+              <i class="bi bi-clock-history feature-icon"></i>
+              <div class="feature-content">
+                <h5>Entregas Puntuales</h5><p>Cumplimos con los tiempos prometidos, sin retrasos.</p>
+              </div>
             </div>
+            <div class="feature-item">
+              <i class="bi bi-geo-alt feature-icon"></i>
+              <div class="feature-content">
+                <h5>Cobertura Nacional</h5><p>Llegamos a más de 900 destinos en todo Colombia.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="feature-item">
+              <i class="bi bi-headset feature-icon"></i>
+              <div class="feature-content">
+                <h5>Soporte 24/7</h5><p>Atención al cliente siempre disponible para ayudarte.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <i class="bi bi-currency-dollar feature-icon"></i>
+              <div class="feature-content">
+                <h5>Precios Competitivos</h5><p>Tarifas justas y transparentes sin cargos ocultos.</p>
+              </div>
+            </div>
+            <div class="feature-item">
+              <i class="bi bi-phone feature-icon"></i>
+              <div class="feature-content">
+                <h5>Tecnología Avanzada</h5><p>Plataforma moderna para gestionar tus envíos fácilmente.</p>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
-</section>
+      </div>
+    </section>
 
-<section class="cta-section">
-    <div class="container">
+    <!-- ── TARIFAS ────────────────────────────────────────────────────────── -->
+    <section class="tarifas" id="tarifas">
+      <div class="container">
+        <h2 class="section-title">Tarifas Transparentes</h2>
+        <p class="section-subtitle">Sin letras pequeñas. Sin cargos sorpresa. Solo logística honesta.</p>
+        <div class="row g-4 justify-content-center">
+          <!-- Express -->
+          <div class="col-md-4">
+            <div class="tarifa-card">
+              <div class="tarifa-nombre">
+                <i class="bi bi-lightning-charge-fill text-danger me-2"></i>Express
+              </div>
+              <div class="tarifa-desc">Entrega urgente el mismo día o en 24 horas hábiles.</div>
+              <div class="tarifa-precio">
+                $12.000 <span>COP</span>
+              </div>
+              <div class="tarifa-desde">Desde · hasta 1 kg · en Bogotá</div>
+              <hr class="tarifa-divider" />
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Entrega en 24 horas
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Rastreo en tiempo real
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Notificación por correo
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Foto de evidencia
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-x-circle" style="color:#ccc"></i> Recogida en domicilio
+              </div>
+              <a href="/registro" class="btn-tarifa">Comenzar</a>
+            </div>
+          </div>
+
+          <!-- Estándar (destacado) -->
+          <div class="col-md-4">
+            <div class="tarifa-card destacado">
+              <span class="badge-popular">⭐ Más Popular</span>
+              <div class="tarifa-nombre">
+                <i class="bi bi-truck me-2" style="color:var(--milano-red)"></i>Estándar
+              </div>
+              <div class="tarifa-desc">La solución preferida por nuestros clientes habituales.</div>
+              <div class="tarifa-precio">
+                $8.500 <span>COP</span>
+              </div>
+              <div class="tarifa-desde">Desde · hasta 1 kg · en Bogotá</div>
+              <hr class="tarifa-divider" />
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Entrega en 24–48 h hábiles
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Rastreo en tiempo real
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Notificación por correo
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Foto de evidencia
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Recogida en domicilio
+              </div>
+              <a href="/registro" class="btn-tarifa">Comenzar</a>
+            </div>
+          </div>
+
+          <!-- Empresarial -->
+          <div class="col-md-4">
+            <div class="tarifa-card">
+              <div class="tarifa-nombre">
+                <i class="bi bi-building-fill text-danger me-2"></i>Empresarial
+              </div>
+              <div class="tarifa-desc">Volumen alto, tarifas negociadas y gestor dedicado.</div>
+              <div class="tarifa-precio">A consultar</div>
+              <div class="tarifa-desde">Desde 50 envíos mensuales</div>
+              <hr class="tarifa-divider" />
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Tarifas preferenciales
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Panel de administración
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Reporte mensual de envíos
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Facturación consolidada
+              </div>
+              <div class="tarifa-item">
+                <i class="bi bi-check-circle-fill"></i> Gestor de cuenta dedicado
+              </div>
+              <a href="https://wa.me/573203460836" target="_blank" class="btn-tarifa">Cotizar ahora</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de kilos adicionales -->
+        <div class="row justify-content-center mt-5">
+          <div class="col-md-8">
+            <div class="tarifa-card p-4">
+              <h5 class="fw-bold mb-3"><i class="bi bi-table text-danger me-2"></i>Cargo por peso adicional</h5>
+              <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr style="background:#f4f4f4">
+                      <th>Peso del paquete</th>
+                      <th>Express</th>
+                      <th>Estándar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Hasta 1 kg</td>
+                      <td>$12.000</td>
+                      <td>$8.500</td>
+                    </tr>
+                    <tr>
+                      <td>1 – 3 kg</td>
+                      <td>$16.000</td>
+                      <td>$11.000</td>
+                    </tr>
+                    <tr>
+                      <td>3 – 5 kg</td>
+                      <td>$21.000</td>
+                      <td>$14.500</td>
+                    </tr>
+                    <tr>
+                      <td>5 – 10 kg</td>
+                      <td>$28.000</td>
+                      <td>$19.000</td>
+                    </tr>
+                    <tr>
+                      <td>Más de 10 kg</td>
+                      <td colspan="2" class="text-center">Cotización personalizada</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="tarifa-nota mt-4">
+          ¿Envíos fuera de Bogotá o necesitas algo especial?
+          <a href="https://wa.me/573203460836" target="_blank"><i class="bi bi-whatsapp"></i> Contáctanos</a>
+          y te damos una cotización en minutos.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── VISIÓN Y MISIÓN ─────────────────────────────────────────────────── -->
+    <section class="vision-mision" id="nosotros">
+      <div class="container">
+        <h2 class="section-title">Quiénes Somos</h2>
+        <div class="row g-4">
+          <!-- Visión -->
+          <div class="col-md-6">
+            <div class="vm-card">
+              <span class="vm-label">Visión</span>
+              <i class="bi bi-eye-fill vm-icon"></i>
+              <h3>Hacia dónde vamos</h3>
+              <p>Ser la plataforma de gestión logística y mensajería urbana más confiable de Colombia, conectando negocios y personas con soluciones tecnológicas ágiles, trazables y accesibles que transformen la experiencia de envío en cada ciudad donde operemos.</p>
+            </div>
+          </div>
+
+          <!-- Misión -->
+          <div class="col-md-6">
+            <div class="vm-card">
+              <span class="vm-label">Misión</span>
+              <i class="bi bi-bullseye vm-icon"></i>
+              <h3>Lo que nos mueve</h3>
+              <p>Facilitar la gestión integral de envíos y rutas de mensajería mediante una plataforma tecnológica innovadora que permita a empresas y emprendedores administrar sus operaciones logísticas con eficiencia, visibilidad en tiempo real y total confianza, apoyando el crecimiento del comercio local en Bogotá y más allá.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Valores -->
+        <div class="vm-valores">
+          <h4><i class="bi bi-stars me-2" style="color:var(--milano-red)"></i>Nuestros Valores</h4>
+          <div>
+            <span class="valor-badge"><i class="bi bi-shield-fill-check"></i> Confianza</span>
+            <span class="valor-badge"><i class="bi bi-lightning-fill"></i> Agilidad</span>
+            <span class="valor-badge"><i class="bi bi-eye-fill"></i> Transparencia</span>
+            <span class="valor-badge"><i class="bi bi-people-fill"></i> Compromiso</span>
+            <span class="valor-badge"><i class="bi bi-cpu-fill"></i> Innovación</span>
+            <span class="valor-badge"><i class="bi bi-geo-alt-fill"></i> Cobertura</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CTA ────────────────────────────────────────────────────────────── -->
+    <section class="cta-section">
+      <div class="container">
         <h2><i class="bi bi-box-seam"></i> ¿Listo para enviar?</h2>
-        <p>Únete a miles de clientes satisfechos que confían en EnviExpress</p>
-        <a href="/registro" class="btn-hero btn-primary-hero mt-3">
-            <i class="bi bi-rocket-takeoff"></i> Crear Cuenta Gratis
-        </a>
-    </div>
-</section>
+        <p class="mt-2 mb-4">Únete a miles de clientes satisfechos que confían en EnviExpress.</p>
+        <a href="/registro" class="btn-hero btn-primary-hero"><i class="bi bi-rocket-takeoff"></i> Crear Cuenta Gratis</a>
+      </div>
+    </section>
 
-<footer class="footer">
-    <div class="container">
+    <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+    <footer class="footer">
+      <div class="container">
         <div class="footer-links mb-4">
-            <a href="#servicios">Servicios</a>
-            <a href="#caracteristicas">Características</a>
-            <a href="/seguimiento">Rastrear Envío</a>
-            <a href="/login">Iniciar Sesión</a>
-            <a href="/registro">Registrarse</a>
+          <a href="#servicios">Servicios</a>
+          <a href="#caracteristicas">Características</a>
+          <a href="#tarifas">Tarifas</a>
+          <a href="#nosotros">Nosotros</a>
+          <a href="/seguimiento">Rastrear Envío</a>
+          <a href="/login">Iniciar Sesión</a>
+          <a href="/registro">Registrarse</a>
         </div>
         <div class="social-icons mb-4">
-            <a href="https://wa.me/573203460836" target="_blank"><i class="bi bi-whatsapp"></i></a>
-            <a href="#" target="_blank"><i class="bi bi-facebook"></i></a>
-            <a href="#" target="_blank"><i class="bi bi-instagram"></i></a>
-            <a href="#" target="_blank"><i class="bi bi-twitter"></i></a>
+          <a href="https://wa.me/573203460836" target="_blank"><i class="bi bi-whatsapp"></i></a>
+          <a href="#" target="_blank"><i class="bi bi-facebook"></i></a>
+          <a href="#" target="_blank"><i class="bi bi-instagram"></i></a>
+          <a href="#" target="_blank"><i class="bi bi-twitter"></i></a>
         </div>
         <p class="mb-0">&copy; 2026 EnviExpress. Todos los derechos reservados.</p>
         <small class="text-muted">Sistema de Gestión de Envíos Profesional</small>
-    </div>
-</footer>
+      </div>
+    </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
