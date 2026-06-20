@@ -37,7 +37,7 @@ import app.repositories.VehiculoRepository as vehiculo_repo
 import app.repositories.TarifaRepository as tarifa_repo
 import app.repositories.RutaRepository as ruta_repo
 import app.repositories.LugarRepository as lugar_repo
-import app.repositories.seguimiento_repository as seg_repo
+import app.repositories.SeguimientoRepository as seg_repo
 from app.config.templates import templates
 
 router = APIRouter(prefix="/envios", tags=["Envíos"])
