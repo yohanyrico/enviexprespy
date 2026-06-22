@@ -267,9 +267,11 @@
                         <th>Origen</th>
                         <th>Ciudad Destino</th>
                         <th>Destino</th>
+                        <th>Cliente</th>
                         <th>Recoge</th>
                         <th>Entrega</th>
                         <th>Ruta</th>
+                        <th>Contraentrega</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -316,8 +318,18 @@
                         <td><small>{% if e.estado == 'En_Ruta' and e.estado_entrega == 'Pendiente' %}N/A{% else %}{{ (e.lugar_entrega.direccion or '')[:20] if e.lugar_entrega else 'N/A' }}{% endif %}</small></td>
                         
                         <td><small>{{ e.mensajero.nombre if e.mensajero else '---' }}</small></td>
+                        <td><small>{{ e.cliente.nombre ~ ' ' ~ e.cliente.apellido if e.cliente else '---' }}</small></td>
                         <td><small>{% if e.estado == 'En_Ruta' and e.estado_entrega == 'Pendiente' %}---{% else %}{{ e.mensajero_entrega.nombre if e.mensajero_entrega else '---' }}{% endif %}</small></td>
                         <td><small class="fw-bold text-primary">{{ e.ruta.nombre_sector if e.ruta else '---' }}</small></td>
+                        <td>
+                            {% if e.es_cod and e.valor_a_cobrar %}
+                                <span class="badge" style="background:#28a745; font-size:0.8rem;">
+                                    ${{ "{:,.0f}".format(e.valor_a_cobrar) }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
 
                         <td>
                             <div class="d-flex gap-1 justify-content-center">
