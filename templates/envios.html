@@ -313,12 +313,14 @@
                         {# ✅ AJUSTE DINÁMICO: Si está en ruta y proviene de una asignación "Solo C", vaciamos o filtramos datos del Destino en la UI #}
                         <td><small>{{ e.lugar_recogida.ciudad if e.lugar_recogida and e.lugar_recogida.ciudad else '---' }}</small></td>
                         <td><small>{{ (e.lugar_recogida.direccion or '')[:20] if e.lugar_recogida else 'N/A' }}</small></td>
-                        
+
                         <td><small>{% if e.estado == 'En_Ruta' and e.estado_entrega == 'Pendiente' %}---{% else %}{{ e.lugar_entrega.ciudad if e.lugar_entrega and e.lugar_entrega.ciudad else '---' }}{% endif %}</small></td>
                         <td><small>{% if e.estado == 'En_Ruta' and e.estado_entrega == 'Pendiente' %}N/A{% else %}{{ (e.lugar_entrega.direccion or '')[:20] if e.lugar_entrega else 'N/A' }}{% endif %}</small></td>
-                        
+
+                        {# ← INTERCAMBIADAS: primero Cliente, luego Recoge #}
+                        <td><small class="fw-bold">{{ e.cliente.nombre ~ ' ' ~ e.cliente.apellido if e.cliente else '---' }}</small></td>
                         <td><small>{{ e.mensajero.nombre if e.mensajero else '---' }}</small></td>
-                        <td><small>{{ e.cliente.nombre ~ ' ' ~ e.cliente.apellido if e.cliente else '---' }}</small></td>
+
                         <td><small>{% if e.estado == 'En_Ruta' and e.estado_entrega == 'Pendiente' %}---{% else %}{{ e.mensajero_entrega.nombre if e.mensajero_entrega else '---' }}{% endif %}</small></td>
                         <td><small class="fw-bold text-primary">{{ e.ruta.nombre_sector if e.ruta else '---' }}</small></td>
                         <td>
