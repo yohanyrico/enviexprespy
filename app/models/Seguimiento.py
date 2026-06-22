@@ -17,7 +17,7 @@ class Seguimiento(Base):
     Enum(
         "Registrado",
         "Pendiente_Recoger",
-        "Colectado",
+        "C-Colectado",
         "Pendiente_Verificar",
         "Pendiente_Entregar",
         "En_Bodega",
