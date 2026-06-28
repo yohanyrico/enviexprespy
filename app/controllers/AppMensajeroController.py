@@ -598,4 +598,23 @@ def obtener_mi_ruta(
         "pedidos_pendientes": sum(1 for p in pedidos if p.estado not in {
             "Entregado", "C-Colectado", "Cancelado", "Rechazado", "Fallido"
         }),
+        "pedidos": [
+            {
+                "id": p.envio_id,
+                "guia": p.numero_guia,
+                "cliente": f"{p.cliente.nombre} {p.cliente.apellido}" if p.cliente else "N/A",
+                "telefono_cliente": p.cliente.telefono if p.cliente else "",
+                "direccion_entrega": p.lugar_entrega.direccion if p.lugar_entrega else "Sin dirección",
+                "ciudad_destino": p.lugar_entrega.ciudad if p.lugar_entrega else "",
+                "estado": p.estado,
+                "instrucciones": p.instrucciones or "",
+                "latitud": float(p.lugar_entrega.latitud) if p.lugar_entrega and p.lugar_entrega.latitud else None,
+                "longitud": float(p.lugar_entrega.longitud) if p.lugar_entrega and p.lugar_entrega.longitud else None,
+                "es_cod": p.es_cod or False,
+                "valor_a_cobrar": float(p.valor_a_cobrar) if p.valor_a_cobrar else 0.0,
+                "peso": float(p.peso) if p.peso else 0.0,
+                "tipo_servicio": p.tipo_servicio or "BASICA",
+            }
+            for p in pedidos
+        ]
     }
