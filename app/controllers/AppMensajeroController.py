@@ -88,15 +88,15 @@ def obtener_pedidos_app(
 ):
     try:
         estados_activos = [
-        "Registrado",
-        "Pendiente_Verificar",   # ← AGREGAR ESTA LÍNEA
-        "Pendiente_Recoger",
-        "C-Colectado",
-        "En_Bodega",
-        "Pendiente_Entregar",
-        "En_Ruta",
-        "En_Destino"
-]
+            "Registrado",
+            "Pendiente_Verificar",
+            "Pendiente_Recoger",
+            "C-Colectado",
+            "En_Bodega",
+            "Pendiente_Entregar",
+            "En_Ruta",
+            "En_Destino"
+        ]
         pedidos = db.query(Envio).filter(
             or_(
                 Envio.usuario_mensajero_id == current_user.id_usuario,
@@ -111,12 +111,18 @@ def obtener_pedidos_app(
                 "guia": p.numero_guia,
                 "cliente": f"{p.cliente.nombre} {p.cliente.apellido}" if p.cliente else "N/A",
                 "telefono_cliente": p.cliente.telefono if p.cliente else "",
+                # Destino
                 "direccion_entrega": p.lugar_entrega.direccion if p.lugar_entrega else "Sin dirección",
                 "ciudad_destino": p.lugar_entrega.ciudad if p.lugar_entrega else "",
-                "estado": p.estado,
-                "instrucciones": p.instrucciones or "",
                 "latitud": float(p.lugar_entrega.latitud) if p.lugar_entrega and p.lugar_entrega.latitud else None,
                 "longitud": float(p.lugar_entrega.longitud) if p.lugar_entrega and p.lugar_entrega.longitud else None,
+                # ✅ Origen real del pedido
+                "direccion_recogida": p.lugar_recogida.direccion if p.lugar_recogida else "Sin dirección origen",
+                "ciudad_origen": p.lugar_recogida.ciudad if p.lugar_recogida else "",
+                "latitud_recogida": float(p.lugar_recogida.latitud) if p.lugar_recogida and p.lugar_recogida.latitud else None,
+                "longitud_recogida": float(p.lugar_recogida.longitud) if p.lugar_recogida and p.lugar_recogida.longitud else None,
+                "estado": p.estado,
+                "instrucciones": p.instrucciones or "",
                 "es_cod": p.es_cod or False,
                 "valor_a_cobrar": float(p.valor_a_cobrar) if p.valor_a_cobrar else 0.0,
                 "peso": float(p.peso) if p.peso else 0.0,
@@ -343,7 +349,6 @@ def actualizar_estado_envio(
 
 
 # --- ACTUALIZAR ESTADO POR NÚMERO DE GUÍA ---
-# Usado por EscaneoScreen y CamaraEvidenciaScreen (flujo individual por guía)
 @router.put("/pedidos/estado-por-guia")
 def actualizar_estado_por_guia(
     body: ActualizarEstadoPorGuiaRequest,
@@ -440,7 +445,6 @@ def gestionar_entrega(
     }
 
 
-# --- SUBIR EVIDENCIA POR ID (método original — mantener para gestion_entrega) ---
 # --- SUBIR EVIDENCIA POR ID ---
 @router.post("/pedidos/{envio_id}/evidencia")
 async def subir_evidencia(
@@ -588,6 +592,8 @@ def obtener_mi_ruta(
 
     pedidos = db.query(Envio).filter(Envio.ruta_id == ruta.ruta_id).all()
 
+    estados_terminales = {"Entregado", "C-Colectado", "Cancelado", "Rechazado", "Fallido"}
+
     return {
         "hay_ruta": True,
         "ruta_id": ruta.ruta_id,
@@ -595,21 +601,25 @@ def obtener_mi_ruta(
         "estado": ruta.estado,
         "tipo_ruta": ruta.tipo_ruta or "ENTREGA",
         "total_pedidos": len(pedidos),
-        "pedidos_pendientes": sum(1 for p in pedidos if p.estado not in {
-            "Entregado", "C-Colectado", "Cancelado", "Rechazado", "Fallido"
-        }),
+        "pedidos_pendientes": sum(1 for p in pedidos if p.estado not in estados_terminales),
         "pedidos": [
             {
                 "id": p.envio_id,
                 "guia": p.numero_guia,
                 "cliente": f"{p.cliente.nombre} {p.cliente.apellido}" if p.cliente else "N/A",
                 "telefono_cliente": p.cliente.telefono if p.cliente else "",
+                # ✅ Destino (entrega)
                 "direccion_entrega": p.lugar_entrega.direccion if p.lugar_entrega else "Sin dirección",
                 "ciudad_destino": p.lugar_entrega.ciudad if p.lugar_entrega else "",
-                "estado": p.estado,
-                "instrucciones": p.instrucciones or "",
                 "latitud": float(p.lugar_entrega.latitud) if p.lugar_entrega and p.lugar_entrega.latitud else None,
                 "longitud": float(p.lugar_entrega.longitud) if p.lugar_entrega and p.lugar_entrega.longitud else None,
+                # ✅ Origen real (recogida) — corrige el bug de dirección fija
+                "direccion_recogida": p.lugar_recogida.direccion if p.lugar_recogida else "Sin dirección origen",
+                "ciudad_origen": p.lugar_recogida.ciudad if p.lugar_recogida else "",
+                "latitud_recogida": float(p.lugar_recogida.latitud) if p.lugar_recogida and p.lugar_recogida.latitud else None,
+                "longitud_recogida": float(p.lugar_recogida.longitud) if p.lugar_recogida and p.lugar_recogida.longitud else None,
+                "estado": p.estado,
+                "instrucciones": p.instrucciones or "",
                 "es_cod": p.es_cod or False,
                 "valor_a_cobrar": float(p.valor_a_cobrar) if p.valor_a_cobrar else 0.0,
                 "peso": float(p.peso) if p.peso else 0.0,
