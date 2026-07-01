@@ -20,16 +20,22 @@ router = APIRouter(prefix="/planes", tags=["Planes"])
 def generar_firma_integridad(referencia: str, monto_centavos: int, moneda: str) -> str:
     llave_secreta = os.getenv("WOMPI_INTEGRITY_SECRET")
 
-    # 🚨 PRUEBA DE CONTROL: si sale None, el .env no está cargando esta variable.
+    # 🚨 PRUEBA DE CONTROL: si sale None, la variable de entorno no está configurada en Render.
     print(f"DEBUG: WOMPI_INTEGRITY_SECRET recuperada -> {llave_secreta}")
 
     if not llave_secreta:
-        # ⚠️ Reemplaza esto por tu llave secreta de integridad real SOLO para probar en local.
-        # Bórrala apenas confirmes que el .env carga bien.
-        llave_secreta = "test_integrity_prod_integrity_1xyEKwVbwNOm87RjTkRRVTnGqnMXv2Dr"
+        # ⚠️ SOLO para pruebas locales. En Render, configura WOMPI_INTEGRITY_SECRET
+        # en Environment Variables con tu llave real (una sola, sin mezclar prefijos).
+        llave_secreta = "prod_integrity_1xyEKwVbwNOm87RjTkRRVTnGqnMXv2Dr"
+        print("⚠️ ADVERTENCIA: usando llave secreta de respaldo hardcodeada. Configura WOMPI_INTEGRITY_SECRET en Render.")
 
     cadena = f"{referencia}{monto_centavos}{moneda}{llave_secreta}"
-    return hashlib.sha256(cadena.encode("utf-8")).hexdigest()
+    firma = hashlib.sha256(cadena.encode("utf-8")).hexdigest()
+
+    print(f"DEBUG: Cadena firmada -> {cadena}")
+    print(f"DEBUG: Firma generada -> {firma}")
+
+    return firma
 
 
 # ─── Vista: pantalla de pago para un plan específico ─────────────────────────
@@ -47,9 +53,8 @@ def vista_pago(nombre: str, request: Request, db: Session = Depends(get_db)):
     key = os.getenv("WOMPI_PUBLIC_KEY")
 
     # 🚨 PRUEBA DE CONTROL: Si esto sale None en la consola, el .env no carga.
-    print(f"DEBUG: La llave recuperada es -> {key}")
+    print(f"DEBUG: La llave pública recuperada es -> {key}")
 
-    # Si sale None, fuerza la llave manualmente solo para probar:
     if not key:
         key = "pub_test_7dp1Bc4HwBDy0I6MGSKhD5FTZX6deV8q"  # Pon tu llave real aquí
 
@@ -59,6 +64,11 @@ def vista_pago(nombre: str, request: Request, db: Session = Depends(get_db)):
         moneda="COP",
     )
 
+    # 🚨 Verificación de seguridad: si por algún motivo la firma sale vacía,
+    # lo vemos en los logs de inmediato en vez de fallar silenciosamente en el navegador.
+    if not firma_integridad:
+        print("❌ ERROR CRÍTICO: firma_integridad salió vacía antes de renderizar el template.")
+
     return templates.TemplateResponse("pago.html", {
         "request": request,
         "plan": tarifa.nombre,
@@ -66,8 +76,8 @@ def vista_pago(nombre: str, request: Request, db: Session = Depends(get_db)):
         "cuota": f"{cuota:,}".replace(",", "."),
         "precio_centavos": precio_centavos,
         "referencia": referencia,
-        "wompi_public_key": key,  # Asegúrate de que este nombre coincida con el HTML
-        "firma_integridad": firma_integridad,  # 👈 NUEVO: requerido por Wompi
+        "wompi_public_key": key,
+        "firma_integridad": firma_integridad,
     })
 
 
