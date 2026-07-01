@@ -5,6 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 import os
 import uuid
+import hashlib
 
 from app.config.database import get_db
 from app.models.Usuario import Usuario
@@ -104,6 +105,24 @@ def detalle_plan(request: Request, nombre_plan: str):
     })
 
 
+def generar_firma_integridad(referencia: str, monto_centavos: int, moneda: str) -> str:
+    """Genera la firma de integridad SHA-256 exigida por Wompi para el Checkout Web."""
+    llave_secreta = os.getenv("WOMPI_INTEGRITY_SECRET")
+
+    print(f"DEBUG: WOMPI_INTEGRITY_SECRET recuperada -> {'(configurada, longitud ' + str(len(llave_secreta)) + ')' if llave_secreta else 'None'}")
+
+    if not llave_secreta:
+        print("❌ ERROR CRÍTICO: WOMPI_INTEGRITY_SECRET no está configurada en las variables de entorno de Render.")
+        return ""
+
+    cadena = f"{referencia}{monto_centavos}{moneda}{llave_secreta}"
+    firma = hashlib.sha256(cadena.encode("utf-8")).hexdigest()
+
+    print(f"DEBUG: Firma generada correctamente para referencia {referencia}")
+
+    return firma
+
+
 @router.get('/planes/pago/{nombre_plan}')
 def pasarela_pago(request: Request, nombre_plan: str, db: Session = Depends(get_db)):
     user_id = request.session.get("user_id")
@@ -119,19 +138,27 @@ def pasarela_pago(request: Request, nombre_plan: str, db: Session = Depends(get_
 
     monto_cuota = int(tarifa.precio_plan or 0)
     monto_total = monto_cuota * (tarifa.envios_incluidos or 0)
+    precio_centavos = monto_total * 100
     referencia  = f"ENVIX-{nombre_plan.upper()}-{uuid.uuid4().hex[:8].upper()}"
     wompi_public_key = os.getenv("WOMPI_PUBLIC_KEY", "")
 
     print(f">>> WOMPI KEY en pasarela_pago: '{wompi_public_key}'")
+
+    firma_integridad = generar_firma_integridad(
+        referencia=referencia,
+        monto_centavos=precio_centavos,
+        moneda="COP",
+    )
 
     return templates.TemplateResponse('pago.html', {
         "request": request,
         "plan": nombre_plan,
         "precio": fmt(monto_total),
         "cuota": fmt(monto_cuota),
-        "precio_centavos": monto_total * 100,
+        "precio_centavos": precio_centavos,
         "referencia": referencia,
         "wompi_public_key": wompi_public_key,
+        "firma_integridad": firma_integridad,   # 👈 NUEVO: requerido por Wompi
     })
 
 
