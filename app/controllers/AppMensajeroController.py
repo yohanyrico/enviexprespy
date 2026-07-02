@@ -15,6 +15,7 @@ from app.models.Ruta import Ruta
 from app.models.Usuario import Usuario
 from app.models.UbicacionMensajero import UbicacionMensajero
 from app.security.SecurityConfig import get_current_user
+import app.repositories.EnvioRepository as envio_repo
 
 router = APIRouter(prefix="/api/mensajero", tags=["App Mensajero"])
 
@@ -278,13 +279,20 @@ def actualizacion_masiva(
             )
         ).first()
 
-        if envio:
-            envio.estado = body.estado
-            if envio.ruta_id:
-                rutas_afectadas.add(envio.ruta_id)
-            actualizados.append(guia)
-        else:
+        if not envio:
             no_encontrados.append(guia)
+            continue
+
+        try:
+            envio_repo.validar_transicion_estado(envio.estado, body.estado)
+        except ValueError as e:
+            no_encontrados.append(f"{guia} (bloqueado: {e})")
+            continue
+
+        envio.estado = body.estado
+        if envio.ruta_id:
+            rutas_afectadas.add(envio.ruta_id)
+        actualizados.append(guia)
 
     db.commit()
 
@@ -335,6 +343,11 @@ def actualizar_estado_envio(
     if not envio:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Envío no encontrado.")
 
+    try:
+        envio_repo.validar_transicion_estado(envio.estado, body.estado)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
     envio.estado = body.estado
     db.commit()
     db.refresh(envio)
@@ -384,6 +397,11 @@ def actualizar_estado_por_guia(
             detail=f"Envío con guía '{body.guia}' no encontrado o no pertenece a este mensajero."
         )
 
+    try:
+        envio_repo.validar_transicion_estado(envio.estado, body.estado)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
     envio.estado = body.estado
     db.commit()
     db.refresh(envio)
@@ -426,6 +444,11 @@ def gestionar_entrega(
     if not envio:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Envío no encontrado.")
 
+    try:
+        envio_repo.validar_transicion_estado(envio.estado, body.estado)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
     envio.estado = body.estado
     if body.nombre_receptor:
         nota = f"[ENTREGA] Receptor: {body.nombre_receptor} | Tipo: {body.tipo_receptor}"
@@ -443,7 +466,6 @@ def gestionar_entrega(
         "estado": envio.estado,
         "ruta_finalizada": ruta_finalizada
     }
-
 
 # --- SUBIR EVIDENCIA POR ID ---
 @router.post("/pedidos/{envio_id}/evidencia")

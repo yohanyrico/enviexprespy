@@ -1000,6 +1000,15 @@ async def actualizar_gestion_envio(id: int, request: Request, db: Session = Depe
         comentario_novedad = form.get("comentario_novedad", "").strip()
 
         if nuevo_estado and nuevo_estado != envio.estado:
+            try:
+                envio_repo.validar_transicion_estado(envio.estado, nuevo_estado)
+            except ValueError as e:
+                db.rollback()
+                return RedirectResponse(
+                    url=f"/envios/gestion/{id}?error={str(e)}",
+                    status_code=303
+                )
+
             envio.estado = nuevo_estado
             descripcion = comentario_novedad or f"Estado actualizado a: {nuevo_estado}"
             db.add(Seguimiento(
@@ -1022,8 +1031,7 @@ async def actualizar_gestion_envio(id: int, request: Request, db: Session = Depe
     except Exception as e:
         db.rollback()
         return RedirectResponse(url=f"/envios/gestion/{id}?error=true", status_code=303)
-
-
+    
 # ─────────────────────────────────────────────────────────────────────────────
 # FOTO DE ENTREGA
 # ─────────────────────────────────────────────────────────────────────────────

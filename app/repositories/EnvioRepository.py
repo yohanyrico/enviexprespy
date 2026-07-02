@@ -88,3 +88,60 @@ def delete(db: Session, envio: Envio):
 
 def get_by_ids(db: Session, ids: list[int]) -> list[Envio]:
     return _base_query(db).filter(Envio.envio_id.in_(ids)).all()
+
+# ─────────────────────────────────────────────────────────────
+# VALIDACIÓN DE TRANSICIONES DE ESTADO
+# ─────────────────────────────────────────────────────────────
+
+# Orden progresivo del flujo. El índice determina qué tan "avanzado" está el pedido.
+ORDEN_ESTADOS = {
+    "Registrado":          0,
+    "Pendiente_Recoger":   1,
+    "C-Colectado":         2,
+    "En_Bodega":           3,
+    "Pendiente_Entregar":  4,
+    "Pendiente_Verificar": 4,   # mismo nivel que Pendiente_Entregar
+    "En_Ruta":             5,
+    "En_Destino":          6,
+    "Entregado":           7,
+}
+
+# Estados terminales especiales: una vez aquí, solo se puede anular.
+ESTADOS_TERMINALES = {"Entregado", "Rechazado", "Fallido"}
+
+ESTADO_ANULACION = "Cancelado"
+
+
+def validar_transicion_estado(estado_actual: str, nuevo_estado: str):
+    """
+    Regla de negocio: no se permite retroceder en el flujo de estados.
+    Única excepción: anular el pedido (pasar a 'Cancelado') desde cualquier punto.
+    """
+    # Anular siempre está permitido, desde cualquier estado
+    if nuevo_estado == ESTADO_ANULACION:
+        return
+
+    # Si ya está en un estado terminal (Entregado, Rechazado, Fallido),
+    # no se puede mover a ningún otro estado que no sea anulación
+    if estado_actual in ESTADOS_TERMINALES:
+        raise ValueError(
+            f"El envío está en estado '{estado_actual}' y no admite más cambios. "
+            "Solo se permite anularlo (estado 'Cancelado')."
+        )
+
+    # Si ya está anulado, no se puede reabrir
+    if estado_actual == ESTADO_ANULACION:
+        raise ValueError("El envío está anulado y no puede cambiar de estado.")
+
+    pos_actual = ORDEN_ESTADOS.get(estado_actual)
+    pos_nuevo  = ORDEN_ESTADOS.get(nuevo_estado)
+
+    # Si alguno de los estados no está en el mapa de orden, no bloqueamos por posición
+    if pos_actual is None or pos_nuevo is None:
+        return
+
+    if pos_nuevo < pos_actual:
+        raise ValueError(
+            f"No se puede retroceder el estado de '{estado_actual}' a '{nuevo_estado}'. "
+            "El flujo del pedido solo avanza, o se anula."
+        )
